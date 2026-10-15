@@ -1,0 +1,103 @@
+/* ============================================================
+   VARIABLES.CSS — Design Tokens para "El Último Algoritmo"
+   Paleta cyberpunk + tipografías + espaciado + timing
+   ============================================================ */
+
+:root {
+  /* ── Fondos ─────────────────────────────────────── */
+  --bg-primary:       #0a0e0a;
+  --bg-secondary:     #111810;
+  --bg-terminal:      #0d1117;
+  --bg-overlay:       rgba(10, 14, 10, 0.92);
+  --bg-card:          rgba(0, 255, 65, 0.03);
+  --bg-card-hover:    rgba(0, 255, 65, 0.07);
+
+  /* ── Verdes (gama principal) ────────────────────── */
+  --green-bright:     #00ff41;
+  --green-mid:        #00c832;
+  --green-dim:        #006622;
+  --green-glow:       rgba(0, 255, 65, 0.15);
+  --green-glow-strong:rgba(0, 255, 65, 0.35);
+
+  /* ── Acentos ────────────────────────────────────── */
+  --cyan:             #00d9ff;
+  --cyan-glow:        rgba(0, 217, 255, 0.2);
+  --red-alert:        #ff0040;
+  --red-glow:         rgba(255, 0, 64, 0.2);
+  --yellow-warn:      #ffcc00;
+  --yellow-glow:      rgba(255, 204, 0, 0.15);
+  --purple-glitch:    #b000ff;
+  --purple-glow:      rgba(176, 0, 255, 0.2);
+
+  /* ── Texto ──────────────────────────────────────── */
+  --text-primary:     #00ff41;
+  --text-secondary:   #8fbc8f;
+  --text-dim:         #4a5a4a;
+  --text-ghost:       #2a3a2a;
+  --text-white:       #e0ffe0;
+  --text-error:       #ff0040;
+  --text-warning:     #ffcc00;
+  --text-info:        #00d9ff;
+
+  /* ── Bordes ─────────────────────────────────────── */
+  --border-primary:   rgba(0, 255, 65, 0.2);
+  --border-hover:     rgba(0, 255, 65, 0.5);
+  --border-active:    #00ff41;
+  --border-error:     rgba(255, 0, 64, 0.4);
+
+  /* ── Tipografías ────────────────────────────────── */
+  --font-mono:        'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-display:     'Orbitron', 'Rajdhani', sans-serif;
+  --font-narrative:   'Share Tech Mono', 'JetBrains Mono', monospace;
+
+  /* ── Tamaños tipográficos ───────────────────────── */
+  --fs-xs:            0.7rem;
+  --fs-sm:            0.85rem;
+  --fs-base:          1rem;
+  --fs-md:            1.15rem;
+  --fs-lg:            1.4rem;
+  --fs-xl:            2rem;
+  --fs-2xl:           2.8rem;
+  --fs-3xl:           4rem;
+  --fs-hero:          6rem;
+
+  /* ── Espaciado ──────────────────────────────────── */
+  --space-xs:         0.25rem;
+  --space-sm:         0.5rem;
+  --space-md:         1rem;
+  --space-lg:         1.5rem;
+  --space-xl:         2rem;
+  --space-2xl:        3rem;
+  --space-3xl:        5rem;
+
+  /* ── Bordes redondeados ─────────────────────────── */
+  --radius-sm:        4px;
+  --radius-md:        8px;
+  --radius-lg:        12px;
+  --radius-pill:      999px;
+
+  /* ── Timing ─────────────────────────────────────── */
+  --transition-fast:  120ms ease;
+  --transition-base:  250ms ease;
+  --transition-slow:  500ms ease;
+  --transition-glitch:80ms steps(3);
+
+  /* ── Sombras / Glows ────────────────────────────── */
+  --shadow-green:     0 0 10px rgba(0, 255, 65, 0.3), 0 0 40px rgba(0, 255, 65, 0.1);
+  --shadow-green-lg:  0 0 20px rgba(0, 255, 65, 0.4), 0 0 80px rgba(0, 255, 65, 0.15);
+  --shadow-cyan:      0 0 10px rgba(0, 217, 255, 0.3), 0 0 40px rgba(0, 217, 255, 0.1);
+  --shadow-red:       0 0 10px rgba(255, 0, 64, 0.3), 0 0 40px rgba(255, 0, 64, 0.1);
+  --shadow-inset:     inset 0 0 30px rgba(0, 0, 0, 0.5);
+
+  /* ── Z-index capas ──────────────────────────────── */
+  --z-bg:             0;
+  --z-content:        10;
+  --z-hud:            100;
+  --z-modal:          500;
+  --z-overlay:        900;
+  --z-toast:          1000;
+
+  /* ── Dimensiones del HUD ────────────────────────── */
+  --hud-width:        280px;
+  --terminal-max-height: 70vh;
+}

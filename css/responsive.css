@@ -1,0 +1,123 @@
+/* ============================================================
+   RESPONSIVE.CSS — Breakpoints y adaptaciones móviles
+   ============================================================ */
+
+/* ── Tablets (≤ 1024px) ───────────────────────────── */
+@media (max-width: 1024px) {
+  :root {
+    --fs-hero:    4rem;
+    --fs-3xl:     3rem;
+    --fs-2xl:     2.2rem;
+    --hud-width:  240px;
+  }
+
+  .game-layout {
+    flex-direction: column;
+  }
+
+  .hud {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    max-height: none;
+  }
+
+  .hud__section {
+    flex: 1;
+    min-width: 150px;
+  }
+}
+
+/* ── Móviles grandes (≤ 768px) ────────────────────── */
+@media (max-width: 768px) {
+  :root {
+    --fs-hero:    2.8rem;
+    --fs-3xl:     2.2rem;
+    --fs-2xl:     1.8rem;
+    --fs-xl:      1.5rem;
+    --fs-lg:      1.2rem;
+    --space-2xl:  2rem;
+    --space-3xl:  3rem;
+  }
+
+  .terminal {
+    padding: var(--space-md);
+    font-size: var(--fs-xs);
+    border-radius: var(--radius-sm);
+  }
+
+  .puzzle {
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+  }
+
+  .puzzle__enunciado {
+    font-size: var(--fs-base);
+  }
+
+  .venn-container {
+    max-width: 300px;
+  }
+
+  /* Ocultar scanlines en móvil (rendimiento) */
+  .scanlines::after {
+    display: none;
+  }
+}
+
+/* ── Móviles pequeños (≤ 480px) ───────────────────── */
+@media (max-width: 480px) {
+  :root {
+    --fs-hero:    2rem;
+    --fs-3xl:     1.8rem;
+    --fs-2xl:     1.4rem;
+    --fs-xl:      1.2rem;
+    --space-xl:   1.5rem;
+    --space-2xl:  1.5rem;
+  }
+
+  .puzzle__header {
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .truth-table {
+    font-size: var(--fs-xs);
+  }
+
+  .truth-table th,
+  .truth-table td {
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  /* CRT flicker también se oculta */
+  .crt-flicker::before {
+    display: none;
+  }
+}
+
+/* ── Preferencias de accesibilidad ────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .scanlines::after,
+  .crt-flicker::before {
+    display: none;
+  }
+}
+
+/* ── Alto contraste ───────────────────────────────── */
+@media (prefers-contrast: high) {
+  :root {
+    --bg-primary:    #000000;
+    --bg-secondary:  #0a0a0a;
+    --text-primary:  #00ff41;
+    --border-primary: rgba(0, 255, 65, 0.5);
+  }
+}

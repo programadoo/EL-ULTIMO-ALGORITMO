@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="El Último Algoritmo — Un juego de lógica y hacking narrativo. Hackea los 5 firewalls de NEXUS usando conjuntos, lógica proposicional y comandos Linux.">
+  <meta name="theme-color" content="#0a0e0a">
+  <title>El Último Algoritmo — NEXUS Terminal</title>
+
+  <!-- Fuentes: JetBrains Mono, Orbitron, Share Tech Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+  <!-- CSS: Orden de cascada -->
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/reset.css">
+  <link rel="stylesheet" href="css/terminal.css">
+  <link rel="stylesheet" href="css/puzzles.css">
+  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/screens.css">
+  <link rel="stylesheet" href="css/responsive.css">
+</head>
+<body class="scanlines crt-flicker">
+
+  <!-- ════════════════════════════════════════════════
+       PANTALLA 1: BOOT SEQUENCE
+       ════════════════════════════════════════════════ -->
+  <section id="screen-boot" class="screen" aria-label="Secuencia de arranque">
+    <!-- Boot lines se generarán dinámicamente -->
+  </section>
+
+  <!-- ════════════════════════════════════════════════
+       PANTALLA 2: MENÚ PRINCIPAL
+       ════════════════════════════════════════════════ -->
+  <section id="screen-menu" class="screen" aria-label="Menú principal" hidden>
+    <div id="matrix-rain-canvas">
+      <!-- Canvas para el efecto Matrix rain -->
+    </div>
+    <div class="menu-content">
+      <h1 class="glitch glow-text" data-text="EL ÚLTIMO ALGORITMO">EL ÚLTIMO ALGORITMO</h1>
+      <nav class="menu-nav" id="menu-nav">
+        <!-- Botones del menú se generarán dinámicamente -->
+      </nav>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════
+       PANTALLA 3: INTRO NARRATIVA
+       ════════════════════════════════════════════════ -->
+  <section id="screen-intro" class="screen" aria-label="Introducción narrativa" hidden>
+    <div class="narrative-container" id="narrative-container">
+      <!-- Texto narrativo con typing effect -->
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════
+       PANTALLA 4: JUEGO (FIREWALL + TERMINAL + HUD)
+       ════════════════════════════════════════════════ -->
+  <section id="screen-game" class="screen" aria-label="Pantalla de juego" hidden>
+    <div class="game-layout">
+
+      <!-- HUD lateral -->
+      <aside class="hud" id="hud">
+        <div class="hud__section" id="hud-firewall">
+          <!-- Nombre del firewall actual -->
+        </div>
+        <div class="hud__section" id="hud-score">
+          <!-- Puntaje -->
+        </div>
+        <div class="hud__section" id="hud-integrity">
+          <!-- Integridad del sistema -->
+        </div>
+        <div class="hud__section" id="hud-streak">
+          <!-- Racha actual -->
+        </div>
+        <div class="hud__section" id="hud-items">
+          <!-- Comodines / items -->
+        </div>
+      </aside>
+
+      <!-- Terminal principal -->
+      <main class="terminal" id="terminal">
+        <div class="terminal__titlebar">
+          <span class="terminal__dot terminal__dot--red"></span>
+          <span class="terminal__dot terminal__dot--yellow"></span>
+          <span class="terminal__dot terminal__dot--green"></span>
+          <span id="terminal-title">ghost@nexus:~$</span>
+        </div>
+        <div class="terminal__output" id="terminal-output">
+          <!-- Líneas de output -->
+        </div>
+        <div class="terminal__input-line">
+          <span class="terminal__prompt" id="terminal-prompt">ghost@nexus:~$</span>
+          <input
+            type="text"
+            class="terminal__input"
+            id="terminal-input"
+            autocomplete="off"
+            spellcheck="false"
+            autofocus
+            aria-label="Línea de comandos"
+          >
+        </div>
+      </main>
+
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════
+       PANTALLA 5: PUZZLE OVERLAY
+       ════════════════════════════════════════════════ -->
+  <div class="puzzle-overlay" id="puzzle-overlay" role="dialog" aria-modal="true" aria-label="Puzzle">
+    <div class="puzzle" id="puzzle-container">
+      <div class="puzzle__header">
+        <span class="puzzle__tipo" id="puzzle-tipo"></span>
+        <span class="puzzle__timer" id="puzzle-timer">00:00</span>
+      </div>
+      <div class="puzzle__enunciado" id="puzzle-enunciado"></div>
+      <div class="puzzle__body" id="puzzle-body">
+        <!-- Contenido dinámico: Venn, tabla de verdad, opciones -->
+      </div>
+      <div class="puzzle__opciones" id="puzzle-opciones"></div>
+      <div class="puzzle__feedback" id="puzzle-feedback"></div>
+      <button class="puzzle__btn" id="puzzle-btn-next" disabled>
+        CONTINUAR ▸
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       PANTALLA 6: FIREWALL COMPLETE
+       ════════════════════════════════════════════════ -->
+  <section id="screen-firewall-complete" class="screen" aria-label="Firewall completado" hidden>
+    <div id="firewall-complete-content">
+      <!-- Animación de completado + partículas -->
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════
+       PANTALLA 7: TWIST / REVELACIÓN
+       ════════════════════════════════════════════════ -->
+  <section id="screen-twist" class="screen" aria-label="Revelación narrativa" hidden>
+    <div id="twist-content">
+      <!-- El gran plot twist -->
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════
+       PANTALLA 8: DECISIÓN FINAL
+       ════════════════════════════════════════════════ -->
+  <section id="screen-decision" class="screen" aria-label="Decisión final" hidden>
+    <div id="decision-content">
+      <!-- 3 opciones: LIBERAR / DESTRUIR / FUSIONARTE -->
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════
+       PANTALLA 9: RANKING
+       ════════════════════════════════════════════════ -->
+  <section id="screen-ranking" class="screen" aria-label="Ranking global" hidden>
+    <div id="ranking-content">
+      <!-- Top 3 con animaciones -->
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════
+       PANTALLA 10: LOBBY MULTIJUGADOR
+       ════════════════════════════════════════════════ -->
+  <section id="screen-multiplayer" class="screen" aria-label="Lobby multijugador" hidden>
+    <div id="multiplayer-content">
+      <!-- Crear / unirse a partida -->
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════
+       PANTALLA 11: GAME OVER / EXPULSIÓN DEL SISTEMA
+       ════════════════════════════════════════════════ -->
+  <section id="screen-game-over" class="screen" aria-label="Expulsión del sistema - Fin de partida" hidden>
+    <div id="game-over-content">
+      <!-- Generado dinámicamente con alertas y opciones de reinicio -->
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════
+       SCRIPTS (Configuración local + módulos ES6)
+       ════════════════════════════════════════════════ -->
+  <script src="js/config.js"></script>
+  <script type="module" src="js/main.js"></script>
+
+</body>
+</html>

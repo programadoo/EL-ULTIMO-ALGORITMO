@@ -1,0 +1,641 @@
+/* ============================================================
+   SCREENS.CSS — Estilos para pantallas, menú, boot y layout
+   ============================================================ */
+
+/* ── Base de pantallas ────────────────────────────── */
+.screen {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: var(--z-content);
+}
+
+.screen[hidden] {
+  display: none !important;
+}
+
+/* ═════════════════════════════════════════════════
+   BOOT SCREEN
+   ═════════════════════════════════════════════════ */
+#screen-boot {
+  background: var(--bg-primary);
+  padding: var(--space-xl) var(--space-2xl);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+#screen-boot .terminal__ascii {
+  color: var(--green-bright);
+  text-shadow: 0 0 20px var(--green-glow-strong);
+  margin-bottom: var(--space-xl);
+  font-size: 0.55rem;
+  line-height: 1.15;
+  text-align: center;
+}
+
+#screen-boot .line {
+  min-height: 1.5em;
+  opacity: 0;
+  animation: boot-appear 0.15s ease forwards;
+}
+
+#screen-boot .line--system {
+  color: var(--text-dim);
+}
+
+#screen-boot .line--success {
+  color: var(--green-mid);
+}
+
+#screen-boot .line--warning {
+  color: var(--yellow-warn);
+}
+
+#screen-boot .line--error {
+  color: var(--red-alert);
+  text-shadow: 0 0 6px var(--red-glow);
+}
+
+#screen-boot .line--info {
+  color: var(--cyan);
+  text-shadow: 0 0 6px var(--cyan-glow);
+}
+
+#screen-boot .line--narrative {
+  color: var(--text-secondary);
+  font-family: var(--font-narrative);
+  font-style: italic;
+  padding-left: var(--space-md);
+  border-left: 2px solid var(--green-dim);
+  margin: var(--space-sm) 0;
+}
+
+/* ═════════════════════════════════════════════════
+   MAIN MENU
+   ═════════════════════════════════════════════════ */
+#screen-menu {
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+/* Matrix rain canvas se posiciona atrás */
+#matrix-rain-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+#matrix-rain-canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Contenido del menú sobre el matrix rain */
+.menu-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: var(--space-2xl);
+  max-width: 640px;
+  width: 100%;
+}
+
+/* Título con glitch */
+.menu-content h1 {
+  font-family: var(--font-display);
+  font-size: var(--fs-3xl);
+  font-weight: 900;
+  color: var(--green-bright);
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-sm);
+  line-height: 1.1;
+  text-shadow:
+    0 0 10px var(--green-glow-strong),
+    0 0 40px var(--green-glow),
+    0 0 80px rgba(0, 255, 65, 0.08);
+}
+
+.menu-subtitle {
+  font-family: var(--font-narrative);
+  font-size: var(--fs-sm);
+  color: var(--text-dim);
+  margin-bottom: var(--space-3xl);
+  letter-spacing: 0.05em;
+}
+
+/* Navegación de botones */
+.menu-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.menu-btn {
+  display: block;
+  width: 100%;
+  max-width: 340px;
+  padding: var(--space-md) var(--space-xl);
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  text-align: left;
+  color: var(--text-secondary);
+  background: rgba(0, 255, 65, 0.03);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+
+  /* Fade in escalonado */
+  opacity: 0;
+  animation: menu-btn-appear 0.4s ease forwards;
+}
+
+@keyframes menu-btn-appear {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.menu-btn:hover {
+  color: var(--green-bright);
+  background: rgba(0, 255, 65, 0.08);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-green);
+  transform: translateX(6px);
+}
+
+.menu-btn:active {
+  transform: translateX(3px);
+  background: rgba(0, 255, 65, 0.12);
+}
+
+/* Línea decorativa que se expande al hover */
+.menu-btn::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--green-bright);
+  transform: scaleY(0);
+  transition: transform var(--transition-base);
+  transform-origin: top;
+}
+
+.menu-btn:hover::before {
+  transform: scaleY(1);
+}
+
+.menu-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Versión en esquina */
+.menu-version {
+  display: block;
+  margin-top: var(--space-3xl);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-ghost);
+  letter-spacing: 0.05em;
+}
+
+/* ═════════════════════════════════════════════════
+   INTRO NARRATIVA
+   ═════════════════════════════════════════════════ */
+#screen-intro {
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.narrative-container {
+  max-width: 700px;
+  width: 90%;
+  padding: var(--space-2xl);
+  font-family: var(--font-narrative);
+  font-size: var(--fs-md);
+  color: var(--text-secondary);
+  line-height: 2;
+}
+
+/* ═════════════════════════════════════════════════
+   GAME LAYOUT (Terminal + HUD)
+   ═════════════════════════════════════════════════ */
+#screen-game {
+  background: var(--bg-primary);
+  padding: var(--space-md);
+}
+
+.game-layout {
+  display: flex;
+  gap: var(--space-md);
+  height: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ── HUD lateral ──────────────────────────────────── */
+.hud {
+  width: var(--hud-width);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  z-index: var(--z-hud);
+}
+
+.hud__section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+}
+
+.hud__section-title {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+  margin-bottom: var(--space-xs);
+}
+
+.hud__value {
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  color: var(--green-bright);
+  text-shadow: 0 0 8px var(--green-glow);
+}
+
+.hud__value--danger {
+  color: var(--red-alert);
+  text-shadow: 0 0 8px var(--red-glow);
+}
+
+.hud__value--warning {
+  color: var(--yellow-warn);
+  text-shadow: 0 0 8px var(--yellow-glow);
+}
+
+/* Barra de integridad */
+.integrity-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-pill);
+  margin-top: var(--space-xs);
+  overflow: hidden;
+}
+
+.integrity-bar__fill {
+  height: 100%;
+  background: var(--green-bright);
+  border-radius: var(--radius-pill);
+  transition: width 0.5s ease, background 0.3s ease;
+  box-shadow: 0 0 8px var(--green-glow);
+}
+
+.integrity-bar__fill--warning {
+  background: var(--yellow-warn);
+  box-shadow: 0 0 8px var(--yellow-glow);
+}
+
+.integrity-bar__fill--danger {
+  background: var(--red-alert);
+  box-shadow: 0 0 8px var(--red-glow);
+  animation: pulse-bar 0.6s ease infinite alternate;
+}
+
+@keyframes pulse-bar {
+  to { opacity: 0.5; }
+}
+
+/* ── Elementos complementarios del HUD ─────────────── */
+.hud__subvalue {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.hud__progress-pills {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.hud__pill {
+  width: 12px;
+  height: 6px;
+  border-radius: 2px;
+  border: 1px solid var(--border-primary);
+  transition: all var(--transition-fast);
+}
+
+.hud__pill--completed {
+  background: var(--green-bright);
+  border-color: var(--green-bright);
+  box-shadow: 0 0 6px var(--green-glow);
+}
+
+.hud__pill--current {
+  background: var(--cyan);
+  border-color: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan-glow);
+  animation: pulse-bar 0.8s ease infinite alternate;
+}
+
+.hud__pill--locked {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border-primary);
+  opacity: 0.35;
+}
+
+.hud__multiplier-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: 6px;
+  transition: all var(--transition-fast);
+}
+
+.hud__multiplier-badge--active {
+  background: rgba(0, 255, 65, 0.15);
+  border: 1px solid var(--green-bright);
+  color: var(--green-bright);
+  box-shadow: 0 0 8px var(--green-glow);
+}
+
+.hud__multiplier-badge--idle {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-primary);
+  color: var(--text-dim);
+}
+
+.hud__items-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.hud__item-btn {
+  padding: 6px 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  text-align: center;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.hud__item-btn:hover:not(:disabled) {
+  background: var(--bg-card-hover);
+  border-color: var(--cyan);
+  color: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan-glow);
+}
+
+.hud__item-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.hud__logs-count {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Terminal ocupa el resto */
+.game-layout .terminal {
+  flex: 1;
+  max-height: none;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-layout .terminal__output {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* ═════════════════════════════════════════════════
+   FIREWALL COMPLETE
+   ═════════════════════════════════════════════════ */
+#screen-firewall-complete {
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#firewall-complete-content {
+  text-align: center;
+  max-width: 600px;
+}
+
+/* ═════════════════════════════════════════════════
+   TWIST / REVELATION
+   ═════════════════════════════════════════════════ */
+#screen-twist {
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#twist-content {
+  max-width: 700px;
+  width: 90%;
+  text-align: center;
+}
+
+/* ═════════════════════════════════════════════════
+   DECISION FINAL
+   ═════════════════════════════════════════════════ */
+#screen-decision {
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#decision-content {
+  max-width: 800px;
+  width: 90%;
+  text-align: center;
+}
+
+/* ═════════════════════════════════════════════════
+   RANKING — TOP 3 HALL OF FAME
+   ═════════════════════════════════════════════════ */
+#screen-ranking {
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-md);
+}
+
+#ranking-content {
+  max-width: 960px;
+  width: 95%;
+  margin: 0 auto;
+}
+
+@keyframes podium-appear {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.podium-card {
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.podium-card:hover {
+  transform: translateY(-6px) scale(1.02);
+}
+
+@media (max-width: 768px) {
+  .podium-grid {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-md) !important;
+  }
+  .podium-card {
+    min-height: auto !important;
+  }
+}
+
+/* ═════════════════════════════════════════════════
+   MULTIPLAYER CO-OP & LOBBY
+   ═════════════════════════════════════════════════ */
+#screen-multiplayer {
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-md);
+}
+
+#multiplayer-content {
+  max-width: 1100px;
+  width: 95%;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.btn-opcion-coop {
+  transition: all var(--transition-fast);
+}
+
+.btn-opcion-coop:hover:not(:disabled) {
+  border-color: var(--cyan);
+  background: rgba(0, 229, 255, 0.1);
+  color: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan-glow);
+  transform: translateY(-2px);
+}
+
+#coop-chat-history::-webkit-scrollbar {
+  width: 4px;
+}
+
+#coop-chat-history::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: 2px;
+}
+
+/* ═════════════════════════════════════════════════
+   GAME OVER / EXPULSIÓN DEL SISTEMA
+   ═════════════════════════════════════════════════ */
+#screen-game-over {
+  background: radial-gradient(circle at center, rgba(255, 0, 85, 0.15) 0%, var(--bg-primary) 85%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-xl);
+  border: 2px solid rgba(255, 0, 85, 0.4);
+  box-shadow: inset 0 0 60px rgba(255, 0, 85, 0.2);
+}
+
+.game-over-container {
+  max-width: 820px;
+  width: 95%;
+  margin: 0 auto;
+  text-align: center;
+  animation: crt-flicker 0.15s infinite alternate;
+}
+
+.game-over-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  margin: var(--space-xl) 0;
+  text-align: left;
+}
+
+@media (max-width: 650px) {
+  .game-over-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

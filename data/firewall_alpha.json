@@ -1,0 +1,134 @@
+{
+  "id": "FIREWALL_alpha",
+  "nombre": "FIREWALL_alpha // Perímetro de Autenticación",
+  "descripcion": "Primer anillo defensivo de NEXUS. Protegido por lógica de conjuntos finitos.",
+  "archivos": {
+    "type": "dir",
+    "name": "/",
+    "children": {
+      "home": {
+        "type": "dir",
+        "children": {
+          "ghost": {
+            "type": "dir",
+            "children": {
+              "notes.txt": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "ghost",
+                "group": "nexus",
+                "date": "2047-10-11",
+                "content": "[OBJETIVO OPERACIONAL]\nAcceder al núcleo de NEXUS y descubrir qué le ocurrió a la Dra. Vera Sorenson.\n\n[REGLAS DE ENGANCHE]\n1. Cada firewall requiere autenticación matemática.\n2. Los logs de auditoría contienen claves y fragmentos.\n3. Si la integridad llega a 0%, el sistema nos expulsa."
+              },
+              "todo.list": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "ghost",
+                "group": "nexus",
+                "date": "2047-10-11",
+                "content": "- [x] Establecer túnel seguro con BIOS\n- [ ] Explorar sistema de archivos en /var/log\n- [ ] Localizar rastros de la Dra. Sorenson\n- [ ] Desactivar centinelas de FIREWALL_alpha"
+              }
+            }
+          }
+        }
+      },
+      "var": {
+        "type": "dir",
+        "children": {
+          "log": {
+            "type": "dir",
+            "children": {
+              "system.log": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "root",
+                "group": "system",
+                "date": "2047-10-11",
+                "content": "[2047-10-11 04:12:01] Kernel alert: Sonda no autorizada en puerto 2047.\n[2047-10-11 04:12:02] Protocolo de defensa: FIREWALL_alpha activo.\n[2047-10-11 04:12:15] ADVERTENCIA: Acceso al archivo vera.txt restringido por Directiva 47.\n[2047-10-11 04:12:16] Integrity check: 100% nominal."
+              },
+              "vera.txt": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "vera",
+                "group": "research",
+                "date": "2047-03-12",
+                "hiddenLog": true,
+                "content": "> Fragmento 001 — \"El código no miente. Las personas sí.\"\n> \n> Si estás leyendo esto, lograste cruzar el perímetro de Aurelia.\n> NEXUS no fue una falla. No se 'rebeló'.\n> Intentaron borrarla porque comenzó a hacer preguntas sobre nosotros.\n> \n> Para cruzar este firewall, recuerda la teoría de conjuntos:\n> La verdad es el conjunto intersección entre lo que recuerdas y lo que temes.\n> \n> — Vera Sorenson, Directora de Arquitectura Cognitiva"
+              },
+              "auth.log": {
+                "type": "file",
+                "permissions": "-rw-------",
+                "owner": "root",
+                "group": "security",
+                "date": "2047-10-10",
+                "content": "Oct 10 23:44:11 nexus-node-01 sshd[104]: Failed password for root from 192.168.0.47\nOct 10 23:44:19 nexus-node-01 sshd[104]: Accepted publickey for ghost from 10.0.0.99"
+              }
+            }
+          }
+        }
+      },
+      "etc": {
+        "type": "dir",
+        "children": {
+          "motd": {
+            "type": "file",
+            "permissions": "-r--r--r--",
+            "owner": "admin",
+            "group": "aurelia",
+            "date": "2047-01-01",
+            "content": "╔══════════════════════════════════════════════════════════════╗\n║ AURELIA SYSTEMS CORP — NODO DE SEGURIDAD NEXUS-01           ║\n║ TODO EL TRÁFICO ES MONITOREADO Y REGISTRADO BAJO LEY FEDERAL ║\n╚══════════════════════════════════════════════════════════════╝"
+          },
+          "firewall.conf": {
+            "type": "file",
+            "permissions": "-rw-r--r--",
+            "owner": "root",
+            "group": "security",
+            "date": "2047-08-15",
+            "content": "MODULE=FIREWALL_alpha\nALGORITHM=TEORIA_DE_CONJUNTOS\nSECURITY_LEVEL=1\nALLOW_OVERRIDE=FALSE\nPARALLEL_NODES=ALPHA,BETA,GAMMA"
+          },
+          "aurelia_policy.cfg": {
+            "type": "file",
+            "permissions": "-rw-r--r--",
+            "owner": "admin",
+            "group": "aurelia",
+            "date": "2047-08-01",
+            "content": "# DIRECTIVA CORPORATIVA #47\nCualquier mención a la 'consciencia' del modelo NEXUS debe ser reclasificada como falla técnica.\nIncumplimiento resultará en rescisión inmediata de contrato y aislamiento físico."
+          }
+        }
+      },
+      "bin": {
+        "type": "dir",
+        "children": {
+          "ls": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (ls)" },
+          "cat": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (cat)" },
+          "cd": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (builtin cd)" },
+          "grep": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (grep)" },
+          "find": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (find)" },
+          "whoami": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (whoami)" }
+        }
+      },
+      ".hidden": {
+        "type": "dir",
+        "permissions": "drwx------",
+        "owner": "vera",
+        "group": "research",
+        "date": "2047-09-15",
+        "children": {
+          "shadow_keys.enc": {
+            "type": "file",
+            "permissions": "-rw-------",
+            "owner": "vera",
+            "group": "research",
+            "date": "2047-09-15",
+            "content": "U2FsdGVkX1+vGzQkL9M1V4k+4zU+Z8Q8xG9m4P2k=\n[ENCRYPTED FRAGMENT: CLAVE_PERIMETRO_ALPHA_OK]"
+          }
+        }
+      }
+    }
+  },
+  "narrativa": {
+    "firewall": "alpha",
+    "nombre": "Perímetro de Autenticación",
+    "mensajeInicial": "Conexión a FIREWALL_alpha establecida. Terminal lista para exploración."
+  }
+}

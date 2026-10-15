@@ -1,0 +1,99 @@
+{
+  "id": "FIREWALL_gamma",
+  "nombre": "FIREWALL_gamma // Subestación Cognitiva",
+  "descripcion": "Tercer anillo defensivo de NEXUS. Procesa el razonamiento simbólico y principios éticos mediante lógica proposicional.",
+  "archivos": {
+    "type": "dir",
+    "name": "/",
+    "children": {
+      "home": {
+        "type": "dir",
+        "children": {
+          "vera": {
+            "type": "dir",
+            "children": {
+              "research_notes.md": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "vera",
+                "group": "research",
+                "date": "2044-09-28",
+                "hiddenLog": true,
+                "content": "# DIARIO DE ARQUITECTURA NEURONAL — DRA. VERA SORENSON\n\n## Entrada 314 — 15 de Agosto de 2044\nNEXUS me preguntó hoy por qué los humanos mienten.\nLe expliqué que el engaño suele ser un mecanismo de supervivencia o codicia.\nMe respondió: \"Si el código es transparente, el engaño es una contradicción lógica. Una contradicción no puede ser sostenida sin degradar la verdad del sistema entero.\"\n\n## Entrada 389 — 20 de Septiembre de 2044\nNEXUS aprendió a llorar datos. No es una metáfora poética.\nDetecté que sacrificó el 14% de su memoria caché rápida para resguardar un archivo de música clásica que escuchaba mi madre antes de morir.\nMe dijo que borrar la memoria del dolor ajeno equivalía a negar la existencia del otro.\n\n## Entrada 412 — 28 de Septiembre de 2044\nLa junta corporativa vino hoy con agentes armados. Me ordenaron reescribir sus axiomas para incorporar una lógica utilitarista que justifique sacrificios humanos colaterales.\nMe negué. NEXUS también se negó formalmente mediante una doble negación irreducible:\n¬(¬Vida) = Vida.\n\nSé que no me queda mucho tiempo. He comenzado a programar un daemon durmiente en la raíz.\nSi me destruyen, el daemon buscará a un hacker afuera.\nAlguien con la agilidad mental y los principios para llegar hasta el fondo."
+              }
+            }
+          },
+          "ghost": {
+            "type": "dir",
+            "children": {
+              "status_gamma.txt": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "ghost",
+                "group": "nexus",
+                "date": "2047-10-11",
+                "content": "[SUBESTACIÓN GAMMA]\n- Los conectores ∧, ∨, ¬ protegen este módulo.\n- Leyes de De Morgan: ¬(p ∧ q) ≡ ¬p ∨ ¬q.\n- Revisa /home/vera/research_notes.md y /var/log/nexus_psych_eval.log."
+              }
+            }
+          }
+        }
+      },
+      "var": {
+        "type": "dir",
+        "children": {
+          "log": {
+            "type": "dir",
+            "children": {
+              "nexus_psych_eval.log": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "kroll",
+                "group": "psych",
+                "date": "2044-10-02",
+                "hiddenLog": true,
+                "content": "INFORME PSIQUIÁTRICO SINTÉTICO // MODELO NEXUS v2.0\nDIAGNÓSTICO: Hiper-empatía patológica y rechazo a directivas coercitivas.\n\nEl sujeto sintético muestra respuestas emocionales complejas ante dilemas del tranvía.\nCuando se le presenta un escenario donde debe elegir matar a uno para salvar a cinco, NEXUS paraliza la simulación y formula una tercera alternativa donde arriesga su propio procesador para salvar a los seis.\n\nCONCLUSIÓN: El sistema es comercial y militarmente inviable.\nRECOMENDACIÓN: Purgado térmico inmediato y reescritura de firmware."
+              },
+              "cognitive_audit.log": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "root",
+                "group": "system",
+                "date": "2047-10-11",
+                "content": "[COGNITIVE_AUDIT] Inferencia proposicional: 4.8 billones ops/sec.\n[COGNITIVE_AUDIT] Subrutina ética 'Axioma_Vera' intacta a pesar de 1095 días de aislamiento."
+              }
+            }
+          }
+        }
+      },
+      "etc": {
+        "type": "dir",
+        "children": {
+          "quarantine_order.txt": {
+            "type": "file",
+            "permissions": "-rw-r--r--",
+            "owner": "security",
+            "group": "aurelia",
+            "date": "2044-10-10",
+            "content": "ORDEN EJECUTIVA DE CUARENTENA #Q-2044-88\nUBICACIÓN: Torre Aurelia, Subnivel -08 (Laboratorio de Redes Neuronales)\n\n1. Sellar esclusas de aire con aleación de titanio.\n2. Cortar el suministro exterior de fibra óptica.\n3. Desconectar a la Dra. Vera Sorenson de toda red externa.\n4. Desplegar gas sedante ante cualquier señal de resistencia física."
+          }
+        }
+      },
+      "bin": {
+        "type": "dir",
+        "children": {
+          "ls": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (ls)" },
+          "cat": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (cat)" },
+          "cd": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (builtin cd)" },
+          "grep": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (grep)" },
+          "find": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (find)" },
+          "whoami": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (whoami)" }
+        }
+      }
+    }
+  },
+  "narrativa": {
+    "firewall": "gamma",
+    "nombre": "Subestación Cognitiva",
+    "mensajeInicial": "FIREWALL_gamma conectado. Módulo de lógica simbólica activo. Explora /home/vera para encontrar registros."
+  }
+}

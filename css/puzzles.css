@@ -1,0 +1,495 @@
+/* ============================================================
+   PUZZLES.CSS — Estilos para los distintos tipos de puzzles
+   ============================================================ */
+
+/* ── Overlay del puzzle ───────────────────────────── */
+.puzzle-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-modal);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-base);
+}
+
+.puzzle-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── Contenedor del puzzle ────────────────────────── */
+.puzzle {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2xl);
+  max-width: 720px;
+  width: 90%;
+  box-shadow: var(--shadow-green-lg);
+  position: relative;
+}
+
+.puzzle__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+
+.puzzle__tipo {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  padding: var(--space-xs) var(--space-sm);
+  border: 1px solid var(--cyan-glow);
+  border-radius: var(--radius-sm);
+  background: var(--cyan-glow);
+}
+
+.puzzle__timer {
+  font-family: var(--font-mono);
+  font-size: var(--fs-lg);
+  color: var(--yellow-warn);
+  text-shadow: 0 0 8px var(--yellow-glow);
+}
+
+.puzzle__timer.critical {
+  color: var(--red-alert);
+  text-shadow: 0 0 12px var(--red-glow);
+  animation: pulse-red 0.5s ease infinite alternate;
+}
+
+@keyframes pulse-red {
+  to { opacity: 0.6; }
+}
+
+/* ── Enunciado ────────────────────────────────────── */
+.puzzle__enunciado {
+  font-family: var(--font-narrative);
+  font-size: var(--fs-md);
+  color: var(--text-white);
+  margin-bottom: var(--space-xl);
+  line-height: 1.8;
+  padding: var(--space-md);
+  border-left: 3px solid var(--green-dim);
+  background: var(--bg-card);
+}
+
+/* ── Opciones (selección múltiple) ────────────────── */
+.puzzle__opciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.puzzle__opcion {
+  padding: var(--space-md) var(--space-lg);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--fs-base);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast);
+  text-align: left;
+}
+
+.puzzle__opcion:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+  color: var(--text-primary);
+}
+
+.puzzle__opcion.selected {
+  border-color: var(--border-active);
+  background: var(--green-glow);
+  color: var(--green-bright);
+  box-shadow: var(--shadow-green);
+}
+
+.puzzle__opcion.correct {
+  border-color: var(--green-bright);
+  background: rgba(0, 255, 65, 0.1);
+  color: var(--green-bright);
+}
+
+.puzzle__opcion.incorrect {
+  border-color: var(--red-alert);
+  background: rgba(255, 0, 64, 0.1);
+  color: var(--red-alert);
+}
+
+/* ── Diagrama de Venn (Tipo A) ────────────────────── */
+.venn-container {
+  width: 100%;
+  max-width: 420px;
+  margin: var(--space-lg) auto;
+}
+
+.venn-container svg {
+  width: 100%;
+  height: auto;
+}
+
+.venn-circle {
+  fill: none;
+  stroke-width: 2;
+  transition: fill var(--transition-base);
+}
+
+.venn-circle--a {
+  stroke: var(--green-bright);
+}
+
+.venn-circle--b {
+  stroke: var(--cyan);
+}
+
+.venn-circle--c {
+  stroke: var(--purple-glitch);
+}
+
+.venn-label {
+  font-family: var(--font-display);
+  font-size: 14px;
+  fill: var(--text-secondary);
+}
+
+.venn-element {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  fill: var(--text-primary);
+  cursor: pointer;
+  transition: fill var(--transition-fast);
+}
+
+.venn-element:hover {
+  fill: var(--cyan);
+}
+
+/* ── Tabla de verdad (Tipo D) ─────────────────────── */
+.truth-table {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  margin: var(--space-lg) 0;
+}
+
+.truth-table th {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--cyan);
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 2px solid var(--border-primary);
+  text-align: center;
+}
+
+.truth-table td {
+  padding: var(--space-sm) var(--space-md);
+  text-align: center;
+  border-bottom: 1px solid rgba(0, 255, 65, 0.08);
+  color: var(--text-secondary);
+}
+
+.truth-table tr:hover td {
+  background: var(--bg-card);
+}
+
+.truth-table .cell--editable {
+  background: var(--bg-card-hover);
+  border: 1px dashed var(--border-hover);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  color: var(--yellow-warn);
+  min-width: 40px;
+}
+
+.truth-table .cell--true {
+  color: var(--green-bright);
+}
+
+.truth-table .cell--false {
+  color: var(--red-alert);
+}
+
+/* ── Feedback post-respuesta ──────────────────────── */
+.puzzle__feedback {
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  font-family: var(--font-narrative);
+  font-size: var(--fs-sm);
+  display: none;
+}
+
+.puzzle__feedback.visible {
+  display: block;
+}
+
+.puzzle__feedback--correct {
+  border: 1px solid var(--green-dim);
+  background: rgba(0, 255, 65, 0.05);
+  color: var(--green-mid);
+}
+
+.puzzle__feedback--incorrect {
+  border: 1px solid var(--red-alert);
+  background: rgba(255, 0, 64, 0.05);
+  color: var(--text-error);
+}
+
+/* ── Botón continuar ──────────────────────────────── */
+.puzzle__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+  padding: var(--space-md) var(--space-xl);
+  font-family: var(--font-display);
+  font-size: var(--fs-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--bg-primary);
+  background: var(--green-bright);
+  border-radius: var(--radius-sm);
+  transition:
+    background var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.puzzle__btn:hover {
+  background: var(--green-mid);
+  box-shadow: var(--shadow-green);
+}
+
+.puzzle__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Lógica Proposicional (Tipo B) ────────────────── */
+.logic-proposition {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.logic-label {
+  display: block;
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  color: var(--cyan);
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-xs);
+}
+
+.logic-code {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xl);
+  color: var(--green-bright);
+  text-shadow: 0 0 10px var(--green-glow);
+  padding: var(--space-sm) var(--space-md);
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--green-bright);
+  margin-bottom: var(--space-md);
+}
+
+.logic-vars-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.logic-var {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-base);
+}
+
+.logic-var__name {
+  color: var(--text-dim);
+  margin-right: 6px;
+}
+
+.logic-var__value--true {
+  color: var(--green-bright);
+  font-weight: bold;
+}
+
+.logic-var__value--false {
+  color: var(--red-alert);
+  font-weight: bold;
+}
+
+/* ── Escenario de Terminal (Tipo C) ───────────────── */
+.command-scenario {
+  margin-bottom: var(--space-lg);
+}
+
+.command-scenario__terminal {
+  background: var(--bg-terminal);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.command-scenario__header {
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--border-primary);
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+}
+
+.command-scenario__body {
+  padding: var(--space-md);
+  font-family: var(--font-mono);
+  font-size: var(--fs-base);
+  min-height: 48px;
+}
+
+.puzzle__opcion--command code {
+  color: var(--cyan);
+  font-weight: 600;
+  font-size: var(--fs-base);
+}
+
+/* ── Tabla de Verdad Interactiva (Tipo D) ─────────── */
+.truth-table__cell--input {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  padding: 4px !important;
+}
+
+.truth-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  color: var(--text-dim);
+  padding: 4px 12px;
+  font-family: var(--font-mono);
+  font-weight: bold;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.truth-btn:hover {
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.truth-btn--true.truth-btn--selected {
+  background: rgba(0, 255, 65, 0.2);
+  border-color: var(--green-bright);
+  color: var(--green-bright);
+  box-shadow: 0 0 8px var(--green-glow);
+}
+
+.truth-btn--false.truth-btn--selected {
+  background: rgba(255, 0, 64, 0.2);
+  border-color: var(--red-alert);
+  color: var(--red-alert);
+  box-shadow: 0 0 8px var(--red-glow);
+}
+
+.puzzle__opcion--submit {
+  text-align: center !important;
+  justify-content: center;
+  font-weight: bold;
+  background: rgba(0, 217, 255, 0.1) !important;
+  border-color: var(--cyan) !important;
+  color: var(--cyan) !important;
+}
+
+.puzzle__opcion--submit:hover {
+  background: rgba(0, 217, 255, 0.25) !important;
+  box-shadow: 0 0 12px var(--cyan-glow) !important;
+}
+
+/* ── Razonamiento y Deducción (Tipo E) ────────────── */
+.reasoning-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-lg);
+}
+
+.reasoning-label {
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  color: var(--cyan);
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+
+.reasoning-premises {
+  margin-bottom: var(--space-md);
+}
+
+.reasoning-premise {
+  display: flex;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  font-family: var(--font-narrative);
+  font-size: var(--fs-base);
+  color: var(--text-white);
+}
+
+.reasoning-premise__number {
+  font-family: var(--font-mono);
+  color: var(--yellow-warn);
+  font-weight: bold;
+}
+
+.reasoning-formal {
+  margin-bottom: var(--space-md);
+}
+
+.reasoning-formal__expr {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(0, 0, 0, 0.4);
+  border-left: 2px solid var(--purple-glitch);
+  font-family: var(--font-mono);
+  color: var(--purple-glitch);
+  font-size: var(--fs-base);
+}
+
+.reasoning-rule {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+}
+
+.puzzle__opcion--reasoning {
+  font-family: var(--font-narrative) !important;
+  line-height: 1.5;
+}

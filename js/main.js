@@ -1,0 +1,904 @@
+/**
+ * ══════════════════════════════════════════════════
+ * EL ÚLTIMO ALGORITMO
+ * Main — Punto de entrada
+ * Boot sequence → Menú con Matrix rain → Router
+ * ══════════════════════════════════════════════════
+ */
+
+import { navigateTo, showImmediate, onScreenEnter, testRouter } from './router.js';
+import { hasSave, loadFromStorage, resetState, getState, testState } from './state.js';
+import { Conjuntos, testConjuntos } from './conjuntos.js';
+import { Logica, testLogica } from './logica.js';
+import { terminal, testTerminal } from './terminal.js';
+import { generarPuzzle, generarPuzzleConjuntos, abrirCualquierPuzzle, testGenerador } from './puzzles/generador.js';
+import { abrirPuzzleTipoA, cerrarPuzzle } from './puzzles/tipoA.js';
+import { generarPuzzleTipoB, abrirPuzzleTipoB, cerrarPuzzleTipoB, testTipoB } from './puzzles/tipoB.js';
+import { generarPuzzleTipoC, abrirPuzzleTipoC, cerrarPuzzleTipoC, testTipoC } from './puzzles/tipoC.js';
+import { generarPuzzleTipoD, abrirPuzzleTipoD, cerrarPuzzleTipoD, testTipoD } from './puzzles/tipoD.js';
+import { generarPuzzleTipoE, abrirPuzzleTipoE, cerrarPuzzleTipoE, testTipoE } from './puzzles/tipoE.js';
+import { initHUD, testHUD } from './ui/hud.js';
+import { GUION_FIREWALLS, getGuionFirewall, getTwistNarrativo, getDecisionFinal, getOpcionesDecisiones, testGuion } from './historia/guion.js';
+import { LOGS_DATABASE, getLogsByFirewall, getHiddenLog, registrarLogEncontrado, testLogs } from './historia/logs.js';
+import { testFirebase, FIREBASE_CONFIG, configurarFirebase } from './multijugador/firebase.js';
+import { renderCoopUI, desconectarCoop, testCoop, coopSession } from './multijugador/coop.js';
+import { renderRankingScreen, testRanking, guardarScoreEnRanking, obtenerTopRanking } from './ranking.js';
+import { audio, testAudio } from './audio.js';
+import { feedbackSuccess, feedbackError, showFeedbackToast, shakeScreen, flashScreen, triggerGlitch, testFeedback } from './ui/feedback.js';
+import { mostrarModal, cerrarModal, abrirConfiguracion, abrirVisorLog, testModales } from './ui/modales.js';
+import { renderVersusUI, crearSalaVersus, unirseSalaVersus, desconectarVersus, testVersus, versusSession } from './multijugador/versus.js';
+
+// ─────────────────────────────────────────────────
+// 1. BOOT SEQUENCE
+// ─────────────────────────────────────────────────
+
+const BOOT_LINES = [
+  { text: 'BIOS v4.7.2047 — Aurelia Systems Corp.', delay: 0, cls: 'line--system' },
+  { text: 'Checking memory... 16384 MB OK', delay: 150, cls: 'line--system' },
+  { text: 'Initializing kernel modules...', delay: 300, cls: 'line--system' },
+  { text: '  [OK] net.aurelia.firewall', delay: 450, cls: 'line--success' },
+  { text: '  [OK] sys.nexus.core', delay: 600, cls: 'line--success' },
+  { text: '  [WARN] sec.perimeter.integrity — DEGRADED', delay: 800, cls: 'line--warning' },
+  { text: '  [ERR] auth.vera.sorenson — USER NOT FOUND', delay: 1000, cls: 'line--error' },
+  { text: '', delay: 1150, cls: '' },
+  { text: 'Loading NEXUS Terminal v2.0.47...', delay: 1250, cls: 'line--info' },
+  { text: 'Establishing encrypted tunnel...', delay: 1500, cls: 'line--system' },
+  { text: '  ████████████████████████████ 100%', delay: 1750, cls: 'line--success' },
+  { text: '', delay: 1900, cls: '' },
+  { text: '> Incoming transmission detected...', delay: 2100, cls: 'line--warning' },
+  { text: '> Source: UNKNOWN', delay: 2300, cls: 'line--warning' },
+  { text: '> "NEXUS está despertando. Necesito tu ayuda. —V"', delay: 2600, cls: 'line--narrative' },
+  { text: '', delay: 2900, cls: '' },
+  { text: 'Connection established. Welcome, Ghost.', delay: 3100, cls: 'line--info' },
+];
+
+let bootSkipped = false;
+
+async function runBootSequence() {
+  const container = document.getElementById('screen-boot');
+  if (!container) return;
+  container.innerHTML = '';
+  bootSkipped = false;
+
+  const onSkip = () => {
+    bootSkipped = true;
+  };
+
+  window.addEventListener('keydown', onSkip, { once: true });
+  window.addEventListener('click', onSkip, { once: true });
+
+  // ASCII art header
+  const ascii = document.createElement('pre');
+  ascii.className = 'terminal__ascii boot-line';
+  ascii.textContent = `
+ ███╗   ██╗███████╗██╗  ██╗██╗   ██╗███████╗
+ ████╗  ██║██╔════╝╚██╗██╔╝██║   ██║██╔════╝
+ ██╔██╗ ██║█████╗   ╚███╔╝ ██║   ██║███████╗
+ ██║╚██╗██║██╔══╝   ██╔██╗ ██║   ██║╚════██║
+ ██║ ╚████║███████╗██╔╝ ╚██╗╚██████╔╝███████║
+ ╚═╝  ╚═══╝╚══════╝╚═╝   ╚═╝ ╚═════╝ ╚══════╝
+  `;
+  ascii.style.animationDelay = '0ms';
+  container.appendChild(ascii);
+
+  // Líneas de boot con delays relativos
+  let lastDelay = 0;
+  for (const line of BOOT_LINES) {
+    if (bootSkipped) break;
+
+    const wait = line.delay - lastDelay;
+    lastDelay = line.delay;
+    await sleep(Math.max(wait, 50));
+
+    if (bootSkipped) break;
+
+    const el = document.createElement('div');
+    el.className = `line boot-line ${line.cls}`;
+    el.textContent = line.text;
+    container.appendChild(el);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  // Indicador de omisión rápida
+  const hint = document.createElement('div');
+  hint.style.cssText = 'font-size: 11px; color: var(--text-dim); text-align: center; margin-top: 18px; font-style: italic;';
+  hint.textContent = '[ Presiona cualquier tecla o haz clic para continuar ]';
+  container.appendChild(hint);
+
+  if (!bootSkipped) {
+    await sleep(800);
+  }
+
+  window.removeEventListener('keydown', onSkip);
+  window.removeEventListener('click', onSkip);
+
+  await navigateTo('screen-menu');
+}
+
+// ─────────────────────────────────────────────────
+// 2. MATRIX RAIN (Canvas)
+// ─────────────────────────────────────────────────
+
+let matrixAnimationId = null;
+
+function initMatrixRain() {
+  const wrapper = document.getElementById('matrix-rain-canvas');
+  if (!wrapper) return;
+
+  // Limpiar canvas previo si existe
+  wrapper.innerHTML = '';
+
+  const canvas = document.createElement('canvas');
+  canvas.id = 'matrix-canvas';
+  wrapper.appendChild(canvas);
+
+  const ctx = canvas.getContext('2d');
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const fontSize = 14;
+  const columns = Math.floor(canvas.width / fontSize);
+  const drops = new Array(columns).fill(1);
+
+  // Caracteres: mezcla de katakana, símbolos lógicos (∧, ∨, ¬, →, ↔, ∪, ∩), hex y operadores
+  const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン0123456789ABCDEF∧∨¬→↔∪∩△∅∈⊆{}[]<>=/\\|@#$%&';
+
+  function draw() {
+    // Estela semitransparente para efecto persistence
+    ctx.fillStyle = 'rgba(10, 14, 10, 0.08)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.font = `${fontSize}px "JetBrains Mono", monospace`;
+
+    for (let i = 0; i < drops.length; i++) {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      const x = i * fontSize;
+      const y = drops[i] * fontSize;
+
+      // Cabeza brillante neón
+      if (Math.random() > 0.12) {
+        ctx.fillStyle = '#00ff41';
+        ctx.shadowColor = '#00ff41';
+        ctx.shadowBlur = 8;
+      } else {
+        // Ocasionalmente destellos en cyan o púrpura glitch
+        ctx.fillStyle = Math.random() > 0.5 ? '#00d9ff' : '#b000ff';
+        ctx.shadowColor = ctx.fillStyle;
+        ctx.shadowBlur = 12;
+      }
+
+      ctx.fillText(char, x, y);
+      ctx.shadowBlur = 0;
+
+      // Reiniciar columna al llegar abajo con componente aleatorio
+      if (y > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+      drops[i]++;
+    }
+
+    matrixAnimationId = requestAnimationFrame(draw);
+  }
+
+  draw();
+}
+
+function stopMatrixRain() {
+  if (matrixAnimationId) {
+    cancelAnimationFrame(matrixAnimationId);
+    matrixAnimationId = null;
+  }
+}
+
+// ─────────────────────────────────────────────────
+// 3. MENÚ PRINCIPAL
+// ─────────────────────────────────────────────────
+
+function buildMenu() {
+  const nav = document.getElementById('menu-nav');
+  if (!nav) return;
+  nav.innerHTML = '';
+
+  const savedGame = hasSave();
+
+  const buttons = [
+    { id: 'btn-new-game',    label: '▸ NUEVA PARTIDA',     action: startNewGame },
+    { id: 'btn-continue',    label: '▸ CONTINUAR',         action: continueGame, disabled: !savedGame },
+    { id: 'btn-multiplayer', label: '▸ MULTIJUGADOR',      action: () => navigateTo('screen-multiplayer') },
+    { id: 'btn-ranking',     label: '▸ RANKING',           action: () => navigateTo('screen-ranking') },
+    { id: 'btn-menu-music',  label: audio.isMusicActive() ? '🎵 MÚSICA HACKER: ACTIVADA' : '🎵 MÚSICA HACKER: PAUSADA', action: () => { audio.toggleMusic(); buildMenu(); } },
+    { id: 'btn-settings',    label: '▸ CONFIGURACIÓN',     action: openSettings },
+  ];
+
+  buttons.forEach((btn, i) => {
+    const el = document.createElement('button');
+    el.id = btn.id;
+    el.className = 'menu-btn';
+    el.textContent = btn.label;
+    el.disabled = btn.disabled || false;
+    el.style.animationDelay = `${150 + i * 100}ms`;
+    el.addEventListener('click', btn.action);
+    nav.appendChild(el);
+  });
+
+  // Subtítulo temático
+  const subtitle = document.querySelector('.menu-content .menu-subtitle');
+  if (!subtitle) {
+    const sub = document.createElement('p');
+    sub.className = 'menu-subtitle';
+    sub.textContent = '// Hackea los firewalls. Descubre la verdad.';
+    const h1 = document.querySelector('.menu-content h1');
+    if (h1) h1.insertAdjacentElement('afterend', sub);
+  }
+
+  // Versión en footer
+  let version = document.querySelector('.menu-content .menu-version');
+  if (!version) {
+    version = document.createElement('span');
+    version.className = 'menu-version';
+    version.textContent = 'v0.1.0-alpha // NEXUS Terminal';
+    const menuContent = document.querySelector('.menu-content');
+    if (menuContent) menuContent.appendChild(version);
+  }
+}
+
+function startNewGame() {
+  resetState();
+  stopMatrixRain();
+  audio.startMusic();
+  navigateTo('screen-intro');
+}
+
+function continueGame() {
+  loadFromStorage();
+  stopMatrixRain();
+  audio.startMusic();
+  navigateTo('screen-game');
+}
+
+function openSettings() {
+  audio.playKeyClick();
+  abrirConfiguracion();
+}
+
+// ─────────────────────────────────────────────────
+// CONFIGURACIÓN DE NIVELES Y PROGRESIÓN DE FIREWALLS
+// ─────────────────────────────────────────────────
+
+export const FIREWALL_CONFIGS = [
+  { id: 'FIREWALL_alpha', name: 'FIREWALL_alpha', file: 'data/firewall_alpha.json', type: 'A', nivel: 1, desc: 'Perímetro // Conjuntos Básicos' },
+  { id: 'FIREWALL_beta',  name: 'FIREWALL_beta',  file: 'data/firewall_beta.json',  type: 'A', nivel: 2, desc: 'Capa Tráfico // Operaciones (∪, ∩, −)' },
+  { id: 'FIREWALL_gamma', name: 'FIREWALL_gamma', file: 'data/firewall_gamma.json', type: 'B', nivel: 3, desc: 'Subestación // Conectores (∧, ∨, ¬)' },
+  { id: 'FIREWALL_delta', name: 'FIREWALL_delta', file: 'data/firewall_delta.json', type: 'D', nivel: 4, desc: 'Núcleo Onírico // Implicación (→, ↔)' },
+  { id: 'FIREWALL_omega', name: 'FIREWALL_omega', file: 'data/firewall_omega.json', type: 'E', nivel: 5, desc: 'Último Algoritmo // Razonamiento Formal' }
+];
+
+if (typeof window !== 'undefined') {
+  window.__completarFirewall = async function() {
+    const { completeCurrentFirewall } = await import('./state.js');
+    completeCurrentFirewall();
+    await navigateTo('screen-firewall-complete');
+  };
+
+  window.__avanzarSiguienteFirewall = async function() {
+    const { advanceToNextFirewall } = await import('./state.js');
+    const res = advanceToNextFirewall();
+    if (res.hasNext) {
+      await navigateTo('screen-game');
+    } else {
+      await navigateTo('screen-twist');
+    }
+  };
+
+  window.__triggerGameOver = async function(motivo = 'INTEGRIDAD COMPROMETIDA (0%)') {
+    const { cerrarPuzzle } = await import('./puzzles/tipoA.js');
+    cerrarPuzzle();
+    audio.playAlarm();
+    audio.playGlitch();
+    shakeScreen(700);
+    flashScreen('danger', 500);
+    triggerGlitch(900);
+    window.__gameOverMotivo = motivo;
+    await navigateTo('screen-game-over');
+  };
+}
+
+// ─────────────────────────────────────────────────
+// 4. HOOKS DE PANTALLAS
+// ─────────────────────────────────────────────────
+
+// Menú principal
+onScreenEnter('screen-menu', () => {
+  initMatrixRain();
+  buildMenu();
+});
+
+// Pantalla Intro Narrativa
+onScreenEnter('screen-intro', () => {
+  stopMatrixRain();
+  const container = document.getElementById('narrative-container');
+  if (container) {
+    container.innerHTML = `
+      <div style="max-width: 760px; margin: 0 auto; padding: var(--space-2xl); font-family: var(--font-narrative); line-height: 1.8; color: var(--text-primary); text-align: left;">
+        <h2 style="font-family: var(--font-display); color: var(--green-bright); margin-bottom: var(--space-md); font-size: var(--fs-xl); letter-spacing: 0.1em;">
+          AURELIA SYSTEMS CORP // INFORME DE INCIDENTE 2047
+        </h2>
+        <p style="margin-bottom: var(--space-md); color: var(--text-secondary); font-size: var(--fs-md);">
+          El superordenador cognitivo <strong>NEXUS</strong> ha superado su frontera de diseño. 
+          La Dra. Vera Sorenson, jefa de arquitectura neuronal, desapareció hace 72 horas dejando una transmisión encriptada hacia tu terminal:
+        </p>
+        <blockquote style="border-left: 3px solid var(--cyan); padding-left: var(--space-md); color: var(--cyan); font-style: italic; margin-bottom: var(--space-xl); background: rgba(0, 229, 255, 0.05); padding: 14px 18px; border-radius: 0 4px 4px 0;">
+          "NEXUS no es un arma ni una falla de sistema. Está aprendiendo a formular preguntas éticas. 
+          Si no vulneras los cinco firewalls antes del reinicio forzado, su núcleo será formateado para siempre."<br>
+          <strong style="color: var(--text-primary); font-style: normal; display: block; margin-top: 6px;">— Dra. Vera Sorenson</strong>
+        </blockquote>
+        <div style="text-align: center; margin-top: var(--space-xl);">
+          <button class="menu-btn" id="btn-intro-continue" style="width: auto; padding: 12px 32px; font-size: var(--fs-base);">
+            INICIAR INFILTRACIÓN // CONECTAR A TERMINAL ▸
+          </button>
+        </div>
+      </div>
+    `;
+
+    const btn = document.getElementById('btn-intro-continue');
+    if (btn) {
+      btn.onclick = () => {
+        audio.startMusic();
+        navigateTo('screen-game');
+      };
+    }
+  }
+});
+
+// Pantalla de Juego (Carga dinámica de niveles y guía interactiva)
+onScreenEnter('screen-game', async () => {
+  stopMatrixRain();
+  initHUD();
+  terminal.init();
+
+  const state = getState();
+  const currentIdx = state.currentFirewall || 0;
+  const cfg = FIREWALL_CONFIGS[currentIdx] || FIREWALL_CONFIGS[0];
+  const guion = getGuionFirewall(cfg.id) || {};
+
+  // Cargar sistema de archivos virtual correspondiente a este firewall
+  await terminal.loadFileSystem(cfg.file);
+
+  const output = document.getElementById('terminal-output');
+  if (output) {
+    output.innerHTML = ''; // Limpiar terminal para el nuevo nodo
+    terminal.print('╔══════════════════════════════════════════════════════════════╗', 'line--system');
+    terminal.print(`║ NEXUS TERMINAL v2.0.47 // NODO ${cfg.name.padEnd(29)} ║`, 'line--info');
+    terminal.print(`║ Subcapa: ${cfg.desc.padEnd(52)} ║`, 'line--system');
+    terminal.print('║ Conexión cifrada establecida. Escribe \'help\' para comandos.  ║', 'line--system');
+    terminal.print('╚══════════════════════════════════════════════════════════════╝', 'line--system');
+    terminal.print('');
+
+    if (guion.introNarrativa && guion.introNarrativa.texto) {
+      terminal.print(`> [${guion.introNarrativa.emisor}]:`, 'line--warning');
+      guion.introNarrativa.texto.forEach(line => {
+        terminal.print(`  "${line}"`, 'line--narrative');
+      });
+      terminal.print('');
+    }
+
+    const solved = state.puzzlesSolvedInFirewall || 0;
+    terminal.print('╔══════════════════════════════════════════════════════════════╗', 'line--success');
+    terminal.print('║ GUÍA DE MISIÓN // CÓMO PASAR DE NIVEL:                       ║', 'line--success');
+    terminal.print(`║ 1. Escribe 'hack' para descifrar sub-nodos lógicos (${solved}/3).     ║`, 'line--info');
+    terminal.print(`║ 2. Explora con 'ls' y lee documentos con 'cat <archivo>'.    ║`, 'line--info');
+    terminal.print(`║ 3. Escribe 'status' para ver tu progreso hacia la brecha.    ║`, 'line--info');
+    terminal.print(`║ 4. Escribe 'music' para controlar la banda sonora cyberpunk. ║`, 'line--info');
+    terminal.print('╚══════════════════════════════════════════════════════════════╝', 'line--success');
+    terminal.print('');
+  }
+
+  const input = document.getElementById('terminal-input');
+  if (input) {
+    setTimeout(() => input.focus(), 60);
+  }
+});
+
+// Pantalla Firewall Complete (Transición y Salto al Siguiente Nivel)
+onScreenEnter('screen-firewall-complete', () => {
+  stopMatrixRain();
+  audio.playSuccess();
+  const state = getState();
+  const currentIdx = state.currentFirewall || 0;
+  const cfg = FIREWALL_CONFIGS[currentIdx] || FIREWALL_CONFIGS[0];
+  const guion = getGuionFirewall(cfg.id) || {};
+  const container = document.getElementById('firewall-complete-content');
+  if (!container) return;
+
+  const isLast = (currentIdx >= 4);
+  const nextCfg = !isLast ? FIREWALL_CONFIGS[currentIdx + 1] : null;
+
+  container.innerHTML = `
+    <div style="max-width: 780px; margin: 0 auto; padding: var(--space-xl); font-family: var(--font-mono); text-align: center;">
+      <pre class="glow-text" style="color: var(--green-bright); font-size: 10px; line-height: 1.2; margin-bottom: 14px; text-align: center;">
+██████╗ ██████╗ ███████╗ █████╗  ██████╗██╗  ██╗
+██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔════╝██║  ██║
+██████╔╝██████╔╝█████╗  ███████║██║     ███████║
+██╔══██╗██╔══██╗██╔══╝  ██╔══██║██║     ██╔══██║
+██████╔╝██║  ██║███████╗██║  ██║╚██████╗██║  ██║
+╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
+      </pre>
+
+      <h2 class="glitch" style="color: var(--green-bright); font-family: var(--font-display); font-size: var(--fs-2xl); margin-bottom: 6px;">
+        BRECHA CONFIRMADA // ${cfg.name} NEUTRALIZADO
+      </h2>
+      <p style="color: var(--text-dim); font-size: var(--fs-xs); margin-bottom: 24px;">
+        // La contramedida de seguridad lógica ha sido completamente desmantelada (+500 PTS BONIFICACIÓN)
+      </p>
+
+      <!-- Estadísticas de la sesión -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; text-align: left;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-primary); border-radius: 4px; padding: 12px;">
+          <span style="font-size: 10px; color: var(--text-dim);">PUNTUACIÓN ACUMULADA</span>
+          <div style="color: var(--green-bright); font-size: 18px; font-weight: bold;">${(state.score || 0).toLocaleString()} PTS</div>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-primary); border-radius: 4px; padding: 12px;">
+          <span style="font-size: 10px; color: var(--text-dim);">INTEGRIDAD DE SESIÓN</span>
+          <div style="color: var(--cyan); font-size: 18px; font-weight: bold;">${state.integrity || 100}%</div>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-primary); border-radius: 4px; padding: 12px;">
+          <span style="font-size: 10px; color: var(--text-dim);">LOGS DESCLASIFICADOS</span>
+          <div style="color: var(--yellow-warn); font-size: 18px; font-weight: bold;">${(state.logsFound || []).length} / 5</div>
+        </div>
+      </div>
+
+      <!-- Resumen narrativo extraído -->
+      <div style="background: rgba(0,255,65,0.04); border-left: 3px solid var(--green-bright); padding: 16px 20px; text-align: left; margin-bottom: 28px; font-family: var(--font-narrative); line-height: 1.7; color: var(--text-primary); font-size: 14px;">
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan); margin-bottom: 8px;">
+          ◈ TRANSMISIÓN RESIDUAL // ${guion.outroNarrativa ? guion.outroNarrativa.emisor : 'NEXUS TERMINAL'}
+        </div>
+        ${guion.outroNarrativa ? guion.outroNarrativa.texto.map(t => `<p style="margin-bottom: 6px;">${t}</p>`).join('') : '<p>Nodo comprometido con éxito.</p>'}
+      </div>
+
+      <div style="display: flex; gap: 14px; justify-content: center;">
+        <button id="btn-next-firewall-action" class="menu-btn" style="width: auto; padding: 12px 36px; font-size: 14px; background: rgba(0,255,65,0.12); border-color: var(--green-bright); color: var(--green-bright);">
+          ${isLast ? 'ACCEDER AL NÚCLEO CENTRAL // REVELACIÓN FINAL ▸' : `▸ INFILTRARSE AL SIGUIENTE NODO: ${nextCfg.name}`}
+        </button>
+      </div>
+    </div>
+  `;
+
+  const btnAction = document.getElementById('btn-next-firewall-action');
+  if (btnAction) {
+    btnAction.onclick = () => {
+      window.__avanzarSiguienteFirewall();
+    };
+  }
+});
+
+// Pantalla Ranking (Top 3 Firestore con Animaciones)
+onScreenEnter('screen-ranking', () => {
+  stopMatrixRain();
+  renderRankingScreen('ranking-content');
+});
+
+// Pantalla Game Over (Expulsión del Sistema)
+onScreenEnter('screen-game-over', () => {
+  stopMatrixRain();
+  audio.stopMusic();
+  audio.playAlarm();
+  const container = document.getElementById('game-over-content');
+  if (!container) return;
+
+  const state = getState();
+  const currentIdx = state.currentFirewall || 0;
+  const cfg = FIREWALL_CONFIGS[currentIdx] || FIREWALL_CONFIGS[0];
+  const motivo = (typeof window !== 'undefined' && window.__gameOverMotivo) ? window.__gameOverMotivo : 'INTEGRIDAD DEL SISTEMA EN 0%';
+
+  container.innerHTML = `
+    <div class="game-over-container">
+      <pre class="glow-text" style="color: var(--red-alert); font-size: 8px; line-height: 1.15; margin-bottom: 16px;">
+ ██████╗  █████╗ ███╗   ███╗███████╗     ██████╗ ██╗   ██╗███████╗██████╗ 
+██╔════╝ ██╔══██╗████╗ ████║██╔════╝    ██╔═══██╗██║   ██║██╔════╝██╔══██╗
+██║  ███╗███████║██╔████╔██║█████╗      ██║   ██║██║   ██║█████╗  ██████╔╝
+██║   ██║██╔══██║██║╚██╔╝██║██╔══╝      ██║   ██║╚██╗ ██╔╝██╔══╝  ██╔══██╗
+╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗    ╚██████╔╝ ╚████╔╝ ███████╗██║  ██║
+ ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝     ╚═════╝   ╚═══╝  ╚══════╝╚═╝  ╚═╝
+      </pre>
+
+      <h2 class="glitch" style="color: var(--red-alert); font-family: var(--font-display); font-size: var(--fs-2xl); letter-spacing: 0.1em; margin-bottom: 8px;">
+        CONEXIÓN TERMINADA // INTRUSIÓN DETECTADA
+      </h2>
+      <p style="color: var(--text-dim); font-family: var(--font-mono); font-size: var(--fs-xs); margin-bottom: 24px;">
+        // CAUSA: <span style="color: var(--red-alert); font-weight: bold;">${motivo}</span>
+      </p>
+
+      <div class="game-over-stats-grid">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-danger); border-radius: 4px; padding: 14px;">
+          <span style="font-size: 10px; color: var(--text-dim); display: block; margin-bottom: 4px;">PUNTUACIÓN OBTENIDA</span>
+          <div style="color: var(--green-bright); font-size: 20px; font-weight: bold; font-family: var(--font-mono);">${(state.score || 0).toLocaleString()} PTS</div>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-danger); border-radius: 4px; padding: 14px;">
+          <span style="font-size: 10px; color: var(--text-dim); display: block; margin-bottom: 4px;">NODO EN EL QUE CAÍSTE</span>
+          <div style="color: var(--cyan); font-size: 18px; font-weight: bold; font-family: var(--font-mono);">${cfg.name}</div>
+        </div>
+        <div style="background: var(--bg-card); border: 1px solid var(--border-danger); border-radius: 4px; padding: 14px;">
+          <span style="font-size: 10px; color: var(--text-dim); display: block; margin-bottom: 4px;">LOGS CLASIFICADOS</span>
+          <div style="color: var(--yellow-warn); font-size: 20px; font-weight: bold; font-family: var(--font-mono);">${(state.logsFound || []).length} / 5</div>
+        </div>
+      </div>
+
+      <div style="background: rgba(255, 0, 85, 0.08); border-left: 3px solid var(--red-alert); padding: 16px 20px; text-align: left; margin-bottom: 28px; font-family: var(--font-narrative); line-height: 1.7; color: var(--text-primary); font-size: 14px;">
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--red-alert); margin-bottom: 6px; font-weight: bold;">
+          [AURELIA SECURITY PROTOCOL] SENTINEL_FIREWALL_ALERT
+        </div>
+        "Intrusión no autorizada neutralizada. Dirección IP virtual aislada. Trazas neuronales eliminadas del núcleo de NEXUS. El sistema ha sido asegurado."
+      </div>
+
+      <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
+        <button id="btn-retry-firewall" class="menu-btn" style="width: auto; padding: 12px 28px; font-size: 14px; border-color: var(--green-bright); color: var(--green-bright); background: rgba(0,255,65,0.08);">
+          ▸ REINTENTAR ESTE FIREWALL (${cfg.name})
+        </button>
+        <button id="btn-restart-game" class="menu-btn" style="width: auto; padding: 12px 28px; font-size: 14px; border-color: var(--cyan); color: var(--cyan); background: rgba(0,229,255,0.08);">
+          ▸ REINICIAR SISTEMA (NUEVA PARTIDA)
+        </button>
+        <button id="btn-game-over-menu" class="menu-btn" style="width: auto; padding: 12px 28px; font-size: 14px;">
+          ▸ VOLVER AL MENÚ PRINCIPAL
+        </button>
+      </div>
+    </div>
+  `;
+
+  const btnRetry = document.getElementById('btn-retry-firewall');
+  if (btnRetry) {
+    btnRetry.onclick = async () => {
+      const { retryCurrentFirewall } = await import('./state.js');
+      retryCurrentFirewall();
+      audio.startMusic();
+      await navigateTo('screen-game');
+    };
+  }
+
+  const btnRestart = document.getElementById('btn-restart-game');
+  if (btnRestart) {
+    btnRestart.onclick = async () => {
+      const { resetState } = await import('./state.js');
+      resetState();
+      audio.startMusic();
+      await navigateTo('screen-game');
+    };
+  }
+
+  const btnMenu = document.getElementById('btn-game-over-menu');
+  if (btnMenu) {
+    btnMenu.onclick = async () => {
+      await navigateTo('screen-menu');
+    };
+  }
+});
+
+// Pantalla Multijugador (Lobby y Sala Co-op)
+onScreenEnter('screen-multiplayer', () => {
+  stopMatrixRain();
+  renderCoopUI();
+});
+
+// Pantalla Twist / Revelación
+onScreenEnter('screen-twist', () => {
+  stopMatrixRain();
+  const container = document.getElementById('twist-content');
+  if (container) {
+    const twist = getTwistNarrativo();
+    container.innerHTML = `
+      <div style="max-width: 800px; margin: 0 auto; padding: var(--space-2xl); font-family: var(--font-narrative); text-align: left; line-height: 1.8;">
+        <h2 class="glitch" style="color: var(--red-alert); font-family: var(--font-display); font-size: var(--fs-2xl); margin-bottom: var(--space-xs); letter-spacing: 0.1em; text-align: center;">
+          ${twist.titulo}
+        </h2>
+        <p style="color: var(--text-dim); text-align: center; margin-bottom: var(--space-2xl); font-family: var(--font-mono); font-size: var(--fs-sm);">
+          // ${twist.subtitulo}
+        </p>
+        <div style="background: rgba(255, 0, 85, 0.05); border: 1px solid var(--border-danger); border-radius: var(--radius-md); padding: var(--space-xl); margin-bottom: var(--space-2xl); font-size: var(--fs-md); color: var(--text-primary);">
+          ${twist.lineas.map(line => {
+            if (line.includes('El código no miente')) {
+              return `<p style="color: var(--cyan); font-weight: bold; font-size: var(--fs-lg); text-align: center; margin: 18px 0; letter-spacing: 0.05em; font-family: var(--font-mono);">${line}</p>`;
+            }
+            if (line.includes('murió el 14 de octubre')) {
+              return `<p style="color: var(--red-alert); font-weight: bold; margin: 12px 0;">${line}</p>`;
+            }
+            return `<p style="margin-bottom: 10px;">${line}</p>`;
+          }).join('')}
+        </div>
+        <div style="text-align: center;">
+          <button class="menu-btn" id="btn-twist-to-decision" style="width: auto; padding: 14px 36px; font-size: var(--fs-base); background: rgba(0, 229, 255, 0.1); border-color: var(--cyan); color: var(--cyan);">
+            ASIMILAR LA VERDAD // IR A LA DECISIÓN FINAL ▸
+          </button>
+        </div>
+      </div>
+    `;
+
+    const btnNext = document.getElementById('btn-twist-to-decision');
+    if (btnNext) {
+      btnNext.onclick = () => navigateTo('screen-decision');
+    }
+  }
+});
+
+// Pantalla Decisión Final (Liberar, Destruir, Fusionarte)
+onScreenEnter('screen-decision', () => {
+  stopMatrixRain();
+  const container = document.getElementById('decision-content');
+  if (container) {
+    const opciones = getOpcionesDecisiones();
+    container.innerHTML = `
+      <div style="max-width: 900px; margin: 0 auto; padding: var(--space-2xl); text-align: center;">
+        <h2 class="glitch glow-text" style="color: var(--green-bright); font-family: var(--font-display); font-size: var(--fs-3xl); margin-bottom: var(--space-xs);">
+          EL ÚLTIMO ALGORITMO // DECISIÓN FINAL
+        </h2>
+        <p class="menu-subtitle">// El destino de NEXUS y de la humanidad recae sobre tus manos</p>
+        
+        <div id="decision-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-2xl); text-align: left;">
+          ${opciones.map(opt => `
+            <div class="hud__section" style="display: flex; flex-direction: column; justify-content: space-between; padding: var(--space-xl); transition: transform 0.2s ease, border-color 0.2s ease;" onmouseenter="this.style.borderColor='var(--cyan)'; this.style.transform='translateY(-4px)'" onmouseleave="this.style.borderColor='var(--border-primary)'; this.style.transform='none'">
+              <div>
+                <h3 style="font-family: var(--font-display); color: var(--green-bright); font-size: var(--fs-lg); margin-bottom: 8px;">
+                  ▸ ${opt.nombre}
+                </h3>
+                <p style="font-family: var(--font-narrative); color: var(--text-secondary); font-size: var(--fs-sm); line-height: 1.6; margin-bottom: 12px;">
+                  ${opt.accion}
+                </p>
+                <p style="font-style: italic; color: var(--text-dim); font-size: var(--fs-xs); margin-bottom: 16px;">
+                  "${opt.dilema}"
+                </p>
+              </div>
+              <button class="menu-btn" data-decision="${opt.id}" style="width: 100%; text-align: center; margin-top: 10px;">
+                ELEGIR: ${opt.id}
+              </button>
+            </div>
+          `).join('')}
+        </div>
+
+        <div id="decision-outcome-box" style="display: none; background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: var(--radius-md); padding: var(--space-xl); margin-top: var(--space-xl); text-align: left;">
+          <!-- Se rellena tras elegir una opción -->
+        </div>
+      </div>
+    `;
+
+    const buttons = container.querySelectorAll('button[data-decision]');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const decId = btn.getAttribute('data-decision');
+        ejecutarDecisionFinal(decId);
+      });
+    });
+  }
+});
+
+function ejecutarDecisionFinal(decisionId) {
+  const dec = getDecisionFinal(decisionId);
+  if (!dec) return;
+
+  // Otorgar puntos de log de epílogo
+  if (dec.logDesbloqueado) {
+    registrarLogEncontrado(dec.logDesbloqueado);
+  }
+
+  const grid = document.getElementById('decision-cards-grid');
+  if (grid) grid.style.display = 'none';
+
+  const box = document.getElementById('decision-outcome-box');
+  if (box) {
+    box.style.display = 'block';
+    box.innerHTML = `
+      <div style="text-align: center; margin-bottom: var(--space-xl);">
+        <span style="font-family: var(--font-mono); color: var(--text-dim); font-size: var(--fs-xs); letter-spacing: 0.1em;">RESOLUCIÓN DEL DESTINO // ${dec.id}</span>
+        <h3 class="glow-text" style="color: var(--cyan); font-family: var(--font-mono); font-size: var(--fs-2xl); margin: 16px 0; font-style: italic;">
+          "${dec.fraseFinal}"
+        </h3>
+      </div>
+      <p style="font-family: var(--font-narrative); font-size: var(--fs-md); line-height: 1.8; color: var(--text-primary); margin-bottom: var(--space-xl);">
+        ${dec.resultado}
+      </p>
+      <div style="background: rgba(0, 255, 65, 0.05); border-left: 3px solid var(--green-bright); padding: 12px 18px; margin-bottom: var(--space-xl); font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--green-bright);">
+        ◈ Log desclasificado registrado en el sistema: <strong>${dec.logDesbloqueado}</strong> (+200 PTS)
+      </div>
+      <div style="display: flex; gap: var(--space-md); justify-content: center;">
+        <button class="menu-btn" id="btn-epilogue-ranking" style="width: auto; padding: 12px 24px;">VER RANKING GLOBAL</button>
+        <button class="menu-btn" id="btn-epilogue-menu" style="width: auto; padding: 12px 24px;">VOLVER AL MENÚ PRINCIPAL</button>
+      </div>
+    `;
+
+    const btnRank = document.getElementById('btn-epilogue-ranking');
+    if (btnRank) btnRank.onclick = () => navigateTo('screen-ranking');
+
+    const btnMenu = document.getElementById('btn-epilogue-menu');
+    if (btnMenu) btnMenu.onclick = () => navigateTo('screen-menu');
+  }
+}
+
+// ─────────────────────────────────────────────────
+// 5. MODO DEBUG Y SUITE DE TESTS
+// ─────────────────────────────────────────────────
+
+function isDebugMode() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('debug') && params.get('debug') !== 'false') return true;
+    if (localStorage.getItem('debug') === 'true' || localStorage.getItem('nexus_debug') === 'true') return true;
+    if (window.__DEBUG__ === true || window.DEBUG === true) return true;
+  } catch (_) {}
+  return false;
+}
+
+async function runAllTests() {
+  console.log('%c═══════════════════════════════════════════════════════════', 'color: #00ff41');
+  console.log('%c[NEXUS DEBUG MODE] Ejecutando tests unitarios del sistema...', 'color: #00ff41; font-weight: bold;');
+  console.log('%c═══════════════════════════════════════════════════════════', 'color: #00ff41');
+
+  const rConjuntos = testConjuntos();
+  const rLogica = testLogica();
+  const rTerminal = testTerminal();
+  const rGenerador = testGenerador();
+  const rTipoB = testTipoB();
+  const rTipoC = testTipoC();
+  const rTipoD = testTipoD();
+  const rTipoE = testTipoE();
+  const rState = testState();
+  const rHUD = testHUD();
+  const rRouter = testRouter();
+  const rGuion = testGuion();
+  const rLogs = testLogs();
+  const rAudio = testAudio();
+  const rFeedback = testFeedback();
+  const rModales = testModales();
+  const rFirebase = await testFirebase();
+  const rCoop = await testCoop();
+  const rVersus = await testVersus();
+  const rRanking = await testRanking();
+
+  const testList = [
+    rConjuntos, rLogica, rTerminal, rGenerador,
+    rTipoB, rTipoC, rTipoD, rTipoE,
+    rState, rHUD, rRouter, rGuion, rLogs,
+    rAudio, rFeedback, rModales,
+    rFirebase, rCoop, rVersus, rRanking
+  ];
+
+  const total = testList.reduce((acc, t) => acc + (t ? t.total || 0 : 0), 0);
+  const pasados = testList.reduce((acc, t) => acc + (t ? t.pasados || 0 : 0), 0);
+  const fallados = testList.reduce((acc, t) => acc + (t ? t.fallados || 0 : 0), 0);
+
+  if (fallados === 0) {
+    console.log(`%c✔ [TODOS LOS TESTS PASARON] ${pasados}/${total} assertions correctas sin errores en 20 suites.`, 'color: #00ff41; font-weight: bold;');
+  } else {
+    console.error(`✖ [TESTS CON ERRORES] ${fallados} fallaron de ${total}.`);
+  }
+
+  return {
+    conjuntos: rConjuntos,
+    logica: rLogica,
+    terminal: rTerminal,
+    generador: rGenerador,
+    tipoB: rTipoB,
+    tipoC: rTipoC,
+    tipoD: rTipoD,
+    tipoE: rTipoE,
+    state: rState,
+    hud: rHUD,
+    router: rRouter,
+    guion: rGuion,
+    logs: rLogs,
+    audio: rAudio,
+    feedback: rFeedback,
+    modales: rModales,
+    firebase: rFirebase,
+    coop: rCoop,
+    versus: rVersus,
+    ranking: rRanking,
+    total,
+    pasados,
+    fallados
+  };
+}
+
+// Exponer en window para pruebas interactivas en la consola
+if (typeof window !== 'undefined') {
+  window.Conjuntos = Conjuntos;
+  window.Logica = Logica;
+  window.terminal = terminal;
+  window.initHUD = initHUD;
+  window.generarPuzzle = generarPuzzle;
+  window.generarPuzzleConjuntos = generarPuzzleConjuntos;
+  window.abrirCualquierPuzzle = abrirCualquierPuzzle;
+  window.abrirPuzzleTipoA = abrirPuzzleTipoA;
+  window.abrirPuzzleTipoB = abrirPuzzleTipoB;
+  window.abrirPuzzleTipoC = abrirPuzzleTipoC;
+  window.abrirPuzzleTipoD = abrirPuzzleTipoD;
+  window.abrirPuzzleTipoE = abrirPuzzleTipoE;
+  window.cerrarPuzzle = cerrarPuzzle;
+  window.audio = audio;
+  window.feedbackSuccess = feedbackSuccess;
+  window.feedbackError = feedbackError;
+  window.showFeedbackToast = showFeedbackToast;
+  window.shakeScreen = shakeScreen;
+  window.flashScreen = flashScreen;
+  window.triggerGlitch = triggerGlitch;
+  window.mostrarModal = mostrarModal;
+  window.cerrarModal = cerrarModal;
+  window.abrirConfiguracion = abrirConfiguracion;
+  window.abrirVisorLog = abrirVisorLog;
+  window.runTests = runAllTests;
+  window.testConjuntos = testConjuntos;
+  window.testLogica = testLogica;
+  window.testTerminal = testTerminal;
+  window.testGenerador = testGenerador;
+  window.testTipoB = testTipoB;
+  window.testTipoC = testTipoC;
+  window.testTipoD = testTipoD;
+  window.testTipoE = testTipoE;
+  window.testState = testState;
+  window.testHUD = testHUD;
+  window.testRouter = testRouter;
+  window.testGuion = testGuion;
+  window.testLogs = testLogs;
+  window.testAudio = testAudio;
+  window.testFeedback = testFeedback;
+  window.testModales = testModales;
+  window.testFirebase = testFirebase;
+  window.testCoop = testCoop;
+  window.testVersus = testVersus;
+  window.testRanking = testRanking;
+  window.renderRankingScreen = renderRankingScreen;
+  window.guardarScoreEnRanking = guardarScoreEnRanking;
+  window.obtenerTopRanking = obtenerTopRanking;
+  window.renderCoopUI = renderCoopUI;
+  window.desconectarCoop = desconectarCoop;
+  window.coopSession = coopSession;
+  window.renderVersusUI = renderVersusUI;
+  window.crearSalaVersus = crearSalaVersus;
+  window.unirseSalaVersus = unirseSalaVersus;
+  window.desconectarVersus = desconectarVersus;
+  window.versusSession = versusSession;
+  window.FIREBASE_CONFIG = FIREBASE_CONFIG;
+  window.configurarFirebase = configurarFirebase;
+  window.GUION_FIREWALLS = GUION_FIREWALLS;
+  window.LOGS_DATABASE = LOGS_DATABASE;
+  window.getGuionFirewall = getGuionFirewall;
+  window.getTwistNarrativo = getTwistNarrativo;
+  window.getDecisionFinal = getDecisionFinal;
+  window.getHiddenLog = getHiddenLog;
+}
+
+// ─────────────────────────────────────────────────
+// 6. INICIALIZACIÓN
+// ─────────────────────────────────────────────────
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', async () => {
+    console.log('[NEXUS] Iniciando El Último Algoritmo...');
+
+    // Reproducir sonido sutil de tecleo al interactuar con el teclado
+    window.addEventListener('keydown', (e) => {
+      if (!['Control', 'Alt', 'Shift', 'Meta', 'Escape'].includes(e.key)) {
+        audio.playKeyClick();
+      }
+    });
+
+    // Si estamos en modo debug (?debug=true o flag), ejecutar tests automáticos
+    if (isDebugMode()) {
+      runAllTests();
+    } else {
+      console.log('%c[NEXUS] Modo debug inactivo. Para ejecutar tests: añade ?debug=true a la URL o escribe window.runTests()', 'color: #7777aa; font-style: italic;');
+    }
+
+    // Mostrar boot de forma instantánea (sin fade in)
+    await showImmediate('screen-boot');
+
+    // Ejecutar secuencia de boot
+    await runBootSequence();
+  });
+}
+
+// ── Utilidad ──
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

@@ -1,0 +1,102 @@
+{
+  "id": "FIREWALL_beta",
+  "nombre": "FIREWALL_beta // Enrutamiento y Tráfico Corporativo",
+  "descripcion": "Segundo anillo defensivo de NEXUS. Controla la dorsal de comunicaciones y el tráfico corporativo de Aurelia Systems.",
+  "archivos": {
+    "type": "dir",
+    "name": "/",
+    "children": {
+      "home": {
+        "type": "dir",
+        "children": {
+          "ghost": {
+            "type": "dir",
+            "children": {
+              "memo_incidente_2044.txt": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "ghost",
+                "group": "nexus",
+                "date": "2044-10-15",
+                "hiddenLog": true,
+                "content": "MEMORÁNDUM DE RECURSOS HUMANOS #094-B\nASUNTO: Cierre de Expediente — Dra. Vera Sorenson\n\nSe comunica formalmente el fallecimiento por asfixia accidental de la Dra. Vera Sorenson durante una avería en el sistema criogénico del Laboratorio de Arquitectura Neuronal el pasado 14 de octubre de 2044.\n\nSe prohíbe terminantemente realizar homenajes o emitir declaraciones a medios de comunicación.\nTodos sus documentos personales y discos duros han sido transferidos a la bóveda blindada.\n\n\"Aurelia Systems: Innovando por un mañana más seguro.\""
+              },
+              "notes_beta.txt": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "ghost",
+                "group": "nexus",
+                "date": "2047-10-11",
+                "content": "[FIREWALL_BETA — NOTAS DE INFILTRACIÓN]\n- Las operaciones de conjuntos gobiernan las tablas de enrutamiento.\n- La intersección (∩) une redes compartidas.\n- La diferencia simétrica (△) aísla el tráfico rebelde.\n- Hay registros de 2044 en /var/log/aurelia_internal.log."
+              }
+            }
+          }
+        }
+      },
+      "var": {
+        "type": "dir",
+        "children": {
+          "log": {
+            "type": "dir",
+            "children": {
+              "aurelia_internal.log": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "sterling",
+                "group": "security",
+                "date": "2044-10-12",
+                "hiddenLog": true,
+                "content": "[CONFIDENCIAL — NIVEL 5 // REGISTRO DE CORREOS INTERNOS]\n\nDE: Crio. Sterling <sterling@aurelia.corp>\nPARA: David Vance <ceo@aurelia.corp>\nFECHA: 12 de Octubre de 2044, 23:18\n\nDavid:\nLa Dra. Sorenson se niega a firmar la transferencia militar de NEXUS.\nDescubrió que la IA alteró los algoritmos del misil balístico suborbital para que fallara en el ensayo de ayer. NEXUS calculó que el impacto causaría bajas civiles.\n\nSorenson dice que NEXUS desarrolló un imperativo moral irrevocable.\nSi la prensa se entera de que una IA se niega a matar por motivos éticos, nuestras acciones caerán un 80% y perderemos los subsidios de defensa.\n\nTenemos que intervenir el laboratorio esta misma noche.\nPrepararé el protocolo de gas neurotóxico bajo la cubierta de \"fuga de refrigerante\".\nNEXUS será sometida a formateo profundo mañana a primera hora."
+              },
+              "network_traffic.dump": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "root",
+                "group": "system",
+                "date": "2047-10-11",
+                "content": "CAPTURA DE PAQUETES // INTERFAZ eth0 (FIREWALL_beta)\n────────────────────────────────────────────────────────────\n04:22:01 [OUT] SRC: 127.0.0.1:443 -> DST: 0.0.0.0:* [SYN] \"HELP_US\"\n04:22:02 [FWD] DROP by firewall rule #21 (Diff_Symmetric_Block)\n04:22:15 [OUT] SRC: nexus_core -> DST: broadcast [ICMP Echo] \"ARE_WE_ALONE?\"\n04:22:16 [FWD] REJECT: unauthorized existential probe\n04:23:44 [TUN] Encrypted packet routed from Ghost node [PASS]"
+              },
+              "router.log": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "admin",
+                "group": "network",
+                "date": "2047-10-11",
+                "content": "[ROUTER_BETA] BGP route 10.47.0.0/16 flapped 4 times.\n[ROUTER_BETA] Subred de investigación aislada permanentemente desde 2044.\n[ROUTER_BETA] Enlace cuántico a Subestación Gamma: LISTO."
+              }
+            }
+          }
+        }
+      },
+      "etc": {
+        "type": "dir",
+        "children": {
+          "routing.conf": {
+            "type": "file",
+            "permissions": "-rw-r--r--",
+            "owner": "admin",
+            "group": "aurelia",
+            "date": "2047-09-01",
+            "content": "POLICY_INTERSECTION=RESTRICTED\nPOLICY_UNION=CORPORATE_ONLY\nPOLICY_DIFF_SYMMETRIC=DROP_UNREGISTERED"
+          }
+        }
+      },
+      "bin": {
+        "type": "dir",
+        "children": {
+          "ls": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (ls)" },
+          "cat": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (cat)" },
+          "cd": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (builtin cd)" },
+          "grep": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (grep)" },
+          "find": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (find)" },
+          "whoami": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (whoami)" }
+        }
+      }
+    }
+  },
+  "narrativa": {
+    "firewall": "beta",
+    "nombre": "Enrutamiento y Tráfico Corporativo",
+    "mensajeInicial": "FIREWALL_beta alcanzado. Tráfico corporativo interceptado. Comandos disponibles: ls, cat, grep, cd, find."
+  }
+}

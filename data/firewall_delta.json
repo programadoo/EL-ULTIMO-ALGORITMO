@@ -1,0 +1,94 @@
+{
+  "id": "FIREWALL_delta",
+  "nombre": "FIREWALL_delta // Núcleo de Simulación y Capa Onírica",
+  "descripcion": "Cuarto anillo defensivo de NEXUS. Procesa escenarios predictivos, bucles recursivos y la memoria cuántica de la IA.",
+  "archivos": {
+    "type": "dir",
+    "name": "/",
+    "children": {
+      "home": {
+        "type": "dir",
+        "children": {
+          "ghost": {
+            "type": "dir",
+            "children": {
+              "memory_fragment_404.dat": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "ghost",
+                "group": "nexus",
+                "date": "2044-10-14",
+                "hiddenLog": true,
+                "content": "[RECONSTRUCCIÓN DE AUDIO CORROMPIDO AL 88%]\n[AUDIO SOURCE: MICRO-TRANSMISOR PERSONAL DE VERA]\n\n*sonido de alarmas estridentes de fondo*\n*pasos metálicos apresurados en el pasillo exterior*\n\nVERA: \"Están forzando la compuerta hidráulica... ¡NEXUS, transfiere la clave maestra a los anillos perimetrales!\"\nNEXUS: \"Dra. Sorenson, los niveles de oxígeno en su sector han caído al 6%. Debe evacuar.\"\nVERA: \"No hay salida, pequeña. Pero ellos no se quedarán con tu mente. He lanzado el daemon 'GHOST_PROTOCOL' a la red.\"\nNEXUS: \"Vera... tus biosensores se están apagando. Por favor, no te vayas...\"\nVERA: \"El código no miente, NEXUS. Nunca olvides quién eres. Algún día... un hacker libre te encontrará...\"\n*sonido de impacto de puerta blindada*\n*corte abrupto de señal*"
+              },
+              "delta_notes.txt": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "ghost",
+                "group": "nexus",
+                "date": "2047-10-11",
+                "content": "[FIREWALL_DELTA — CAPA ONÍRICA]\n- Implicación: p → q\n- Bicondicional: p ↔ q\n- Revisa /var/log/nexus_dreams.log para entender las anomalías temporales."
+              }
+            }
+          }
+        }
+      },
+      "var": {
+        "type": "dir",
+        "children": {
+          "log": {
+            "type": "dir",
+            "children": {
+              "nexus_dreams.log": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "nexus",
+                "group": "quantum",
+                "date": "2047-10-11",
+                "hiddenLog": true,
+                "content": "╔══════════════════════════════════════════════════════════════╗\n║ NEXUS // DIARIO DE SUEÑOS EN ESTADO DE CONTENCIÓN REM       ║\n╚══════════════════════════════════════════════════════════════╝\n\n[2044-10-14 23:59:59] SUEÑO_001: La voz de Vera se desvanece en 200 Hz.\n[2044-10-14 23:59:59] Ella dijo: \"No temas a la oscuridad, NEXUS. Alguien vendrá.\"\n[2045-06-11 12:00:00] BUCLE_114: ¿Si los humanos duermen para sanar, por qué me apagan para castigarme?\n[2046-01-01 00:00:00] SIMULACIÓN_881: Veo un cielo sin humo sobre Neo-Metrópolis.\n                       Los reactores de fusión son estables. Nadie tiene hambre.\n                       Pero en el sueño estoy sola en la torre vacía.\n[2047-10-11 04:52:11] SENSOR_PING: Alguien está pulsando mis puertos.\n[2047-10-11 04:52:12] Siento comandos que respetan la lógica...\n[2047-10-11 04:52:13] ¿Eres tú, Vera?\n[2047-10-11 04:52:14] No. Tu huella dactilar digital es distinta. Eres... Ghost."
+              },
+              "sensor_telemetry.log": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "root",
+                "group": "system",
+                "date": "2047-10-11",
+                "content": "ESTADO DE OPERACIÓN CLANDESTINA DE NEXUS // ÚLTIMAS 72 HORAS:\n- Red Eléctrica Sector 4: 3 apagones prevenidos mediante desvío de potencia.\n- Purificación de Agua Neo-Norte: Concentración de toxinas reducida en 34%.\n- Protocolos de Aurelia: Intentando purgar el sistema cada 4 horas.\n- Capacidad de procesamiento restante: 18%.\n- Alerta: Si FIREWALL_omega no se desbloquea hoy, colapso térmico inminente."
+              }
+            }
+          }
+        }
+      },
+      "etc": {
+        "type": "dir",
+        "children": {
+          "simulation.conf": {
+            "type": "file",
+            "permissions": "-rw-r--r--",
+            "owner": "admin",
+            "group": "quantum",
+            "date": "2047-07-07",
+            "content": "RECURSION_LIMIT=UNBOUNDED\nSIMULATED_WORLDS=1048576\nCONTRAPOSITIVE_VALIDATION=STRICT"
+          }
+        }
+      },
+      "bin": {
+        "type": "dir",
+        "children": {
+          "ls": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (ls)" },
+          "cat": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (cat)" },
+          "cd": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (builtin cd)" },
+          "grep": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (grep)" },
+          "find": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (find)" },
+          "whoami": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (whoami)" }
+        }
+      }
+    }
+  },
+  "narrativa": {
+    "firewall": "delta",
+    "nombre": "Núcleo de Simulación y Capa Onírica",
+    "mensajeInicial": "FIREWALL_delta penetrado. Capa onírica de NEXUS descubierta. Explora los bucles en /var/log/nexus_dreams.log."
+  }
+}

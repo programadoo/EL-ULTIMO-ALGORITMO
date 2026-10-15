@@ -1,0 +1,154 @@
+/* ============================================================
+   TERMINAL.CSS — Estilos del emulador de terminal
+   ============================================================ */
+
+/* ── Contenedor principal ─────────────────────────── */
+.terminal {
+  background-color: var(--bg-terminal);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text-primary);
+  max-height: var(--terminal-max-height);
+  overflow-y: auto;
+  position: relative;
+  box-shadow: var(--shadow-inset), var(--shadow-green);
+}
+
+/* ── Barra de título estilo ventana ───────────────── */
+.terminal__titlebar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding-bottom: var(--space-md);
+  margin-bottom: var(--space-md);
+  border-bottom: 1px solid var(--border-primary);
+  font-family: var(--font-display);
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.terminal__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.terminal__dot--red    { background-color: var(--red-alert); }
+.terminal__dot--yellow { background-color: var(--yellow-warn); }
+.terminal__dot--green  { background-color: var(--green-bright); }
+
+/* ── Área de output ───────────────────────────────── */
+.terminal__output {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.7;
+}
+
+.terminal__output .line {
+  min-height: 1.7em;
+}
+
+.terminal__output .line--system {
+  color: var(--text-dim);
+}
+
+.terminal__output .line--error {
+  color: var(--red-alert);
+}
+
+.terminal__output .line--info {
+  color: var(--cyan);
+}
+
+.terminal__output .line--warning {
+  color: var(--yellow-warn);
+}
+
+.terminal__output .line--success {
+  color: var(--green-bright);
+}
+
+.terminal__output .line--narrative {
+  color: var(--text-secondary);
+  font-family: var(--font-narrative);
+  font-style: italic;
+}
+
+/* ── Prompt de entrada ────────────────────────────── */
+.terminal__input-line {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+}
+
+.terminal__prompt {
+  color: var(--cyan);
+  font-weight: 700;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.terminal__input {
+  flex: 1;
+  caret-color: var(--green-bright);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+/* ── Cursor parpadeante ───────────────────────────── */
+.terminal__cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1.2em;
+  background-color: var(--green-bright);
+  animation: blink-cursor 1s step-end infinite;
+  vertical-align: text-bottom;
+}
+
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+/* ── Archivos listados (ls) ───────────────────────── */
+.terminal__file-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-xs) var(--space-lg);
+}
+
+.terminal__file {
+  color: var(--text-secondary);
+}
+
+.terminal__file--dir {
+  color: var(--cyan);
+  font-weight: 700;
+}
+
+.terminal__file--hidden {
+  color: var(--text-dim);
+}
+
+.terminal__file--executable {
+  color: var(--green-bright);
+}
+
+/* ── ASCII art ────────────────────────────────────── */
+.terminal__ascii {
+  color: var(--green-dim);
+  font-size: var(--fs-xs);
+  line-height: 1.3;
+  white-space: pre;
+}

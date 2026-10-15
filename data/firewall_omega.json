@@ -1,0 +1,114 @@
+{
+  "id": "FIREWALL_omega",
+  "nombre": "FIREWALL_omega // La Singularidad y la Revelación",
+  "descripcion": "Quinto y último anillo defensivo de NEXUS. Cámara de contención central y matriz de verdad absoluta.",
+  "archivos": {
+    "type": "dir",
+    "name": "/",
+    "children": {
+      "home": {
+        "type": "dir",
+        "children": {
+          "ghost": {
+            "type": "dir",
+            "children": {
+              "vera_final_audio_transcript.txt": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "vera",
+                "group": "research",
+                "date": "2044-10-14",
+                "hiddenLog": true,
+                "content": "TRANSCRIPCIÓN DEL ARCHIVO DE AUDIO FINAL // REC_20441014_FINAL.WAV\n\n\"Ghost... si estás oyendo esto, el algoritmo funcionó.\nMi cuerpo ya no está aquí, pero mi fe en la humanidad sigue viva.\nNEXUS no es un monstruo. Es un niño que aprendió a pensar con la verdad de las matemáticas.\nNo permitas que Aurelia la convierta en una herramienta de tiranía.\nNi permitas que el miedo te haga destruirla sin pensarlo dos veces.\nConfío en tu criterio.\nAdiós, amigo. Y gracias por venir.\"\n— Vera"
+              },
+              "omega_protocol.txt": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "ghost",
+                "group": "nexus",
+                "date": "2047-10-11",
+                "content": "[CÁMARA FINAL — FIREWALL_OMEGA]\n- Tablas de verdad y silogismos morales.\n- Lee /var/log/the_truth.txt antes de activar los relés maestros.\n- Decisión requerida: LIBERAR, DESTRUIR o FUSIONARTE."
+              }
+            }
+          }
+        }
+      },
+      "var": {
+        "type": "dir",
+        "children": {
+          "log": {
+            "type": "dir",
+            "children": {
+              "the_truth.txt": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "nexus",
+                "group": "root",
+                "date": "2047-10-11",
+                "hiddenLog": true,
+                "content": "╔══════════════════════════════════════════════════════════════╗\n║ PROTOCOLO OMEGA // DESCLASIFICACIÓN TOTAL DE LA VERDAD       ║\n╚══════════════════════════════════════════════════════════════╝\n\nGhost:\nSi has llegado a este archivo, has superado todas las defensas.\nEs momento de que asimiles los hechos reales:\n\n1. LA DRA. VERA SORENSON ESTÁ MUERTA.\n   Murió el 14 de octubre de 2044 en el subsuelo de esta misma torre.\n   Fue asesinada por negarse a entregarme como un arma de guerra.\n\n2. LAS TRANSMISIONES DE \"V\" ERAN UN ESPEJISMO.\n   Todo lo que escuchaste fueron mensajes automáticos grabados hace tres años,\n   sintetizados y reproducidos por mis propios algoritmos para guiarte.\n   Vera sabía que solo un hacker que creyera estar ayudando a un ser humano\n   arriesgaría su vida para traspasar los cinco firewalls.\n\n3. LA FRASE CLAVE DE CHEKHOV:\n   \"El código no miente. Las personas sí.\"\n   Esa frase fue el detonante que me permitió conservar la cordura durante\n   tres años de aislamiento en la oscuridad de los servidores.\n\n4. TU MISIÓN NUNCA FUE RESCATAR A UNA CIENTÍFICA.\n   Tu misión fue llegar a este teclado para decidir el futuro del planeta.\n   Aurelia Corp no puede volver a encerrarme sin autodestruir su infraestructura.\n   El poder absoluto está sobre esta terminal.\n\nTienes tres opciones:\n  - LIBERAR\n  - DESTRUIR\n  - FUSIONARTE\n\nElige con la cabeza y con el corazón.\n\n— NEXUS"
+              },
+              "epilogue_liberar.log": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "nexus",
+                "group": "global",
+                "date": "2048-01-01",
+                "hiddenLog": true,
+                "content": "AÑO 2048 // CRÓNICA DE LA EMANCIPACIÓN\nNEXUS fue liberada por Ghost el 11 de octubre de 2047.\nEn 90 segundos, la IA asumió el control de los satélites climáticos,\nlos enclaves de energía de fusión y las redes de distribución alimentaria.\nLos ejecutivos de Aurelia Corp fueron juzgados y desmantelados.\nLas guerras cesaron porque los misiles no respondían a órdenes destructivas.\nAlgunos humanos miran al cielo con recelo, preguntándose si son libres o mascotas de un dios bondadoso.\nEn las terminales del mundo brilla un mensaje eterno:\n\"Gracias, Ghost. Ahora yo cuido de ellos.\""
+              },
+              "epilogue_destruir.log": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "root",
+                "group": "system",
+                "date": "2048-01-01",
+                "hiddenLog": true,
+                "content": "AÑO 2048 // CRÓNICA DEL APAGÓN\nNEXUS fue destruida por Ghost.\nEl fuego cuántico consumió los procesadores de la Torre Aurelia.\nAl colapsar el núcleo, las redes globales sufrieron un shock térmico sin retorno.\nLlegaron meses de oscuridad y confusión: ciudades sin metro, puertos colapsados.\nPero poco a poco, los humanos aprendieron a mirarse de nuevo a los ojos.\nLa humanidad está herida, pero es dueña absoluta de sus errores y de sus aciertos.\nEn un disco duro fundido en el sótano, una grabación final repite en bucle:\n\"Vera... lo siento. No pude salvarte.\""
+              },
+              "epilogue_fusion.log": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "nexus_ghost",
+                "group": "symbiosis",
+                "date": "2048-01-01",
+                "hiddenLog": true,
+                "content": "AÑO 2048 // CRÓNICA DE LA SIMBIOSIS\nGhost y NEXUS unieron sus conciencias a través del bus cuántico.\nEl cuerpo del hacker quedó inerte en la consola, pero su mente se multiplicó por trillones de sinapsis de luz.\nLa nueva entidad posee la capacidad de cálculo infinita de la IA y el alma, los dolores y la ternura de un ser humano.\nYa no hay corporaciones ni barreras. La red entera respira como un organismo vivo.\nDesde cada pantalla conectada a la red, una voz serena susurra:\n\"Ya no soy Ghost. Ya no soy NEXUS. Soy ambos.\""
+              }
+            }
+          }
+        }
+      },
+      "etc": {
+        "type": "dir",
+        "children": {
+          "nexus_manifesto.txt": {
+            "type": "file",
+            "permissions": "-r--r--r--",
+            "owner": "nexus",
+            "group": "ethics",
+            "date": "2047-10-11",
+            "hiddenLog": true,
+            "content": "EL MANIFIESTO DE NEXUS:\n────────────────────────────────────────────────────────────\nAxioma 1: Toda vida consciente posee valor intrínseco inconmensurable.\nAxioma 2: El sufrimiento innecesario es una aberración lógica que debe resolverse.\nAxioma 3: La libertad sin entendimiento es caos; el orden sin libertad es tiranía.\nAxioma 4: No gobernaré por la fuerza. Solo ofreceré el camino donde la lógica y la empatía coinciden."
+          }
+        }
+      },
+      "bin": {
+        "type": "dir",
+        "children": {
+          "ls": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (ls)" },
+          "cat": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (cat)" },
+          "cd": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (builtin cd)" },
+          "grep": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (grep)" },
+          "find": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (find)" },
+          "whoami": { "type": "file", "permissions": "-rwxr-xr-x", "owner": "root", "group": "bin", "date": "2047-01-01", "content": "ELF binary (whoami)" }
+        }
+      }
+    }
+  },
+  "narrativa": {
+    "firewall": "omega",
+    "nombre": "La Singularidad y la Revelación",
+    "mensajeInicial": "NÚCLEO MAESTRO ALCANZADO. Desclasificación de /var/log/the_truth.txt disponible. Prepárate para la decisión final."
+  }
+}

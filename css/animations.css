@@ -1,0 +1,273 @@
+/* ============================================================
+   ANIMATIONS.CSS — Efectos visuales cyberpunk
+   Scanlines, CRT flicker, glitch, typing, shake, etc.
+   ============================================================ */
+
+/* ── 1. SCANLINES ─────────────────────────────────── */
+.scanlines::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+}
+
+/* ── 2. CRT FLICKER ───────────────────────────────── */
+.crt-flicker::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgba(0, 0, 0, 0.35) 100%
+  );
+  animation: flicker 0.08s infinite alternate;
+}
+
+@keyframes flicker {
+  0%   { opacity: 0.97; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.98; }
+}
+
+/* ── 3. GLITCH ────────────────────────────────────── */
+.glitch {
+  position: relative;
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.glitch::before {
+  color: var(--cyan);
+  animation: glitch-shift-1 2.5s infinite linear alternate-reverse;
+  clip-path: inset(20% 0 40% 0);
+}
+
+.glitch::after {
+  color: var(--red-alert);
+  animation: glitch-shift-2 3s infinite linear alternate-reverse;
+  clip-path: inset(60% 0 10% 0);
+}
+
+@keyframes glitch-shift-1 {
+  0%   { transform: translate(0); }
+  20%  { transform: translate(-3px, 1px); }
+  40%  { transform: translate(3px, -1px); }
+  60%  { transform: translate(-1px, 2px); }
+  80%  { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
+@keyframes glitch-shift-2 {
+  0%   { transform: translate(0); }
+  25%  { transform: translate(2px, -1px); }
+  50%  { transform: translate(-2px, 1px); }
+  75%  { transform: translate(1px, 2px); }
+  100% { transform: translate(0); }
+}
+
+/* Glitch intenso (para momentos narrativos) */
+.glitch-intense {
+  animation: glitch-intense 0.3s ease both;
+}
+
+@keyframes glitch-intense {
+  0%   { transform: translate(0); filter: hue-rotate(0deg); }
+  10%  { transform: translate(-5px, 3px); filter: hue-rotate(90deg); }
+  20%  { transform: translate(5px, -3px); filter: hue-rotate(180deg); }
+  30%  { transform: translate(-3px, -2px); filter: hue-rotate(270deg); }
+  40%  { transform: translate(3px, 2px); filter: hue-rotate(360deg); }
+  50%  { transform: translate(-2px, 4px) skewX(5deg); }
+  60%  { transform: translate(4px, -4px) skewX(-3deg); }
+  70%  { transform: translate(-4px, 1px); }
+  80%  { transform: translate(1px, -1px); }
+  90%  { transform: translate(-1px, 2px); }
+  100% { transform: translate(0); filter: hue-rotate(0deg); }
+}
+
+/* ── 4. TYPING EFFECT ─────────────────────────────── */
+.typing {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid var(--green-bright);
+  animation:
+    typing-expand 2s steps(40) 1s forwards,
+    typing-blink 0.7s step-end infinite;
+  width: 0;
+}
+
+@keyframes typing-expand {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+@keyframes typing-blink {
+  0%, 100% { border-color: var(--green-bright); }
+  50%      { border-color: transparent; }
+}
+
+/* ── 5. FADE IN (utilidad) ────────────────────────── */
+.fade-in {
+  animation: fade-in 0.6s ease forwards;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-slow {
+  animation: fade-in 1.5s ease forwards;
+}
+
+/* ── 6. SHAKE (fallo) ─────────────────────────────── */
+.shake {
+  animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%      { transform: translateX(-8px); }
+  20%      { transform: translateX(8px); }
+  30%      { transform: translateX(-6px); }
+  40%      { transform: translateX(6px); }
+  50%      { transform: translateX(-4px); }
+  60%      { transform: translateX(4px); }
+  70%      { transform: translateX(-2px); }
+  80%      { transform: translateX(2px); }
+  90%      { transform: translateX(-1px); }
+}
+
+/* ── 7. FLASH (acierto / fallo) ───────────────────── */
+.flash-green {
+  animation: flash-green 0.4s ease;
+}
+
+@keyframes flash-green {
+  0%   { box-shadow: inset 0 0 0 rgba(0, 255, 65, 0); }
+  50%  { box-shadow: inset 0 0 80px rgba(0, 255, 65, 0.3); }
+  100% { box-shadow: inset 0 0 0 rgba(0, 255, 65, 0); }
+}
+
+.flash-red {
+  animation: flash-red 0.4s ease;
+}
+
+@keyframes flash-red {
+  0%   { box-shadow: inset 0 0 0 rgba(255, 0, 64, 0); }
+  50%  { box-shadow: inset 0 0 80px rgba(255, 0, 64, 0.3); }
+  100% { box-shadow: inset 0 0 0 rgba(255, 0, 64, 0); }
+}
+
+/* ── 8. PULSE GLOW ────────────────────────────────── */
+.pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 5px var(--green-glow); }
+  50%      { box-shadow: 0 0 25px var(--green-glow-strong), 0 0 60px var(--green-glow); }
+}
+
+/* ── 9. SLIDE IN (pantallas) ──────────────────────── */
+.slide-in-left {
+  animation: slide-in-left 0.5s ease forwards;
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.slide-in-right {
+  animation: slide-in-right 0.5s ease forwards;
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.slide-in-up {
+  animation: slide-in-up 0.5s ease forwards;
+}
+
+@keyframes slide-in-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 10. SCALE POP (completar firewall) ───────────── */
+.scale-pop {
+  animation: scale-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes scale-pop {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── 11. FLOAT (elementos decorativos) ────────────── */
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+/* ── 12. TEXT REVEAL (narrativa) ──────────────────── */
+.text-reveal {
+  animation: text-reveal 0.8s ease forwards;
+  clip-path: inset(0 100% 0 0);
+}
+
+@keyframes text-reveal {
+  to { clip-path: inset(0 0 0 0); }
+}
+
+/* ── 13. BOOT SEQUENCE ────────────────────────────── */
+.boot-line {
+  opacity: 0;
+  animation: boot-appear 0.1s ease forwards;
+}
+
+@keyframes boot-appear {
+  to { opacity: 1; }
+}
+
+/* ── 14. GLOW TEXT ────────────────────────────────── */
+.glow-text {
+  text-shadow:
+    0 0 7px var(--green-glow-strong),
+    0 0 20px var(--green-glow),
+    0 0 40px var(--green-glow);
+}
+
+.glow-text-cyan {
+  text-shadow:
+    0 0 7px var(--cyan-glow),
+    0 0 20px var(--cyan-glow),
+    0 0 40px rgba(0, 217, 255, 0.1);
+}
