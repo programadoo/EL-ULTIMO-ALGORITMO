@@ -7,6 +7,7 @@
  */
 
 import { audio } from '../audio.js';
+import { particulas } from './particulas.js';
 
 // Contenedor persistente de notificaciones flotantes (toasts)
 let toastContainer = null;
@@ -180,10 +181,12 @@ export function showFeedbackToast({ titulo, mensaje = '', tipo = 'info', duracio
  * Notificación rápida de acierto / resolución de puzzle.
  * @param {number} puntos
  * @param {string} [mensaje]
+ * @param {object} [coords]
  */
-export function feedbackSuccess(puntos = 100, mensaje = 'Autenticación superada con éxito') {
+export function feedbackSuccess(puntos = 100, mensaje = 'Autenticación superada con éxito', coords = null) {
   flashScreen('green', 300);
   audio.playSuccess();
+  particulas.emitSuccess(coords?.x, coords?.y);
   showFeedbackToast({
     titulo: `+${puntos} PTS // NODO DESBLOQUEADO`,
     mensaje,
@@ -195,11 +198,13 @@ export function feedbackSuccess(puntos = 100, mensaje = 'Autenticación superada
  * Notificación rápida de fallo / daño de integridad.
  * @param {number} [integridadPerdida=20]
  * @param {string} [mensaje]
+ * @param {object} [coords]
  */
-export function feedbackError(integridadPerdida = 20, mensaje = 'Fallo de autenticación detectado por el centinela') {
+export function feedbackError(integridadPerdida = 20, mensaje = 'Fallo de autenticación detectado por el centinela', coords = null) {
   shakeScreen(450);
   flashScreen('red', 400);
   audio.playError();
+  particulas.emitError(coords?.x, coords?.y);
   showFeedbackToast({
     titulo: `-${integridadPerdida}% INTEGRIDAD // ALERTA`,
     mensaje,
@@ -208,19 +213,29 @@ export function feedbackError(integridadPerdida = 20, mensaje = 'Fallo de autent
 }
 
 /**
- * Notificación de log oculto hallado.
+ * Notificación de log oculto hallado (Prompt 11 playUnlock & Prompt 13 emitBinarySmoke).
  * @param {string} nombreLog
  * @param {string} fragmento
+ * @param {object} [coords]
  */
-export function feedbackLogUnlocked(nombreLog, fragmento = '') {
+export function feedbackLogUnlocked(nombreLog, fragmento = '', coords = null) {
   flashScreen('cyan', 400);
-  audio.playSuccess();
+  audio.playUnlock();
+  particulas.emitBinarySmoke(coords?.x, coords?.y);
   showFeedbackToast({
     titulo: `LOG DESCLASIFICADO: ${nombreLog} (+200 PTS)`,
     mensaje: fragmento || 'Nuevo documento de inteligencia recuperado de la memoria central.',
     tipo: 'log',
     duracion: 5000
   });
+}
+
+/**
+ * Efecto de pantalla completa para cuando se vulnera un firewall completo.
+ */
+export function feedbackFirewallBreach() {
+  audio.playFirewallComplete();
+  particulas.emitFirewallBreach();
 }
 
 /**
@@ -244,6 +259,7 @@ export function testFeedback() {
   assert(typeof feedbackSuccess === 'function', 'feedbackSuccess debe ser una función');
   assert(typeof feedbackError === 'function', 'feedbackError debe ser una función');
   assert(typeof feedbackLogUnlocked === 'function', 'feedbackLogUnlocked debe ser una función');
+  assert(typeof feedbackFirewallBreach === 'function', 'feedbackFirewallBreach debe ser una función');
 
   const fallados = total - pasados;
   if (fallados === 0) {

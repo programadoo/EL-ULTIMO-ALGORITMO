@@ -12,6 +12,8 @@
 import { Logica } from '../logica.js';
 import { registerCorrect, registerWrong } from '../state.js';
 import { elegirAlAzar, mezclar } from './generador.js';
+import { feedbackSuccess, feedbackError } from '../ui/feedback.js';
+import { audio } from '../audio.js';
 
 // ─────────────────────────────────────────────────
 // 1. EXPRESIONES POR NIVEL
@@ -126,6 +128,7 @@ function detenerTimer() {
     clearInterval(timerInterval);
     timerInterval = null;
   }
+  audio.updateTension({ timer: null });
 }
 
 function formatearTiempo(s) {
@@ -214,6 +217,7 @@ export function abrirPuzzleTipoD(nivel = 1, onCompletado = null) {
     timerInterval = setInterval(() => {
       segundosRestantes--;
       elTimer.textContent = formatearTiempo(segundosRestantes);
+      audio.updateTension({ timer: segundosRestantes });
       if (segundosRestantes <= 10) elTimer.classList.add('critical');
       if (segundosRestantes <= 0) {
         detenerTimer();
@@ -329,9 +333,17 @@ function verificarTabla() {
 
   const timeMs = Date.now() - tiempoInicio;
 
+  const rect = (btnVerificar && typeof btnVerificar.getBoundingClientRect === 'function')
+    ? btnVerificar.getBoundingClientRect()
+    : null;
+  const coords = rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : null;
+
   if (todosCorrecto) {
     const pts = registerCorrect({ timeMs, usedHint: false });
     puzzleActual._puntosObtenidos = pts;
+
+    feedbackSuccess(pts, puzzleActual.explicacion, coords);
+
     if (elFeedback) {
       elFeedback.className = 'puzzle__feedback puzzle__feedback--correct visible';
       elFeedback.innerHTML = `
@@ -343,6 +355,9 @@ function verificarTabla() {
     const gameOver = registerWrong();
     puzzleActual._puntosObtenidos = 0;
     puzzleActual._isGameOver = gameOver;
+
+    feedbackError(20, puzzleActual.explicacion, coords);
+
     if (elFeedback) {
       elFeedback.className = 'puzzle__feedback puzzle__feedback--incorrect visible';
       elFeedback.innerHTML = `

@@ -7,6 +7,7 @@
  */
 
 import { COMMANDS, parseArgs } from './commands.js';
+import { audio } from './audio.js';
 
 // ─────────────────────────────────────────────────
 // 1. SISTEMA DE ARCHIVOS VIRTUAL (VFS)
@@ -497,6 +498,9 @@ export class TerminalEmulator {
       return;
     }
 
+    // Sonido de procesamiento de comando (Prompt 11 / Spec 1.2)
+    audio.playCommandProcessing();
+
     // Registrar en el historial si no es idéntico al último
     if (this.history[this.history.length - 1] !== input) {
       this.history.push(input);
@@ -557,6 +561,7 @@ export class TerminalEmulator {
     // 1. ENTER: Ejecutar comando
     if (e.key === 'Enter') {
       e.preventDefault();
+      audio.playEnter();
       const val = this.dom.input.value;
       this.dom.input.value = '';
       this.executeCommand(val);

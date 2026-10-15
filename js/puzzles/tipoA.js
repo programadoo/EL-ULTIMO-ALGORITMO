@@ -8,6 +8,8 @@
 
 import { generarPuzzleConjuntos } from './generador.js';
 import { registerCorrect, registerWrong, getState } from '../state.js';
+import { feedbackSuccess, feedbackError } from '../ui/feedback.js';
+import { audio } from '../audio.js';
 
 let timerInterval = null;
 let puzzleActual = null;
@@ -22,6 +24,7 @@ function detenerTimer() {
     clearInterval(timerInterval);
     timerInterval = null;
   }
+  audio.updateTension({ timer: null });
 }
 
 /**
@@ -128,6 +131,7 @@ export function abrirPuzzleTipoA(nivel = 1, onCompletado = null) {
     timerInterval = setInterval(() => {
       segundosRestantes--;
       elTimer.textContent = formatearTiempo(segundosRestantes);
+      audio.updateTension({ timer: segundosRestantes });
 
       if (segundosRestantes <= 10) {
         elTimer.classList.add('critical');
@@ -166,12 +170,20 @@ function procesarRespuesta(botonSeleccionado, opcionTexto) {
   const timeMs = Date.now() - tiempoInicio;
   puzzleActual._respondidoCorrecto = esCorrecto;
 
+  const rect = (botonSeleccionado && typeof botonSeleccionado.getBoundingClientRect === 'function')
+    ? botonSeleccionado.getBoundingClientRect()
+    : null;
+  const coords = rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : null;
+
   if (esCorrecto) {
     botonSeleccionado.classList.add('correct');
 
     // Registrar acierto en el estado global
     const pts = registerCorrect({ timeMs, usedHint: false });
     puzzleActual._puntosObtenidos = pts;
+
+    // Disparar feedback sonoro y partículas (Prompt 11 & 13)
+    feedbackSuccess(pts, puzzleActual.explicacion, coords);
 
     if (elFeedback) {
       elFeedback.className = 'puzzle__feedback puzzle__feedback--correct visible';
@@ -197,6 +209,9 @@ function procesarRespuesta(botonSeleccionado, opcionTexto) {
     const gameOver = registerWrong();
     puzzleActual._puntosObtenidos = 0;
     puzzleActual._isGameOver = gameOver;
+
+    // Disparar feedback de error sonoro y partículas glitch (Prompt 11 & 13)
+    feedbackError(20, puzzleActual.explicacion, coords);
 
     if (elFeedback) {
       elFeedback.className = 'puzzle__feedback puzzle__feedback--incorrect visible';

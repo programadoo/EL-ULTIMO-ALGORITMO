@@ -100,4 +100,113 @@
   /* ── Dimensiones del HUD ────────────────────────── */
   --hud-width:        280px;
   --terminal-max-height: 70vh;
+
+  /* ── Tokens dinámicos de firewall (Prompt 14) ───── */
+  --fw-primary:        #00ff41;
+  --fw-secondary:      #00c832;
+  --fw-accent:         #39ff14;
+  --fw-glow:           rgba(0, 255, 65, 0.35);
+  --fw-glow-strong:    rgba(0, 255, 65, 0.65);
+  --fw-border:         rgba(0, 255, 65, 0.25);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   PROMPT 14: PALETAS DINÁMICAS POR FIREWALL (Transición de 1.5s)
+   ══════════════════════════════════════════════════════════════ */
+
+/* Transición suave global de 1.5 segundos entre paletas */
+body,
+.terminal,
+.hud__section,
+.hud__value,
+.puzzle,
+.menu-btn,
+.terminal__prompt,
+.integrity-bar__fill,
+.hud__pill--current {
+  transition: color 1.5s ease-in-out,
+              background-color 1.5s ease-in-out,
+              border-color 1.5s ease-in-out,
+              box-shadow 1.5s ease-in-out,
+              text-shadow 1.5s ease-in-out;
+}
+
+/* Firewall 1: Verde brillante (Inicio, curiosidad) */
+body.theme-firewall-1 {
+  --green-bright:      #00ff41;
+  --green-mid:         #00c832;
+  --green-glow:        rgba(0, 255, 65, 0.25);
+  --green-glow-strong: rgba(0, 255, 65, 0.45);
+  --text-primary:      #00ff41;
+  --border-primary:    rgba(0, 255, 65, 0.25);
+  --border-active:     #00ff41;
+  --shadow-green:      0 0 12px rgba(0, 255, 65, 0.35), 0 0 45px rgba(0, 255, 65, 0.12);
+  --fw-primary:        #00ff41;
+  --fw-secondary:      #00c832;
+  --fw-accent:         #39ff14;
+}
+
+/* Firewall 2: Verde + Ámbar (Tensión) */
+body.theme-firewall-2 {
+  --green-bright:      #00e575;
+  --green-mid:         #ffb000;
+  --green-glow:        rgba(255, 176, 0, 0.25);
+  --green-glow-strong: rgba(255, 176, 0, 0.50);
+  --text-primary:      #00e575;
+  --text-secondary:    #ffd680;
+  --border-primary:    rgba(255, 176, 0, 0.30);
+  --border-active:     #ffb000;
+  --shadow-green:      0 0 12px rgba(255, 176, 0, 0.35), 0 0 45px rgba(0, 229, 117, 0.15);
+  --fw-primary:        #00e575;
+  --fw-secondary:      #ffb000;
+  --fw-accent:         #ffd24d;
+}
+
+/* Firewall 3: Verde + Violeta (Misterio) */
+body.theme-firewall-3 {
+  --green-bright:      #00e5a3;
+  --green-mid:         #bd00ff;
+  --green-glow:        rgba(189, 0, 255, 0.28);
+  --green-glow-strong: rgba(189, 0, 255, 0.55);
+  --text-primary:      #00e5a3;
+  --text-secondary:    #d999ff;
+  --border-primary:    rgba(189, 0, 255, 0.35);
+  --border-active:     #bd00ff;
+  --shadow-green:      0 0 14px rgba(189, 0, 255, 0.40), 0 0 50px rgba(0, 229, 163, 0.18);
+  --fw-primary:        #00e5a3;
+  --fw-secondary:      #bd00ff;
+  --fw-accent:         #e280ff;
+}
+
+/* Firewall 4: Ámbar + Rojo (Peligro) */
+body.theme-firewall-4 {
+  --green-bright:      #ff9900;
+  --green-mid:         #ff2a2a;
+  --green-glow:        rgba(255, 42, 42, 0.30);
+  --green-glow-strong: rgba(255, 42, 42, 0.60);
+  --text-primary:      #ff9900;
+  --text-secondary:    #ff8080;
+  --border-primary:    rgba(255, 42, 42, 0.38);
+  --border-active:     #ff2a2a;
+  --shadow-green:      0 0 14px rgba(255, 42, 42, 0.42), 0 0 50px rgba(255, 153, 0, 0.20);
+  --fw-primary:        #ff9900;
+  --fw-secondary:      #ff2a2a;
+  --fw-accent:         #ff6666;
+}
+
+/* Firewall 5: Rojo + Blanco + Azul (Épico, Revelación) */
+body.theme-firewall-5 {
+  --green-bright:      #ff1744;
+  --green-mid:         #00d9ff;
+  --green-glow:        rgba(255, 23, 68, 0.35);
+  --green-glow-strong: rgba(0, 217, 255, 0.60);
+  --text-primary:      #ff3366;
+  --text-secondary:    #e0f7ff;
+  --border-primary:    rgba(0, 217, 255, 0.40);
+  --border-active:     #ff1744;
+  --shadow-green:      0 0 16px rgba(255, 23, 68, 0.45), 0 0 60px rgba(0, 217, 255, 0.25);
+  --fw-primary:        #ff1744;
+  --fw-secondary:      #00d9ff;
+  --fw-accent:         #ffffff;
+}
+

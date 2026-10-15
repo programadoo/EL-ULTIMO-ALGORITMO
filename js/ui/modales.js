@@ -6,7 +6,7 @@
  * ══════════════════════════════════════════════════
  */
 
-import { audio } from '../audio.js';
+import { audio, speechEngine } from '../audio.js';
 import { resetState } from '../state.js';
 
 let activeModalOverlay = null;
@@ -170,6 +170,7 @@ export function mostrarModal({ titulo, cuerpoHTML, botones = [], onCerrar = null
  * Cierra el modal activo.
  */
 export function cerrarModal() {
+  speechEngine.stop();
   if (activeModalOverlay) {
     activeModalOverlay.style.opacity = '0';
     activeModalOverlay.style.pointerEvents = 'none';
@@ -187,6 +188,7 @@ export function abrirConfiguracion() {
   const crtActivo = document.body.classList.contains('crt-flicker');
   const scanlinesActivo = document.body.classList.contains('scanlines');
   const muted = audio.isMuted();
+  const voiceEnabled = speechEngine.isVoiceEnabled();
 
   const cuerpoHTML = `
     <div style="font-family: var(--font-mono); font-size: 13px;">
@@ -199,6 +201,13 @@ export function abrirConfiguracion() {
           <span>AUDIO & EFECTOS SONOROS</span>
           <button id="toggle-opt-sound" class="puzzle__opcion" style="padding: 4px 14px; font-size: 11px;">
             ${muted ? '🔇 SILENCIADO' : '🔊 ACTIVADO'}
+          </button>
+        </label>
+
+        <label style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-primary); border-radius: 4px;">
+          <span>VOZ SINTETIZADA (NEXUS / VERA)</span>
+          <button id="toggle-opt-voice" class="puzzle__opcion" style="padding: 4px 14px; font-size: 11px;">
+            ${voiceEnabled ? '🎙️ ACTIVADA' : '○ DESACTIVADA'}
           </button>
         </label>
 
@@ -249,6 +258,17 @@ export function abrirConfiguracion() {
     btnSound.onclick = () => {
       const isMuted = audio.toggleMute();
       btnSound.textContent = isMuted ? '🔇 SILENCIADO' : '🔊 ACTIVADO';
+    };
+  }
+
+  const btnVoice = document.getElementById('toggle-opt-voice');
+  if (btnVoice) {
+    btnVoice.onclick = () => {
+      const isVoiceOn = speechEngine.toggleVoice();
+      btnVoice.textContent = isVoiceOn ? '🎙️ ACTIVADA' : '○ DESACTIVADA';
+      if (isVoiceOn) {
+        speechEngine.speakNexus('Voz de terminal activada.');
+      }
     };
   }
 
@@ -304,6 +324,12 @@ ${contenido}
     titulo: `VISOR DE INTELIGENCIA // ${nombreArchivo}`,
     cuerpoHTML,
     botones: [
+      {
+        label: '🎙️ TRANSMISIÓN DE VOZ (VERA)',
+        onClick: () => {
+          speechEngine.speakVera(contenido);
+        }
+      },
       { label: 'CERRAR ARCHIVO', onClick: cerrarModal }
     ]
   });

@@ -12,6 +12,8 @@
 import { Logica } from '../logica.js';
 import { registerCorrect, registerWrong } from '../state.js';
 import { elegirAlAzar, mezclar } from './generador.js';
+import { feedbackSuccess, feedbackError } from '../ui/feedback.js';
+import { audio } from '../audio.js';
 
 // ─────────────────────────────────────────────────
 // 1. BANCO DE PLANTILLAS DE EXPRESIONES
@@ -148,6 +150,7 @@ function detenerTimer() {
     clearInterval(timerInterval);
     timerInterval = null;
   }
+  audio.updateTension({ timer: null });
 }
 
 function formatearTiempo(s) {
@@ -240,6 +243,7 @@ export function abrirPuzzleTipoB(nivel = 1, onCompletado = null) {
     timerInterval = setInterval(() => {
       segundosRestantes--;
       elTimer.textContent = formatearTiempo(segundosRestantes);
+      audio.updateTension({ timer: segundosRestantes });
       if (segundosRestantes <= 10) elTimer.classList.add('critical');
       if (segundosRestantes <= 0) {
         detenerTimer();
@@ -296,10 +300,18 @@ function procesarRespuestaB(botonSeleccionado, opcionTexto) {
   const timeMs = Date.now() - tiempoInicio;
   puzzleActual._respondidoCorrecto = esCorrecto;
 
+  const rect = (botonSeleccionado && typeof botonSeleccionado.getBoundingClientRect === 'function')
+    ? botonSeleccionado.getBoundingClientRect()
+    : null;
+  const coords = rect ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : null;
+
   if (esCorrecto) {
     botonSeleccionado.classList.add('correct');
     const pts = registerCorrect({ timeMs, usedHint: false });
     puzzleActual._puntosObtenidos = pts;
+
+    feedbackSuccess(pts, puzzleActual.explicacion, coords);
+
     if (elFeedback) {
       elFeedback.className = 'puzzle__feedback puzzle__feedback--correct visible';
       elFeedback.innerHTML = `
@@ -317,6 +329,9 @@ function procesarRespuestaB(botonSeleccionado, opcionTexto) {
     const gameOver = registerWrong();
     puzzleActual._puntosObtenidos = 0;
     puzzleActual._isGameOver = gameOver;
+
+    feedbackError(20, puzzleActual.explicacion, coords);
+
     if (elFeedback) {
       elFeedback.className = 'puzzle__feedback puzzle__feedback--incorrect visible';
       elFeedback.innerHTML = `

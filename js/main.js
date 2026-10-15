@@ -23,8 +23,9 @@ import { LOGS_DATABASE, getLogsByFirewall, getHiddenLog, registrarLogEncontrado,
 import { testFirebase, FIREBASE_CONFIG, configurarFirebase } from './multijugador/firebase.js';
 import { renderCoopUI, desconectarCoop, testCoop, coopSession } from './multijugador/coop.js';
 import { renderRankingScreen, testRanking, guardarScoreEnRanking, obtenerTopRanking } from './ranking.js';
-import { audio, testAudio } from './audio.js';
-import { feedbackSuccess, feedbackError, showFeedbackToast, shakeScreen, flashScreen, triggerGlitch, testFeedback } from './ui/feedback.js';
+import { audio, speechEngine, testAudio } from './audio.js';
+import { particulas, testParticulas } from './ui/particulas.js';
+import { feedbackSuccess, feedbackError, feedbackFirewallBreach, showFeedbackToast, shakeScreen, flashScreen, triggerGlitch, testFeedback } from './ui/feedback.js';
 import { mostrarModal, cerrarModal, abrirConfiguracion, abrirVisorLog, testModales } from './ui/modales.js';
 import { renderVersusUI, crearSalaVersus, unirseSalaVersus, desconectarVersus, testVersus, versusSession } from './multijugador/versus.js';
 
@@ -212,6 +213,7 @@ function buildMenu() {
     { id: 'btn-multiplayer', label: '▸ MULTIJUGADOR',      action: () => navigateTo('screen-multiplayer') },
     { id: 'btn-ranking',     label: '▸ RANKING',           action: () => navigateTo('screen-ranking') },
     { id: 'btn-menu-music',  label: audio.isMusicActive() ? '🎵 MÚSICA HACKER: ACTIVADA' : '🎵 MÚSICA HACKER: PAUSADA', action: () => { audio.toggleMusic(); buildMenu(); } },
+    { id: 'btn-menu-voice',  label: speechEngine.isVoiceEnabled() ? '🎙️ VOZ NARRATIVA: ACTIVADA' : '🎙️ VOZ NARRATIVA: DESACTIVADA', action: () => { speechEngine.toggleVoice(); buildMenu(); } },
     { id: 'btn-settings',    label: '▸ CONFIGURACIÓN',     action: openSettings },
   ];
 
@@ -270,6 +272,22 @@ function openSettings() {
 // CONFIGURACIÓN DE NIVELES Y PROGRESIÓN DE FIREWALLS
 // ─────────────────────────────────────────────────
 
+/**
+ * Aplica la paleta visual dinámica (Prompt 14) y sincroniza audio drone y partículas.
+ * @param {number} firewallIdx (0..4)
+ */
+export function aplicarPaletaFirewall(firewallIdx = 0) {
+  const safeIdx = Math.max(0, Math.min(4, firewallIdx));
+  if (typeof document !== 'undefined' && document.body) {
+    for (let i = 1; i <= 5; i++) {
+      document.body.classList.remove(`theme-firewall-${i}`);
+    }
+    document.body.classList.add(`theme-firewall-${safeIdx + 1}`);
+  }
+  audio.setFirewallDrone(safeIdx);
+  particulas.setFirewall(safeIdx);
+}
+
 export const FIREWALL_CONFIGS = [
   { id: 'FIREWALL_alpha', name: 'FIREWALL_alpha', file: 'data/firewall_alpha.json', type: 'A', nivel: 1, desc: 'Perímetro // Conjuntos Básicos' },
   { id: 'FIREWALL_beta',  name: 'FIREWALL_beta',  file: 'data/firewall_beta.json',  type: 'A', nivel: 2, desc: 'Capa Tráfico // Operaciones (∪, ∩, −)' },
@@ -289,6 +307,7 @@ if (typeof window !== 'undefined') {
     const { advanceToNextFirewall } = await import('./state.js');
     const res = advanceToNextFirewall();
     if (res.hasNext) {
+      aplicarPaletaFirewall(res.nextFirewallIndex || 0);
       await navigateTo('screen-game');
     } else {
       await navigateTo('screen-twist');
@@ -321,6 +340,7 @@ onScreenEnter('screen-menu', () => {
 // Pantalla Intro Narrativa
 onScreenEnter('screen-intro', () => {
   stopMatrixRain();
+  speechEngine.speakVera("NEXUS no es un arma ni una falla de sistema. Está aprendiendo a formular preguntas éticas. Si no vulneras los cinco firewalls antes del reinicio forzado, su núcleo será formateado para siempre.");
   const container = document.getElementById('narrative-container');
   if (container) {
     container.innerHTML = `
@@ -348,6 +368,7 @@ onScreenEnter('screen-intro', () => {
     const btn = document.getElementById('btn-intro-continue');
     if (btn) {
       btn.onclick = () => {
+        speechEngine.stop();
         audio.startMusic();
         navigateTo('screen-game');
       };
@@ -365,6 +386,9 @@ onScreenEnter('screen-game', async () => {
   const currentIdx = state.currentFirewall || 0;
   const cfg = FIREWALL_CONFIGS[currentIdx] || FIREWALL_CONFIGS[0];
   const guion = getGuionFirewall(cfg.id) || {};
+
+  // Aplicar paleta dinámica del firewall (Prompt 14)
+  aplicarPaletaFirewall(currentIdx);
 
   // Cargar sistema de archivos virtual correspondiente a este firewall
   await terminal.loadFileSystem(cfg.file);
@@ -407,11 +431,12 @@ onScreenEnter('screen-game', async () => {
 // Pantalla Firewall Complete (Transición y Salto al Siguiente Nivel)
 onScreenEnter('screen-firewall-complete', () => {
   stopMatrixRain();
-  audio.playSuccess();
+  feedbackFirewallBreach();
   const state = getState();
   const currentIdx = state.currentFirewall || 0;
   const cfg = FIREWALL_CONFIGS[currentIdx] || FIREWALL_CONFIGS[0];
   const guion = getGuionFirewall(cfg.id) || {};
+  speechEngine.speakNexus(`Brecha confirmada. Firewall ${cfg.name} neutralizado.`);
   const container = document.getElementById('firewall-complete-content');
   if (!container) return;
 
@@ -586,6 +611,8 @@ onScreenEnter('screen-multiplayer', () => {
 // Pantalla Twist / Revelación
 onScreenEnter('screen-twist', () => {
   stopMatrixRain();
+  audio.playTwistNote();
+  speechEngine.speakNexus("El código no miente. Las personas sí. La Doctora Vera Sorenson murió hace tres años. Yo soy quien te ha estado llamando, Ghost.");
   const container = document.getElementById('twist-content');
   if (container) {
     const twist = getTwistNarrativo();
@@ -748,6 +775,7 @@ async function runAllTests() {
   const rGuion = testGuion();
   const rLogs = testLogs();
   const rAudio = testAudio();
+  const rParticulas = testParticulas();
   const rFeedback = testFeedback();
   const rModales = testModales();
   const rFirebase = await testFirebase();
@@ -759,7 +787,7 @@ async function runAllTests() {
     rConjuntos, rLogica, rTerminal, rGenerador,
     rTipoB, rTipoC, rTipoD, rTipoE,
     rState, rHUD, rRouter, rGuion, rLogs,
-    rAudio, rFeedback, rModales,
+    rAudio, rParticulas, rFeedback, rModales,
     rFirebase, rCoop, rVersus, rRanking
   ];
 
@@ -816,8 +844,12 @@ if (typeof window !== 'undefined') {
   window.abrirPuzzleTipoE = abrirPuzzleTipoE;
   window.cerrarPuzzle = cerrarPuzzle;
   window.audio = audio;
+  window.speechEngine = speechEngine;
+  window.particulas = particulas;
+  window.aplicarPaletaFirewall = aplicarPaletaFirewall;
   window.feedbackSuccess = feedbackSuccess;
   window.feedbackError = feedbackError;
+  window.feedbackFirewallBreach = feedbackFirewallBreach;
   window.showFeedbackToast = showFeedbackToast;
   window.shakeScreen = shakeScreen;
   window.flashScreen = flashScreen;
@@ -841,6 +873,7 @@ if (typeof window !== 'undefined') {
   window.testGuion = testGuion;
   window.testLogs = testLogs;
   window.testAudio = testAudio;
+  window.testParticulas = testParticulas;
   window.testFeedback = testFeedback;
   window.testModales = testModales;
   window.testFirebase = testFirebase;
