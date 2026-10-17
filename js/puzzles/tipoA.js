@@ -82,8 +82,33 @@ export function abrirPuzzleTipoA(nivel = 1, onCompletado = null) {
   }
   elEnunciado.innerHTML = puzzleActual.enunciado;
 
-  // Inyectar el diagrama de Venn en SVG
-  elBody.innerHTML = puzzleActual.svg;
+  // Inyectar el diagrama de Venn en SVG y guía paso a paso para los primeros 2 puzzles (Prompt 15)
+  const state = getState();
+  const currentFw = state.currentFirewall || 0;
+  const subnodo = state.puzzlesSolvedInFirewall || 0;
+  let guiaTutorialHTML = '';
+
+  if (currentFw === 0 && subnodo === 0) {
+    guiaTutorialHTML = `
+      <div style="background: rgba(0, 255, 65, 0.08); border-left: 3px solid var(--green-bright); padding: 10px 14px; margin-bottom: 12px; font-family: var(--font-mono); font-size: 11px; color: var(--text-primary); text-align: left; border-radius: 2px;">
+        <strong style="color: var(--green-bright); font-size: 11px; letter-spacing: 0.05em;">💡 TUTORIAL PASO A PASO // GUÍA 1 DE 2:</strong><br>
+        ▸ <strong>Paso 1:</strong> Lee el enunciado y observa los números ubicados en cada región de los círculos.<br>
+        ▸ <strong>Paso 2:</strong> Si la operación es <strong>(A ∩ B)</strong>, busca los números que comparten ambos círculos en el centro.<br>
+        ▸ <strong>Paso 3:</strong> Haz clic en el botón de abajo con el conjunto exacto para descifrar el subnodo.
+      </div>
+    `;
+  } else if (currentFw === 0 && subnodo === 1) {
+    guiaTutorialHTML = `
+      <div style="background: rgba(0, 229, 255, 0.08); border-left: 3px solid var(--cyan); padding: 10px 14px; margin-bottom: 12px; font-family: var(--font-mono); font-size: 11px; color: var(--text-primary); text-align: left; border-radius: 2px;">
+        <strong style="color: var(--cyan); font-size: 11px; letter-spacing: 0.05em;">💡 TUTORIAL PASO A PASO // GUÍA 2 DE 2:</strong><br>
+        ▸ <strong>Paso 1:</strong> Atención a operaciones de diferencia: <strong>(A − B)</strong> son elementos que están en A pero NO en B.<br>
+        ▸ <strong>Paso 2:</strong> Descarta las opciones que incluyan números del otro círculo o de la zona central.<br>
+        ▸ <strong>Paso 3:</strong> Al resolver este y el siguiente subnodo, ¡vulnerarás completamente el Firewall Alpha!
+      </div>
+    `;
+  }
+
+  elBody.innerHTML = guiaTutorialHTML + puzzleActual.svg;
 
   // Limpiar y resetear feedback y botón siguiente
   if (elFeedback) {
@@ -122,20 +147,25 @@ export function abrirPuzzleTipoA(nivel = 1, onCompletado = null) {
     elOpciones.appendChild(btn);
   });
 
-  // Iniciar cuenta regresiva
+  // Iniciar cuenta regresiva (oculta en Modo Ghost Protocol - Prompt 19)
   let segundosRestantes = puzzleActual.tiempoLimite || 75;
+  const isGhost = !!getState().isGhostProtocol;
+
   if (elTimer) {
-    elTimer.textContent = formatearTiempo(segundosRestantes);
+    elTimer.textContent = isGhost ? '⏱️ [OCULTO]' : formatearTiempo(segundosRestantes);
     elTimer.classList.remove('critical');
 
     timerInterval = setInterval(() => {
       segundosRestantes--;
-      elTimer.textContent = formatearTiempo(segundosRestantes);
-      audio.updateTension({ timer: segundosRestantes });
-
-      if (segundosRestantes <= 10) {
-        elTimer.classList.add('critical');
+      if (isGhost) {
+        elTimer.textContent = '⏱️ [OCULTO]';
+      } else {
+        elTimer.textContent = formatearTiempo(segundosRestantes);
+        if (segundosRestantes <= 10) {
+          elTimer.classList.add('critical');
+        }
       }
+      audio.updateTension({ timer: segundosRestantes });
 
       if (segundosRestantes <= 0) {
         detenerTimer();
@@ -214,10 +244,17 @@ function procesarRespuesta(botonSeleccionado, opcionTexto) {
     feedbackError(20, puzzleActual.explicacion, coords);
 
     if (elFeedback) {
+      const curFailures = getState().consecutiveFailures || 0;
       elFeedback.className = 'puzzle__feedback puzzle__feedback--incorrect visible';
       elFeedback.innerHTML = `
         <strong>✖ FALLO DE SEGURIDAD // INTEGRIDAD REDUCIDA (-20%)</strong><br>
         <span>${puzzleActual.explicacion}</span>
+        ${curFailures >= 2 ? `
+          <div style="margin-top: 10px; padding: 8px 12px; background: rgba(255,184,0,0.12); border: 1px solid var(--yellow-warn); border-radius: 4px; color: var(--yellow-warn); font-size: 11px; text-align: left;">
+            <strong>💡 PISTA AUTOMÁTICA DEL SISTEMA (2 fallos consecutivos):</strong><br>
+            Identifica primero qué números están en la región compartida central (intersección) y descarta las respuestas que los mezclen erróneamente.
+          </div>
+        ` : ''}
         ${gameOver ? '<br><strong style="color:var(--red-alert)">[ALERTA CRÍTICA] ¡Integridad en 0%! Sistema bloqueado.</strong>' : ''}
       `;
     }

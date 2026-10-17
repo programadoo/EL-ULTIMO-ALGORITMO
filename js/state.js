@@ -65,6 +65,17 @@ export function createDefaultState() {
     hints: 3,
     skips: 1,
 
+    // Detección de fallos seguidos (Prompt 15 / Spec 4.3)
+    consecutiveFailures: 0,
+
+    // Estadísticas de sesión y perfil (Prompt 17)
+    commandsCount: 0,
+    puzzlesAttempted: 0,
+    puzzlesCorrect: 0,
+    puzzlesFailed: 0,
+    maxStreak: 0,
+    wordsDecrypted: 0,
+
     // Narrativa
     logsFound: [],             // ['vera.txt', 'aurelia_internal.log', ...]
     decisionsHistory: [],      // Decisiones del jugador
@@ -74,6 +85,7 @@ export function createDefaultState() {
     playerName: 'Ghost',
     startedAt: null,
     totalTime: 0,             // segundos jugados
+    isGhostProtocol: false,   // Modo Ghost Protocol (Prompt 19 / Spec 4.1)
 
     // Configuración
     settings: {
@@ -151,6 +163,10 @@ function notifyListeners(prev, next) {
 export function saveToStorage() {
   try {
     storageAdapter.setItem(STORAGE_KEY, JSON.stringify(state));
+    // Indicador visual discreto de guardado automático (Prompt 20 / Spec 5.5)
+    if (typeof window !== 'undefined' && typeof window.mostrarIndicadorGuardado === 'function') {
+      window.mostrarIndicadorGuardado();
+    }
   } catch (e) {
     console.warn('[State] No se pudo guardar en almacenamiento:', e);
   }
@@ -221,12 +237,17 @@ export function registerCorrect({ timeMs = Infinity, usedHint = false } = {}) {
   else if (newStreak >= 3) multiplier = 1.5;
 
   const total = Math.round(points * multiplier);
+  const maxStreak = Math.max(state.maxStreak || 0, newStreak);
 
   update({
     score: state.score + total,
     streak: newStreak,
     multiplier,
     highScore: Math.max(state.highScore, state.score + total),
+    consecutiveFailures: 0,
+    puzzlesAttempted: (state.puzzlesAttempted || 0) + 1,
+    puzzlesCorrect: (state.puzzlesCorrect || 0) + 1,
+    maxStreak
   });
 
   return total;
@@ -235,15 +256,21 @@ export function registerCorrect({ timeMs = Infinity, usedHint = false } = {}) {
 /**
  * Registra un fallo. Resta integridad (-20%) y puntos (-50).
  * Reinicia la racha y el multiplicador a 1.
+ * Incrementa consecutiveFailures para activar pistas automáticas (Prompt 15).
  * @returns {boolean} true si la integridad llegó a 0 (game over)
  */
 export function registerWrong() {
   const newIntegrity = Math.max(0, state.integrity - 20);
+  const failures = (state.consecutiveFailures || 0) + 1;
+
   update({
     score: Math.max(0, state.score - 50),
     streak: 0,
     multiplier: 1,
     integrity: newIntegrity,
+    consecutiveFailures: failures,
+    puzzlesAttempted: (state.puzzlesAttempted || 0) + 1,
+    puzzlesFailed: (state.puzzlesFailed || 0) + 1
   });
   return newIntegrity <= 0;
 }
@@ -397,7 +424,8 @@ export function advanceToNextFirewall() {
  * @param {number} [amount=20]
  */
 export function healIntegrity(amount = 20) {
-  const newIntegrity = Math.min(100, state.integrity + amount);
+  const maxIntegrity = state.isGhostProtocol ? 50 : 100;
+  const newIntegrity = Math.min(maxIntegrity, state.integrity + amount);
   update({ integrity: newIntegrity });
 }
 
@@ -410,6 +438,47 @@ export function addScore(points) {
   update({
     score: newScore,
     highScore: Math.max(state.highScore, newScore)
+  });
+}
+
+/**
+ * Comprueba si el Modo Ghost Protocol ha sido desbloqueado.
+ * @returns {boolean}
+ */
+export function isGhostProtocolUnlocked() {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      return localStorage.getItem('nexus_ghost_protocol_unlocked') === 'true';
+    }
+  } catch (_) {}
+  return false;
+}
+
+/**
+ * Desbloquea el Modo Ghost Protocol tras completar la campaña.
+ */
+export function unlockGhostProtocol() {
+  try {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('nexus_ghost_protocol_unlocked', 'true');
+    }
+  } catch (_) {}
+}
+
+/**
+ * Inicia una partida en Modo Ghost Protocol (Prompt 19 / Spec 4.1).
+ * - Sin timer visible
+ * - Sin pistas (0 pistas disponibles)
+ * - Integridad inicial reducida a 50
+ * - Dificultad extrema de puzzles
+ */
+export function startGhostProtocolMode() {
+  resetState();
+  update({
+    isGhostProtocol: true,
+    integrity: 50,
+    hints: 0,
+    skips: 0
   });
 }
 

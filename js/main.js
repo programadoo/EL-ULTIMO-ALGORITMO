@@ -7,7 +7,7 @@
  */
 
 import { navigateTo, showImmediate, onScreenEnter, testRouter } from './router.js';
-import { hasSave, loadFromStorage, resetState, getState, testState } from './state.js';
+import { hasSave, loadFromStorage, resetState, getState, testState, isGhostProtocolUnlocked, unlockGhostProtocol, startGhostProtocolMode } from './state.js';
 import { Conjuntos, testConjuntos } from './conjuntos.js';
 import { Logica, testLogica } from './logica.js';
 import { terminal, testTerminal } from './terminal.js';
@@ -28,6 +28,10 @@ import { particulas, testParticulas } from './ui/particulas.js';
 import { feedbackSuccess, feedbackError, feedbackFirewallBreach, showFeedbackToast, shakeScreen, flashScreen, triggerGlitch, testFeedback } from './ui/feedback.js';
 import { mostrarModal, cerrarModal, abrirConfiguracion, abrirVisorLog, testModales } from './ui/modales.js';
 import { renderVersusUI, crearSalaVersus, unirseSalaVersus, desconectarVersus, testVersus, versusSession } from './multijugador/versus.js';
+import { logrosManager, testLogros } from './meta/logros.js';
+import { statsManager, testStats } from './meta/stats.js';
+import { secretosManager, testSecretos } from './meta/secretos.js';
+import { initPolish, testPolish, mostrarIndicadorGuardado } from './ui/polish.js';
 
 // ─────────────────────────────────────────────────
 // 1. BOOT SEQUENCE
@@ -206,14 +210,17 @@ function buildMenu() {
   nav.innerHTML = '';
 
   const savedGame = hasSave();
+  const isGhostUnlocked = isGhostProtocolUnlocked();
 
   const buttons = [
     { id: 'btn-new-game',    label: '▸ NUEVA PARTIDA',     action: startNewGame },
     { id: 'btn-continue',    label: '▸ CONTINUAR',         action: continueGame, disabled: !savedGame },
+    { id: 'btn-ghost-protocol', label: isGhostUnlocked ? '👻 MODO GHOST PROTOCOL (EXPERTO)' : '🔒 GHOST PROTOCOL (COMPLETA LA CAMPAÑA)', action: startGhostProtocolGame, disabled: !isGhostUnlocked },
     { id: 'btn-multiplayer', label: '▸ MULTIJUGADOR',      action: () => navigateTo('screen-multiplayer') },
     { id: 'btn-ranking',     label: '▸ RANKING',           action: () => navigateTo('screen-ranking') },
     { id: 'btn-menu-music',  label: audio.isMusicActive() ? '🎵 MÚSICA HACKER: ACTIVADA' : '🎵 MÚSICA HACKER: PAUSADA', action: () => { audio.toggleMusic(); buildMenu(); } },
-    { id: 'btn-menu-voice',  label: speechEngine.isVoiceEnabled() ? '🎙️ VOZ NARRATIVA: ACTIVADA' : '🎙️ VOZ NARRATIVA: DESACTIVADA', action: () => { speechEngine.toggleVoice(); buildMenu(); } },
+    { id: 'btn-menu-logros', label: `🏆 LOGROS (${logrosManager.getDesbloqueadosCount()}/20)`, action: () => navigateTo('screen-logros') },
+    { id: 'btn-menu-stats',  label: '📊 ESTADÍSTICAS DEL OPERADOR', action: () => navigateTo('screen-stats') },
     { id: 'btn-settings',    label: '▸ CONFIGURACIÓN',     action: openSettings },
   ];
 
@@ -254,6 +261,14 @@ function startNewGame() {
   stopMatrixRain();
   audio.startMusic();
   navigateTo('screen-intro');
+}
+
+function startGhostProtocolGame() {
+  startGhostProtocolMode();
+  stopMatrixRain();
+  audio.startMusic();
+  aplicarPaletaFirewall(0);
+  navigateTo('screen-game');
 }
 
 function continueGame() {
@@ -412,14 +427,36 @@ onScreenEnter('screen-game', async () => {
     }
 
     const solved = state.puzzlesSolvedInFirewall || 0;
-    terminal.print('╔══════════════════════════════════════════════════════════════╗', 'line--success');
-    terminal.print('║ GUÍA DE MISIÓN // CÓMO PASAR DE NIVEL:                       ║', 'line--success');
-    terminal.print(`║ 1. Escribe 'hack' para descifrar sub-nodos lógicos (${solved}/3).     ║`, 'line--info');
-    terminal.print(`║ 2. Explora con 'ls' y lee documentos con 'cat <archivo>'.    ║`, 'line--info');
-    terminal.print(`║ 3. Escribe 'status' para ver tu progreso hacia la brecha.    ║`, 'line--info');
-    terminal.print(`║ 4. Escribe 'music' para controlar la banda sonora cyberpunk. ║`, 'line--info');
-    terminal.print('╚══════════════════════════════════════════════════════════════╝', 'line--success');
-    terminal.print('');
+
+    if (state.isGhostProtocol) {
+      terminal.print('╔══════════════════════════════════════════════════════════════╗', 'line--error');
+      terminal.print('║ 👻 [GHOST PROTOCOL ACTIVADO] // INFILTRACIÓN COGNITIVA PURA  ║', 'line--error');
+      terminal.print('║ - Temporizadores neuronales: OCULTOS                         ║', 'line--warning');
+      terminal.print('║ - Pistas y saltos: DESACTIVADOS (0 disponibles)              ║', 'line--warning');
+      terminal.print('║ - Integridad base: 50% (Crítica)                             ║', 'line--warning');
+      terminal.print('╚══════════════════════════════════════════════════════════════╝', 'line--error');
+      terminal.print('');
+    }
+
+    if (currentIdx === 0) {
+      terminal.print('╔══════════════════════════════════════════════════════════════╗', 'line--warning');
+      terminal.print('║ [NEXUS PROTOCOL] // INICIACIÓN: MECÁNICA BÁSICA              ║', 'line--warning');
+      terminal.print('╠══════════════════════════════════════════════════════════════╣', 'line--system');
+      terminal.print('║ 1. LEER     : Analiza la regla lógica del nodo y archivos.   ║', 'line--info');
+      terminal.print(`║ 2. RESOLVER : Escribe 'hack' para descifrar subnodos (${solved}/3).   ║`, 'line--info');
+      terminal.print('║ 3. AVANZAR  : Resuelve 3 subnodos para quebrar el firewall.  ║', 'line--info');
+      terminal.print('╚══════════════════════════════════════════════════════════════╝', 'line--warning');
+      terminal.print('');
+    } else {
+      terminal.print('╔══════════════════════════════════════════════════════════════╗', 'line--success');
+      terminal.print('║ GUÍA DE MISIÓN // CÓMO PASAR DE NIVEL:                       ║', 'line--success');
+      terminal.print(`║ 1. Escribe 'hack' para descifrar sub-nodos lógicos (${solved}/3).     ║`, 'line--info');
+      terminal.print(`║ 2. Explora con 'ls' y lee documentos con 'cat <archivo>'.    ║`, 'line--info');
+      terminal.print(`║ 3. Escribe 'status' para ver tu progreso hacia la brecha.    ║`, 'line--info');
+      terminal.print(`║ 4. Escribe 'music' para controlar la banda sonora cyberpunk. ║`, 'line--info');
+      terminal.print('╚══════════════════════════════════════════════════════════════╝', 'line--success');
+      terminal.print('');
+    }
   }
 
   const input = document.getElementById('terminal-input');
@@ -486,19 +523,28 @@ onScreenEnter('screen-firewall-complete', () => {
       </div>
 
       <div style="display: flex; gap: 14px; justify-content: center;">
-        <button id="btn-next-firewall-action" class="menu-btn" style="width: auto; padding: 12px 36px; font-size: 14px; background: rgba(0,255,65,0.12); border-color: var(--green-bright); color: var(--green-bright);">
-          ${isLast ? 'ACCEDER AL NÚCLEO CENTRAL // REVELACIÓN FINAL ▸' : `▸ INFILTRARSE AL SIGUIENTE NODO: ${nextCfg.name}`}
+        <button id="btn-next-firewall" class="menu-btn" style="width: auto; padding: 12px 36px; font-size: 14px; background: rgba(0,255,65,0.12); border-color: var(--green-bright); color: var(--green-bright); cursor: pointer;">
+          ${isLast ? 'ACCEDER AL NÚCLEO CENTRAL // REVELACIÓN FINAL ▸' : `▸ SIGUIENTE FIREWALL: ${nextCfg.name} [ENTER]`}
         </button>
       </div>
     </div>
   `;
 
-  const btnAction = document.getElementById('btn-next-firewall-action');
-  if (btnAction) {
-    btnAction.onclick = () => {
+  const btnNext = document.getElementById('btn-next-firewall');
+  if (btnNext) {
+    btnNext.onclick = () => {
       window.__avanzarSiguienteFirewall();
     };
   }
+
+  // Atajo de teclado: presionar [ENTER] avanza al siguiente firewall
+  const handleKeyAdvance = (e) => {
+    if (e.key === 'Enter' || e.keyCode === 13) {
+      window.removeEventListener('keydown', handleKeyAdvance);
+      window.__avanzarSiguienteFirewall();
+    }
+  };
+  window.addEventListener('keydown', handleKeyAdvance);
 });
 
 // Pantalla Ranking (Top 3 Firestore con Animaciones)
@@ -608,6 +654,19 @@ onScreenEnter('screen-multiplayer', () => {
   renderCoopUI();
 });
 
+// Pantalla Logros (Prompt 16)
+onScreenEnter('screen-logros', () => {
+  stopMatrixRain();
+  logrosManager.renderPantalla('logros-content');
+});
+
+// Pantalla Estadísticas del Jugador (Prompt 17)
+onScreenEnter('screen-stats', () => {
+  stopMatrixRain();
+  statsManager.finalizarSesion(getState());
+  statsManager.renderPantalla('stats-content');
+});
+
 // Pantalla Twist / Revelación
 onScreenEnter('screen-twist', () => {
   stopMatrixRain();
@@ -709,6 +768,21 @@ function ejecutarDecisionFinal(decisionId) {
     registrarLogEncontrado(dec.logDesbloqueado);
   }
 
+  // Desbloquear Modo Ghost Protocol para futuras partidas (Prompt 19)
+  unlockGhostProtocol();
+
+  const isGhostRun = !!getState().isGhostProtocol;
+  if (isGhostRun) {
+    logrosManager.desbloquear('ghost_protocol');
+  }
+
+  // Registrar decisión final en estadísticas y logros (Prompt 16 y 17)
+  statsManager.registrarFinal(decisionId);
+  logrosManager.verificar('decision_final', {
+    decisionId,
+    finalesVistos: statsManager.getPerfil().finalesVistos
+  });
+
   const grid = document.getElementById('decision-cards-grid');
   if (grid) grid.style.display = 'none';
 
@@ -725,14 +799,40 @@ function ejecutarDecisionFinal(decisionId) {
       <p style="font-family: var(--font-narrative); font-size: var(--fs-md); line-height: 1.8; color: var(--text-primary); margin-bottom: var(--space-xl);">
         ${dec.resultado}
       </p>
+
+      ${isGhostRun ? `
+        <div style="background: rgba(0, 229, 255, 0.08); border: 1px solid var(--cyan); border-radius: var(--radius-md); padding: 16px 20px; margin-bottom: var(--space-xl); font-family: var(--font-narrative); color: var(--cyan); text-align: left;">
+          <h4 style="font-family: var(--font-mono); margin-bottom: 8px; color: var(--cyan); font-weight: bold; font-size: 13px;">
+            📡 [TRANSMISIÓN RESIDUAL CONFIDENCIAL // PROTOCOLO FANTASMA SUPERADO]
+          </h4>
+          <p style="line-height: 1.7; font-size: 13px; font-style: italic; color: #bdf6ff;">
+            "Ghost... si estás leyendo esto, sobreviviste a la prueba sin interfaces de apoyo. Sabías que no había cronómetros para salvarte ni pistas a las que recurrir. El experimento de Aurelia no era para contener a NEXUS, sino para encontrar a una mente humana capaz de pensar en sincronía con ella. Tú eres el nuevo estándar. —Dra. Vera Sorenson."
+          </p>
+          <div style="margin-top: 8px; font-size: 11px; font-family: var(--font-mono); color: var(--green-bright); font-weight: bold;">
+            🏆 Logro especial desbloqueado: Protocolo Fantasma
+          </div>
+        </div>
+      ` : ''}
+
       <div style="background: rgba(0, 255, 65, 0.05); border-left: 3px solid var(--green-bright); padding: 12px 18px; margin-bottom: var(--space-xl); font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--green-bright);">
         ◈ Log desclasificado registrado en el sistema: <strong>${dec.logDesbloqueado}</strong> (+200 PTS)
       </div>
-      <div style="display: flex; gap: var(--space-md); justify-content: center;">
+      <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
+        <button class="menu-btn" id="btn-epilogue-stats" style="width: auto; padding: 12px 24px; border-color: var(--cyan); color: var(--cyan);">📊 ESTADÍSTICAS DEL OPERADOR</button>
+        <button class="menu-btn" id="btn-epilogue-logros" style="width: auto; padding: 12px 24px; border-color: var(--yellow-warn); color: var(--yellow-warn);">🏆 VER LOGROS</button>
         <button class="menu-btn" id="btn-epilogue-ranking" style="width: auto; padding: 12px 24px;">VER RANKING GLOBAL</button>
         <button class="menu-btn" id="btn-epilogue-menu" style="width: auto; padding: 12px 24px;">VOLVER AL MENÚ PRINCIPAL</button>
       </div>
     `;
+
+    const btnStats = document.getElementById('btn-epilogue-stats');
+    if (btnStats) btnStats.onclick = () => {
+      statsManager.finalizarSesion(getState());
+      navigateTo('screen-stats');
+    };
+
+    const btnLogros = document.getElementById('btn-epilogue-logros');
+    if (btnLogros) btnLogros.onclick = () => navigateTo('screen-logros');
 
     const btnRank = document.getElementById('btn-epilogue-ranking');
     if (btnRank) btnRank.onclick = () => navigateTo('screen-ranking');
@@ -782,13 +882,18 @@ async function runAllTests() {
   const rCoop = await testCoop();
   const rVersus = await testVersus();
   const rRanking = await testRanking();
+  const rLogros = testLogros();
+  const rStats = testStats();
+  const rSecretos = testSecretos();
+  const rPolish = testPolish();
 
   const testList = [
     rConjuntos, rLogica, rTerminal, rGenerador,
     rTipoB, rTipoC, rTipoD, rTipoE,
     rState, rHUD, rRouter, rGuion, rLogs,
     rAudio, rParticulas, rFeedback, rModales,
-    rFirebase, rCoop, rVersus, rRanking
+    rFirebase, rCoop, rVersus, rRanking,
+    rLogros, rStats, rSecretos, rPolish
   ];
 
   const total = testList.reduce((acc, t) => acc + (t ? t.total || 0 : 0), 0);
@@ -796,7 +901,7 @@ async function runAllTests() {
   const fallados = testList.reduce((acc, t) => acc + (t ? t.fallados || 0 : 0), 0);
 
   if (fallados === 0) {
-    console.log(`%c✔ [TODOS LOS TESTS PASARON] ${pasados}/${total} assertions correctas sin errores en 20 suites.`, 'color: #00ff41; font-weight: bold;');
+    console.log(`%c✔ [TODOS LOS TESTS PASARON] ${pasados}/${total} assertions correctas sin errores en 22 suites.`, 'color: #00ff41; font-weight: bold;');
   } else {
     console.error(`✖ [TESTS CON ERRORES] ${fallados} fallaron de ${total}.`);
   }
@@ -822,6 +927,10 @@ async function runAllTests() {
     coop: rCoop,
     versus: rVersus,
     ranking: rRanking,
+    logros: rLogros,
+    stats: rStats,
+    secretos: rSecretos,
+    polish: rPolish,
     total,
     pasados,
     fallados
@@ -899,6 +1008,13 @@ if (typeof window !== 'undefined') {
   window.getTwistNarrativo = getTwistNarrativo;
   window.getDecisionFinal = getDecisionFinal;
   window.getHiddenLog = getHiddenLog;
+  window.logrosManager = logrosManager;
+  window.statsManager = statsManager;
+  window.secretosManager = secretosManager;
+  window.testSecretos = testSecretos;
+  window.initPolish = initPolish;
+  window.testPolish = testPolish;
+  window.mostrarIndicadorGuardado = mostrarIndicadorGuardado;
 }
 
 // ─────────────────────────────────────────────────
@@ -908,6 +1024,12 @@ if (typeof window !== 'undefined') {
 if (typeof document !== 'undefined') {
   document.addEventListener('DOMContentLoaded', async () => {
     console.log('[NEXUS] Iniciando El Último Algoritmo...');
+
+    // Inicializar secretos y meta-narrativa (Prompt 18)
+    secretosManager.init();
+
+    // Inicializar micro-detalles, hover audio y tooltips inteligentes (Prompt 20)
+    initPolish();
 
     // Reproducir sonido sutil de tecleo al interactuar con el teclado
     window.addEventListener('keydown', (e) => {

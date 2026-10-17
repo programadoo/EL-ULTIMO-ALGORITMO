@@ -1047,15 +1047,12 @@ class CyberpunkAudioEngine {
 
 export class CyberpunkSpeechEngine {
   constructor() {
-    this.enabled = true;
+    this.enabled = false; // Voz sintetizada desactivada permanentemente por solicitud del usuario
     try {
       if (typeof localStorage !== 'undefined') {
-        const val = localStorage.getItem('nexus_voice_enabled');
-        this.enabled = (val !== 'false');
+        localStorage.setItem('nexus_voice_enabled', 'false');
       }
-    } catch (_) {
-      this.enabled = true;
-    }
+    } catch (_) {}
   }
 
   isVoiceEnabled() {
@@ -1080,68 +1077,32 @@ export class CyberpunkSpeechEngine {
     }
   }
 
-  getVoiceForLang(lang = 'es') {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
-    try {
-      const voices = window.speechSynthesis.getVoices();
-      const esVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith(lang));
-      return esVoice || voices[0] || null;
-    } catch (_) {
-      return null;
-    }
+  getVoiceForLang() {
+    return null;
   }
 
   /**
-   * Voz de NEXUS: grave (pitch 0.6), lenta (rate 0.85), autoritaria
-   * @param {string} text
-   * @param {object} [options]
+   * Voz de NEXUS: Desactivada. Voz sintetizada eliminada.
    */
-  speakNexus(text, options = {}) {
-    if (!this.enabled || !text) return;
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    try {
-      this.stop();
-      const cleanText = text.replace(/<[^>]*>/g, '').replace(/[#*`_~]/g, '').trim();
-      const utter = new SpeechSynthesisUtterance(cleanText);
-      utter.lang = options.lang || 'es-ES';
-      utter.pitch = options.pitch ?? 0.6; // Grave y robótico
-      utter.rate = options.rate ?? 0.85;  // Lento y autoritario
-      utter.volume = options.volume ?? 0.9;
-      const voice = this.getVoiceForLang('es');
-      if (voice) utter.voice = voice;
-      window.speechSynthesis.speak(utter);
-    } catch (_) {}
+  speakNexus() {
+    // Voz sintetizada eliminada por solicitud (sonaba robótica e inadecuada)
+    this.stop();
   }
 
   /**
-   * Voz de Vera: pitch 1.05, rate 0.9, con efecto de transmisión de radio
-   * @param {string} text
-   * @param {object} [options]
+   * Voz de Vera: Solo emite el sutil efecto de radio-transmisión (beep / static) sin habla sintetizada.
    */
-  speakVera(text, options = {}) {
-    if (!this.enabled || !text) return;
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+  speakVera() {
+    this.stop();
     try {
-      this.stop();
       if (audio && typeof audio.playRadioBeep === 'function') {
         audio.playRadioBeep();
       }
       setTimeout(() => {
-        const cleanText = text.replace(/<[^>]*>/g, '').replace(/[#*`_~]/g, '').trim();
-        const utter = new SpeechSynthesisUtterance(cleanText);
-        utter.lang = options.lang || 'es-ES';
-        utter.pitch = options.pitch ?? 1.05; // Normal / femenino
-        utter.rate = options.rate ?? 0.90;   // Ligeramente pausado
-        utter.volume = options.volume ?? 0.85;
-        const voice = this.getVoiceForLang('es');
-        if (voice) utter.voice = voice;
-        utter.onend = () => {
-          if (audio && typeof audio.playRadioStaticEnd === 'function') {
-            audio.playRadioStaticEnd();
-          }
-        };
-        window.speechSynthesis.speak(utter);
-      }, 120);
+        if (audio && typeof audio.playRadioStaticEnd === 'function') {
+          audio.playRadioStaticEnd();
+        }
+      }, 350);
     } catch (_) {}
   }
 }

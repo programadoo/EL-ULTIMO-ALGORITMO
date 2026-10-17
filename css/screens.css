@@ -639,3 +639,85 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ═════════════════════════════════════════════════
+   INDICADOR DE GUARDADO AUTOMÁTICO (Prompt 20 / Spec 5.5)
+   ═════════════════════════════════════════════════ */
+#nexus-autosave-indicator {
+  position: fixed;
+  bottom: 18px;
+  right: 22px;
+  z-index: 9999;
+  background: rgba(10, 14, 10, 0.92);
+  border: 1px solid rgba(0, 255, 65, 0.45);
+  color: var(--green-bright);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 15px rgba(0, 255, 65, 0.25);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#nexus-autosave-indicator.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ═════════════════════════════════════════════════
+   TOOLTIPS INTELIGENTES (Prompt 20 / Spec 5.4)
+   ═════════════════════════════════════════════════ */
+#nexus-smart-tooltip {
+  position: fixed;
+  z-index: 10000;
+  max-width: 280px;
+  background: rgba(13, 17, 23, 0.96);
+  border: 1px solid var(--green-bright);
+  box-shadow: 0 0 15px var(--green-glow-strong), inset 0 0 8px rgba(0, 255, 65, 0.1);
+  border-radius: 4px;
+  padding: 8px 12px;
+  pointer-events: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+#nexus-smart-tooltip.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+#nexus-smart-tooltip .tooltip__header {
+  font-family: var(--font-display);
+  font-size: 10px;
+  color: var(--cyan);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 4px;
+  border-bottom: 1px dashed rgba(0, 229, 255, 0.3);
+  padding-bottom: 2px;
+}
+
+#nexus-smart-tooltip .tooltip__body {
+  color: var(--text-secondary);
+}
+
+#nexus-smart-tooltip.tooltip--mastered {
+  border-color: var(--cyan);
+  box-shadow: 0 0 15px var(--cyan-glow);
+}
+
+#nexus-smart-tooltip.tooltip--mastered .tooltip__header {
+  color: var(--green-bright);
+}

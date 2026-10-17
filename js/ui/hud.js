@@ -96,13 +96,13 @@ export function renderHUD(prevState, nextState) {
       ${generateProgressPillsHTML(currentIdx, nextState.firewallsCompleted)}
 
       <div style="margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.35); border: 1px solid var(--border-primary); border-radius: 4px;">
-        <div style="font-size: 11px; color: var(--text-dim); margin-bottom: 5px; display: flex; justify-content: space-between;">
-          <span>SEGURIDAD RESTANTE</span>
-          <strong style="color: var(--yellow-warn);">${solved} / ${req} RESUELTOS</strong>
+        <div style="font-size: 11px; color: var(--text-dim); margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: bold; letter-spacing: 0.05em; color: var(--cyan);">PUZZLES: ${solved}/${req}</span>
+          <strong style="color: var(--yellow-warn); font-size: 10px;">${solved >= req ? '✔ BRECHA LISTA' : `${req - solved} RESTANTE${req - solved > 1 ? 'S' : ''}`}</strong>
         </div>
-        <div style="display: flex; align-items: center;">${blocksHTML}</div>
-        <div style="font-size: 11px; color: var(--cyan); margin-top: 6px; line-height: 1.3;">
-          ${solved >= req ? '⚡ ¡FIREWALL VULNERADO! Avanzando...' : '▸ Escribe \'hack\' para el sig. subnodo'}
+        <div style="display: flex; align-items: center; margin-bottom: 6px;">${blocksHTML}</div>
+        <div style="font-size: 11px; color: var(--cyan); line-height: 1.3;">
+          ${solved >= req ? '⚡ ¡FIREWALL VULNERADO! Presiona [ENTER] o escribe \'next\'' : '▸ Escribe \'hack\' para el sig. subnodo'}
         </div>
       </div>
     `;
@@ -129,14 +129,20 @@ export function renderHUD(prevState, nextState) {
     if (integrity <= 40) fillClass += ' integrity-bar__fill--danger';
     else if (integrity <= 60) fillClass += ' integrity-bar__fill--warning';
 
+    const isGhost = !!nextState.isGhostProtocol;
+    const maxIntegrity = isGhost ? 50 : 100;
+    const integrityPercent = Math.min(100, Math.round((integrity / maxIntegrity) * 100));
+
     elIntegrity.innerHTML = `
-      <div class="hud__section-title">INTEGRIDAD DEL SISTEMA</div>
-      <div class="hud__value ${valClass}">${integrity}%</div>
+      <div class="hud__section-title" style="${isGhost ? 'color: #d154ff;' : ''}">
+        ${isGhost ? '👻 INTEGRIDAD GHOST PROTOCOL' : 'INTEGRIDAD DEL SISTEMA'}
+      </div>
+      <div class="hud__value ${valClass}">${integrity}% ${isGhost ? '<span style="font-size:11px; color:#aaa;">(MÁX 50)</span>' : ''}</div>
       <div class="integrity-bar">
-        <div class="${fillClass}" style="width: ${integrity}%;"></div>
+        <div class="${fillClass}" style="width: ${integrityPercent}%; ${isGhost ? 'background: linear-gradient(90deg, #b000ff, #ff0055);' : ''}"></div>
       </div>
       <div class="hud__subvalue" style="margin-top: 6px;">
-        ${integrity > 40 ? 'SISTEMA ESTABLE // ANILLO ACTIVO' : '¡ALERTA! RIESGO DE EXPULSIÓN'}
+        ${isGhost ? '⚠️ MODO GHOST ACTIVO // SIN PISTAS' : (integrity > 40 ? 'SISTEMA ESTABLE // ANILLO ACTIVO' : '¡ALERTA! RIESGO DE EXPULSIÓN')}
       </div>
     `;
   }
@@ -165,19 +171,20 @@ export function renderHUD(prevState, nextState) {
   // 5. Sección Comodines, Logs y Controlador de Música
   const elItems = document.getElementById('hud-items');
   if (elItems) {
-    const hints = nextState.hints ?? 0;
-    const skips = nextState.skips ?? 0;
+    const isGhost = !!nextState.isGhostProtocol;
+    const hints = isGhost ? 0 : (nextState.hints ?? 0);
+    const skips = isGhost ? 0 : (nextState.skips ?? 0);
     const logsCount = (nextState.logsFound || []).length;
     const isMusicOn = audio.isMusicActive();
 
     elItems.innerHTML = `
       <div class="hud__section-title">COMODINES // ACCIONES</div>
       <div class="hud__items-grid">
-        <button class="hud__item-btn" id="btn-hud-hint" ${hints <= 0 ? 'disabled' : ''} title="Usa 1 pista (-20 PTS)">
-          💡 Pista (${hints})
+        <button class="hud__item-btn" id="btn-hud-hint" ${hints <= 0 ? 'disabled' : ''} title="${isGhost ? 'Desactivado en Ghost Protocol' : 'Usa 1 pista (-20 PTS)'}">
+          ${isGhost ? '🚫 Sin pistas' : `💡 Pista (${hints})`}
         </button>
-        <button class="hud__item-btn" id="btn-hud-skip" ${skips <= 0 ? 'disabled' : ''} title="Salta este puzzle (-20 PTS)">
-          ⏭ Salto (${skips})
+        <button class="hud__item-btn" id="btn-hud-skip" ${skips <= 0 ? 'disabled' : ''} title="${isGhost ? 'Desactivado en Ghost Protocol' : 'Salta este puzzle (-20 PTS)'}">
+          ${isGhost ? '🚫 Sin saltos' : `⏭ Salto (${skips})`}
         </button>
       </div>
       <div class="hud__logs-count">

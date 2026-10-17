@@ -205,13 +205,6 @@ export function abrirConfiguracion() {
         </label>
 
         <label style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-primary); border-radius: 4px;">
-          <span>VOZ SINTETIZADA (NEXUS / VERA)</span>
-          <button id="toggle-opt-voice" class="puzzle__opcion" style="padding: 4px 14px; font-size: 11px;">
-            ${voiceEnabled ? '🎙️ ACTIVADA' : '○ DESACTIVADA'}
-          </button>
-        </label>
-
-        <label style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-primary); border-radius: 4px;">
           <span>DRONE AMBIENTAL DE FONDO</span>
           <button id="toggle-opt-ambient" class="puzzle__opcion" style="padding: 4px 14px; font-size: 11px;">
             ${audio.isAmbientPlaying ? '⚡ ACTIVO' : '○ APAGADO'}
@@ -258,17 +251,6 @@ export function abrirConfiguracion() {
     btnSound.onclick = () => {
       const isMuted = audio.toggleMute();
       btnSound.textContent = isMuted ? '🔇 SILENCIADO' : '🔊 ACTIVADO';
-    };
-  }
-
-  const btnVoice = document.getElementById('toggle-opt-voice');
-  if (btnVoice) {
-    btnVoice.onclick = () => {
-      const isVoiceOn = speechEngine.toggleVoice();
-      btnVoice.textContent = isVoiceOn ? '🎙️ ACTIVADA' : '○ DESACTIVADA';
-      if (isVoiceOn) {
-        speechEngine.speakNexus('Voz de terminal activada.');
-      }
     };
   }
 

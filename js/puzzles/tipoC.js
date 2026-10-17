@@ -9,7 +9,7 @@
  * ══════════════════════════════════════════════════
  */
 
-import { registerCorrect, registerWrong } from '../state.js';
+import { registerCorrect, registerWrong, getState } from '../state.js';
 import { elegirAlAzar, mezclar } from './generador.js';
 import { feedbackSuccess, feedbackError } from '../ui/feedback.js';
 import { audio } from '../audio.js';
@@ -277,16 +277,23 @@ export function abrirPuzzleTipoC(nivel = 1, onCompletado = null) {
     elOpciones.appendChild(btn);
   });
 
-  // Timer
+  // Timer (oculto en Ghost Protocol - Prompt 19)
   let segundosRestantes = puzzleActual.tiempoLimite || 80;
+  const isGhost = !!getState().isGhostProtocol;
+
   if (elTimer) {
-    elTimer.textContent = formatearTiempo(segundosRestantes);
+    elTimer.textContent = isGhost ? '⏱️ [OCULTO]' : formatearTiempo(segundosRestantes);
     elTimer.classList.remove('critical');
+
     timerInterval = setInterval(() => {
       segundosRestantes--;
-      elTimer.textContent = formatearTiempo(segundosRestantes);
+      if (isGhost) {
+        elTimer.textContent = '⏱️ [OCULTO]';
+      } else {
+        elTimer.textContent = formatearTiempo(segundosRestantes);
+        if (segundosRestantes <= 10) elTimer.classList.add('critical');
+      }
       audio.updateTension({ timer: segundosRestantes });
-      if (segundosRestantes <= 10) elTimer.classList.add('critical');
       if (segundosRestantes <= 0) {
         detenerTimer();
         procesarTiempoAgotadoC();

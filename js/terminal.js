@@ -8,6 +8,8 @@
 
 import { COMMANDS, parseArgs } from './commands.js';
 import { audio } from './audio.js';
+import { statsManager } from './meta/stats.js';
+import { logrosManager } from './meta/logros.js';
 
 // ─────────────────────────────────────────────────
 // 1. SISTEMA DE ARCHIVOS VIRTUAL (VFS)
@@ -520,6 +522,9 @@ export class TerminalEmulator {
     }
 
     try {
+      statsManager.registrarComando();
+      logrosManager.verificar('comando_ejecutado', { totalComandos: statsManager.getPerfil().totalComandos });
+
       const result = cmd.execute({
         args,
         terminal: this,

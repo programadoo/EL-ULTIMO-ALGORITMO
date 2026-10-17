@@ -7,6 +7,7 @@
  */
 
 import { Conjuntos } from '../conjuntos.js';
+import { getState } from '../state.js';
 import { generarPuzzleTipoB } from './tipoB.js';
 import { generarPuzzleTipoC } from './tipoC.js';
 import { generarPuzzleTipoD } from './tipoD.js';
@@ -404,30 +405,34 @@ export function generarPuzzle(tipo = 'A', nivel = 1) {
  */
 export async function abrirCualquierPuzzle(tipo = 'A', nivel = 1, onCompletado = null) {
   const t = String(tipo || 'A').toUpperCase();
+  const st = (typeof getState === 'function') ? getState() : null;
+  // En Modo Ghost Protocol (Prompt 19), los puzzles son más difíciles (+1 nivel, mín 3)
+  const nivelEfectivo = (st && st.isGhostProtocol) ? Math.min(5, Math.max(3, nivel + 1)) : nivel;
+
   switch (t) {
     case 'A': {
       const { abrirPuzzleTipoA } = await import('./tipoA.js');
-      return abrirPuzzleTipoA(nivel, onCompletado);
+      return abrirPuzzleTipoA(nivelEfectivo, onCompletado);
     }
     case 'B': {
       const { abrirPuzzleTipoB } = await import('./tipoB.js');
-      return abrirPuzzleTipoB(nivel, onCompletado);
+      return abrirPuzzleTipoB(nivelEfectivo, onCompletado);
     }
     case 'C': {
       const { abrirPuzzleTipoC } = await import('./tipoC.js');
-      return abrirPuzzleTipoC(nivel, onCompletado);
+      return abrirPuzzleTipoC(nivelEfectivo, onCompletado);
     }
     case 'D': {
       const { abrirPuzzleTipoD } = await import('./tipoD.js');
-      return abrirPuzzleTipoD(nivel, onCompletado);
+      return abrirPuzzleTipoD(nivelEfectivo, onCompletado);
     }
     case 'E': {
       const { abrirPuzzleTipoE } = await import('./tipoE.js');
-      return abrirPuzzleTipoE(nivel, onCompletado);
+      return abrirPuzzleTipoE(nivelEfectivo, onCompletado);
     }
     default: {
       const { abrirPuzzleTipoA } = await import('./tipoA.js');
-      return abrirPuzzleTipoA(nivel, onCompletado);
+      return abrirPuzzleTipoA(nivelEfectivo, onCompletado);
     }
   }
 }

@@ -6,9 +6,12 @@
  * ══════════════════════════════════════════════════
  */
 
-import { registerLogFound, getState, registerPuzzleSolvedInFirewall } from './state.js';
+import { registerLogFound, getState, registerPuzzleSolvedInFirewall, isGhostProtocolUnlocked } from './state.js';
 import { abrirCualquierPuzzle } from './puzzles/generador.js';
 import { audio } from './audio.js';
+import { logrosManager } from './meta/logros.js';
+import { statsManager } from './meta/stats.js';
+import { secretosManager } from './meta/secretos.js';
 
 /**
  * Convierte un patrón glob (ej. "*.log", "*vera*") a RegExp.
@@ -588,23 +591,72 @@ export const COMMANDS = {
           const breach = registerPuzzleSolvedInFirewall();
           terminal.print(`[+] SUBNODO DESBLOQUEADO: Seguridad Tipo ${tipo} superada (+${puntos} PTS).`, 'line--success');
 
+          // Comprobar logros de puzzle
+          const st = getState();
+          logrosManager.verificar('puzzle_acertado', {
+            streak: st.streak,
+            integridad: st.integrity,
+            totalResueltos: st.puzzlesCorrect || 0
+          });
+
           if (breach.firewallBreached) {
             terminal.print('╔══════════════════════════════════════════════════════════════╗', 'line--success');
-            terminal.print(`║ [★★★] ¡BRECHA TOTAL EN FIREWALL ${fw}! (3/3 SUBNODOS RESUELTOS)║`, 'line--success');
-            terminal.print('║ Contramedida neutralizada. Desmantelando capa de seguridad...║', 'line--system');
+            terminal.print('║ FIREWALL COMPLETADO — Presiona [ENTER] para continuar        ║', 'line--success');
+            terminal.print('║ Contramedida neutralizada. Capa de seguridad desmantelada.   ║', 'line--system');
             terminal.print('╚══════════════════════════════════════════════════════════════╝', 'line--success');
             audio.playSuccess();
-            setTimeout(() => {
-              if (window.__completarFirewall) {
-                window.__completarFirewall();
+            audio.playFirewallComplete();
+
+            logrosManager.verificar('firewall_completado', {
+              firewallIndex: breach.firewallIndex,
+              integridad: st.integrity,
+              fallosEnFirewall: st.consecutiveFailures || 0
+            });
+
+            // Permitir avanzar inmediatamente con [ENTER]
+            let enterProcessed = false;
+            const onEnterPress = (e) => {
+              if (enterProcessed) return;
+              if (e.key === 'Enter' || e.keyCode === 13) {
+                enterProcessed = true;
+                if (typeof window !== 'undefined') window.removeEventListener('keydown', onEnterPress);
+                if (window.__completarFirewall) {
+                  window.__completarFirewall();
+                }
               }
-            }, 1200);
+            };
+            if (typeof window !== 'undefined') {
+              window.addEventListener('keydown', onEnterPress);
+            }
+
+            // Timeout de respaldo
+            setTimeout(() => {
+              if (!enterProcessed) {
+                enterProcessed = true;
+                if (typeof window !== 'undefined') window.removeEventListener('keydown', onEnterPress);
+                if (window.__completarFirewall) {
+                  window.__completarFirewall();
+                }
+              }
+            }, 3500);
           } else {
             terminal.print(`[i] Progreso del Firewall: ${breach.solved}/3 sub-nodos descifrados. Faltan ${breach.remaining} para quebrar el firewall.`, 'line--info');
             terminal.print(`> Consejo: Escribe 'hack' para descifrar el siguiente sub-nodo.`, 'line--warning');
           }
         } else {
           terminal.print(`[-] FALLO DE DESBLOQUEO: Centinela detectó la intrusión (-20% integridad). Escribe 'hack' para reintentar.`, 'line--error');
+          const fails = getState().consecutiveFailures || 0;
+          if (fails >= 2) {
+            terminal.print(`💡 [PISTA AUTOMÁTICA DEL SISTEMA // 2 FALLOS CONSECUTIVOS]:`, 'line--warning');
+            const pistasPorTipo = {
+              A: 'Identifica qué números residen en la intersección central para descartar las respuestas erróneas.',
+              B: 'La conjunción (∧) exige que ambas premisas sean verdaderas; la disyunción (∨) solo requiere una.',
+              C: 'Aplica equivalencias de De Morgan: ¬(p ∧ q) ≡ (¬p ∨ ¬q), y ¬(p ∨ q) ≡ (¬p ∧ ¬q).',
+              D: 'La implicación (p → q) es únicamente falsa cuando el antecedente es verdadero y el consecuente falso.',
+              E: 'Si una regla universal (p → q) está activa y la premisa p se cumple, la conclusión q se deduce de forma necesaria.'
+            };
+            terminal.print(`   ↳ "${pistasPorTipo[tipo] || 'Revisa con detenimiento las premisas antes de responder.'}"`, 'line--info');
+          }
         }
       }).catch(err => {
         terminal.print(`nexus-sh: error al cargar módulo de puzzle: ${err.message}`, 'line--error');
@@ -732,6 +784,127 @@ export const COMMANDS = {
     usage: 'mission',
     execute(ctx) {
       return COMMANDS.objetivo.execute(ctx);
+    }
+  },
+
+  logros: {
+    name: 'logros',
+    description: 'Abre la pantalla de logros del sistema (20 logros)',
+    usage: 'logros',
+    execute() {
+      if (typeof window !== 'undefined' && window.navigateTo) {
+        window.navigateTo('screen-logros');
+        return { lines: ['Accediendo al expediente neural de logros...'] };
+      }
+      const total = logrosManager.getTodos().length;
+      const des = logrosManager.getDesbloqueadosCount();
+      return {
+        lines: [
+          `🏆 LOGROS DESBLOQUEADOS: ${des} / ${total}`,
+          `Escribe 'menu' o haz clic en la interfaz para ver el archivo completo.`
+        ]
+      };
+    }
+  },
+
+  achievements: {
+    name: 'achievements',
+    description: 'Alias de logros',
+    usage: 'achievements',
+    execute(ctx) {
+      return COMMANDS.logros.execute(ctx);
+    }
+  },
+
+  stats: {
+    name: 'stats',
+    description: 'Muestra las estadísticas de rendimiento y estilo de juego',
+    usage: 'stats',
+    execute() {
+      if (typeof window !== 'undefined' && window.navigateTo) {
+        statsManager.finalizarSesion(getState());
+        window.navigateTo('screen-stats');
+        return { lines: ['Accediendo al análisis heurístico de rendimiento...'] };
+      }
+      const st = statsManager.getSesionActual();
+      return {
+        lines: [
+          `📊 TIEMPO: ${st.tiempoTotal}s | PRECISIÓN: ${st.precision}% | RACHA: ${st.rachaMaxima}`,
+          `ESTILO: ${(st.estilo ? st.estilo.nombre : 'Analítico')}`
+        ]
+      };
+    }
+  },
+
+  estadisticas: {
+    name: 'estadisticas',
+    description: 'Alias de stats',
+    usage: 'estadisticas',
+    execute(ctx) {
+      return COMMANDS.stats.execute(ctx);
+    }
+  },
+
+  sudo: {
+    name: 'sudo',
+    description: 'Ejecuta una instrucción con privilegios elevados (Prompt 18)',
+    usage: 'sudo [su|comando]',
+    execute({ args }) {
+      return secretosManager.ejecutarSudo(args);
+    }
+  },
+
+  42: {
+    name: '42',
+    description: 'La respuesta a la Vida, el Universo y Todo lo Demás (Prompt 18)',
+    usage: '42',
+    execute() {
+      return secretosManager.ejecutar42();
+    }
+  },
+
+  verdad: {
+    name: 'verdad',
+    description: 'Revelación confidencial de la Dra. Vera Sorenson',
+    usage: 'verdad',
+    execute() {
+      return secretosManager.ejecutarVerdad();
+    }
+  },
+
+  'ghost-protocol': {
+    name: 'ghost-protocol',
+    description: 'Accede al protocolo de infiltración clasificado Ghost Protocol (Prompt 19)',
+    usage: 'ghost-protocol',
+    execute() {
+      const unlocked = isGhostProtocolUnlocked();
+      if (!unlocked) {
+        return {
+          lines: [
+            '[ACCESO DENEGADO]: Protocolo Ghost Protocol bloqueado.',
+            'NEXUS: "Debes descifrar los 5 firewalls y completar el juicio final antes de acceder a esta simulación pura."'
+          ]
+        };
+      }
+      return {
+        lines: [
+          '◈ [GHOST PROTOCOL DISPONIBLE]:',
+          '  - Temporizadores neuronales: OCULTOS',
+          '  - Protocolos de asistencia: DESACTIVADOS (0 pistas / 0 skips)',
+          '  - Integridad operativa inicial: 50% (Crítica)',
+          '  - Dificultad de los subnodos: MÁXIMA',
+          'Para iniciar este modo, regresa al menú principal (escribe "menu") y selecciona 👻 MODO GHOST PROTOCOL.'
+        ]
+      };
+    }
+  },
+
+  ghostprotocol: {
+    name: 'ghostprotocol',
+    description: 'Alias de ghost-protocol',
+    usage: 'ghostprotocol',
+    execute(ctx) {
+      return COMMANDS['ghost-protocol'].execute(ctx);
     }
   }
 };

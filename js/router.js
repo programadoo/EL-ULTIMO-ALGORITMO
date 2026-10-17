@@ -19,6 +19,9 @@ const SCREENS = [
   'screen-decision',
   'screen-ranking',
   'screen-multiplayer',
+  'screen-game-over',
+  'screen-logros',
+  'screen-stats',
 ];
 
 let currentScreen = null;
