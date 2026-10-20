@@ -323,8 +323,10 @@ class StatsManager {
     const btnMenu = document.getElementById('btn-stats-volver-menu');
     if (btnMenu) {
       btnMenu.onclick = () => {
-        if (typeof window !== 'undefined' && window.navigateTo) {
+        if (typeof window !== 'undefined' && typeof window.navigateTo === 'function') {
           window.navigateTo('screen-menu');
+        } else {
+          import('../router.js').then(r => r.navigateTo('screen-menu'));
         }
       };
     }
@@ -332,8 +334,10 @@ class StatsManager {
     const btnLogros = document.getElementById('btn-stats-ver-logros');
     if (btnLogros) {
       btnLogros.onclick = () => {
-        if (typeof window !== 'undefined' && window.navigateTo) {
+        if (typeof window !== 'undefined' && typeof window.navigateTo === 'function') {
           window.navigateTo('screen-logros');
+        } else {
+          import('../router.js').then(r => r.navigateTo('screen-logros'));
         }
       };
     }
@@ -341,10 +345,12 @@ class StatsManager {
     const btnNew = document.getElementById('btn-stats-nueva-partida');
     if (btnNew) {
       btnNew.onclick = () => {
-        if (typeof window !== 'undefined' && window.startNewGame) {
+        if (typeof window !== 'undefined' && typeof window.startNewGame === 'function') {
           window.startNewGame();
-        } else if (typeof window !== 'undefined' && window.navigateTo) {
+        } else if (typeof window !== 'undefined' && typeof window.navigateTo === 'function') {
           window.navigateTo('screen-game');
+        } else {
+          import('../router.js').then(r => r.navigateTo('screen-game'));
         }
       };
     }

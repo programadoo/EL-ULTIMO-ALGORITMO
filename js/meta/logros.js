@@ -463,16 +463,20 @@ class SistemaLogros {
     const btnVolver = document.getElementById('btn-logros-volver-menu');
     if (btnVolver) {
       btnVolver.onclick = () => {
-        if (typeof window !== 'undefined' && window.navigateTo) {
+        if (typeof window !== 'undefined' && typeof window.navigateTo === 'function') {
           window.navigateTo('screen-menu');
+        } else {
+          import('../router.js').then(r => r.navigateTo('screen-menu'));
         }
       };
     }
     const btnJuego = document.getElementById('btn-logros-ir-juego');
     if (btnJuego) {
       btnJuego.onclick = () => {
-        if (typeof window !== 'undefined' && window.navigateTo) {
+        if (typeof window !== 'undefined' && typeof window.navigateTo === 'function') {
           window.navigateTo('screen-game');
+        } else {
+          import('../router.js').then(r => r.navigateTo('screen-game'));
         }
       };
     }

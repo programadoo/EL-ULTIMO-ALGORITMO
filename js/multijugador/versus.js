@@ -378,10 +378,13 @@ function renderLobbyVersus(container) {
   const savedAlias = localStorage.getItem('nexus_player_alias') || 'Ghost';
   container.innerHTML = `
     <div style="max-width: 780px; margin: 0 auto; padding: var(--space-xl); font-family: var(--font-mono);">
-      <!-- Botón volver al selector multiplayer -->
-      <div style="margin-bottom: var(--space-md);">
+      <!-- Botón volver al selector multiplayer y al menú -->
+      <div style="margin-bottom: var(--space-md); display: flex; gap: 10px; flex-wrap: wrap;">
         <button id="btn-back-to-mode-select" class="puzzle__opcion" style="padding: 4px 12px; font-size: 11px;">
           ◀ CAMBIAR A MODO CO-OP
+        </button>
+        <button id="btn-versus-back-to-menu" class="puzzle__opcion" style="padding: 4px 12px; font-size: 11px;">
+          ‹ VOLVER AL MENÚ PRINCIPAL
         </button>
       </div>
 
@@ -467,6 +470,18 @@ function renderLobbyVersus(container) {
       import('./coop.js').then(({ renderCoopUI }) => {
         renderCoopUI();
       });
+    };
+  }
+
+  const btnMenu = document.getElementById('btn-versus-back-to-menu');
+  if (btnMenu) {
+    btnMenu.onclick = () => {
+      desconectarVersus();
+      if (typeof window !== 'undefined' && typeof window.navigateTo === 'function') {
+        window.navigateTo('screen-menu');
+      } else {
+        import('../router.js').then(r => r.navigateTo('screen-menu'));
+      }
     };
   }
 }

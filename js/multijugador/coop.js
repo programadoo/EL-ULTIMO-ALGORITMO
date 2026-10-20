@@ -464,7 +464,11 @@ function renderLobbyInicial(container) {
 
   document.getElementById('btn-back-to-menu')?.addEventListener('click', () => {
     desconectarCoop();
-    import('../router.js').then(r => r.navigateTo('screen-menu'));
+    if (typeof window !== 'undefined' && typeof window.navigateTo === 'function') {
+      window.navigateTo('screen-menu');
+    } else {
+      import('../router.js').then(r => r.navigateTo('screen-menu'));
+    }
   });
 }
 

@@ -2,6 +2,13 @@
    RESPONSIVE.CSS — Breakpoints y adaptaciones móviles
    ============================================================ */
 
+/* ── Fix global: Prevent body from scrolling behind fixed screens ─ */
+html, body {
+  overflow: hidden;
+  height: 100%;
+  height: 100dvh;
+}
+
 /* ── Tablets (≤ 1024px) ───────────────────────────── */
 @media (max-width: 1024px) {
   :root {
@@ -26,6 +33,20 @@
     flex: 1;
     min-width: 150px;
   }
+
+  /* Menu buttons: slightly narrower */
+  .menu-btn {
+    max-width: 320px;
+  }
+
+  /* Puzzle overlay: give it more breathing room */
+  .puzzle-overlay {
+    padding: var(--space-md);
+  }
+
+  .puzzle {
+    max-width: 90vw;
+  }
 }
 
 /* ── Móviles grandes (≤ 768px) ────────────────────── */
@@ -40,28 +61,282 @@
     --space-3xl:  3rem;
   }
 
+  /* ── Screens general fix ── */
+  .screen {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── Main menu: mobile ── */
+  #screen-menu {
+    padding: var(--space-sm) var(--space-xs);
+    justify-content: flex-start;
+  }
+
+  .menu-content {
+    padding: var(--space-md) var(--space-xs);
+    margin: 0 auto;
+    max-width: 100%;
+  }
+
+  .menu-content h1 {
+    font-size: var(--fs-xl);
+    letter-spacing: 0.05em;
+  }
+
+  .menu-subtitle {
+    font-size: var(--fs-xs);
+    margin-bottom: var(--space-md);
+  }
+
+  .menu-btn {
+    max-width: 100%;
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    /* Touch-friendly min height */
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+  }
+
+  .menu-nav {
+    gap: 8px;
+    width: 100%;
+    padding: 0;
+  }
+
+  .menu-version {
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-md);
+    font-size: 10px;
+  }
+
+  /* ── Terminal: mobile ── */
   .terminal {
     padding: var(--space-md);
     font-size: var(--fs-xs);
     border-radius: var(--radius-sm);
   }
 
+  .terminal__titlebar {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .terminal__input-line {
+    flex-wrap: nowrap;
+  }
+
+  .terminal__prompt {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .terminal__input {
+    font-size: 14px; /* Prevents iOS zoom on focus */
+    min-height: 44px;
+  }
+
+  /* ── Game layout: stack vertically ── */
+  .game-layout {
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: 0;
+    height: 100%;
+  }
+
+  .hud {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+    order: -1; /* HUD on top on mobile */
+    max-height: 30vh;
+    overflow-y: auto;
+  }
+
+  .hud__section {
+    flex: 1 1 calc(50% - 6px);
+    min-width: 0;
+    padding: 8px 10px;
+  }
+
+  .hud__section-title {
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    margin-bottom: 2px;
+  }
+
+  .hud__value {
+    font-size: var(--fs-base);
+  }
+
+  .hud__items-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+
+  .hud__item-btn {
+    padding: 4px 6px;
+    font-size: 10px;
+    min-height: 36px;
+  }
+
+  .game-layout .terminal {
+    flex: 1;
+    min-height: 0;
+    max-height: none;
+  }
+
+  /* ── Puzzles: mobile ── */
   .puzzle {
     padding: var(--space-lg);
     border-radius: var(--radius-md);
+    max-height: 90vh;
+    max-height: 90dvh;
+    overflow-y: auto;
   }
 
   .puzzle__enunciado {
     font-size: var(--fs-base);
+    line-height: 1.5;
+  }
+
+  .puzzle__header {
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .puzzle__opciones {
+    gap: 8px;
+  }
+
+  .puzzle__opcion {
+    padding: 10px 14px;
+    font-size: var(--fs-sm);
+    min-height: 44px;
+  }
+
+  .puzzle__btn {
+    min-height: 44px;
+    font-size: var(--fs-sm);
+  }
+
+  .puzzle-overlay {
+    padding: var(--space-sm);
   }
 
   .venn-container {
     max-width: 300px;
   }
 
+  /* ── Ranking: mobile ── */
+  .podium-grid {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-md) !important;
+  }
+
+  .podium-card {
+    min-height: auto !important;
+  }
+
+  #ranking-content .menu-content {
+    padding: var(--space-md);
+  }
+
+  /* ── Game Over: mobile ── */
+  .game-over-stats-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+  }
+
+  .game-over-container {
+    padding: var(--space-md);
+  }
+
+  .game-over-container pre {
+    font-size: 5px !important;
+    line-height: 1.1 !important;
+  }
+
+  /* ── Multiplayer content: mobile ── */
+  #multiplayer-content > div {
+    padding: var(--space-md) !important;
+  }
+
+  /* ── Logros grid: mobile ── */
+  #logros-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Stats grid: mobile ── */
+  #stats-content .hud__section {
+    flex: 1 1 calc(50% - 6px);
+  }
+
+  /* ── Decision cards: mobile ── */
+  #decision-cards-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Firewall complete: mobile ── */
+  #firewall-complete-content pre {
+    font-size: 6px !important;
+    line-height: 1.1 !important;
+  }
+
+  #firewall-complete-content > div > div:nth-child(3) {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Narrative: mobile ── */
+  .narrative-container {
+    width: 95%;
+    padding: var(--space-lg);
+  }
+
+  /* ── Autosave indicator: mobile ── */
+  #nexus-autosave-indicator {
+    bottom: 10px;
+    right: 10px;
+    font-size: 10px;
+    padding: 4px 10px;
+  }
+
+  /* ── Achievement toasts: mobile ── */
+  #nexus-achievements-container {
+    top: 12px !important;
+    right: 12px !important;
+    left: 12px !important;
+  }
+
+  .achievement-toast {
+    min-width: auto !important;
+    max-width: 100% !important;
+  }
+
+  /* ── Tooltips: mobile (disable hover tooltips) ── */
+  #nexus-smart-tooltip {
+    display: none !important;
+  }
+
   /* Ocultar scanlines en móvil (rendimiento) */
   .scanlines::after {
     display: none;
+  }
+
+  /* Custom cursor: disable on touch devices */
+  body,
+  button, a, input, select, textarea, .menu-btn, .puzzle__opcion, .btn, [role="button"] {
+    cursor: auto !important;
   }
 }
 
@@ -76,11 +351,37 @@
     --space-2xl:  1.5rem;
   }
 
-  .puzzle__header {
-    flex-direction: column;
-    gap: var(--space-sm);
+  /* Menu title smaller */
+  .menu-content h1 {
+    font-size: var(--fs-xl);
+    letter-spacing: 0.03em;
   }
 
+  /* HUD: compact on small phones */
+  .hud {
+    max-height: 25vh;
+  }
+
+  .hud__section {
+    flex: 1 1 calc(50% - 4px);
+    padding: 6px 8px;
+  }
+
+  .hud__value {
+    font-size: var(--fs-sm);
+  }
+
+  .hud__section-title {
+    font-size: 8px;
+  }
+
+  /* Terminal: full width */
+  .terminal {
+    padding: var(--space-sm);
+    border-radius: 0;
+  }
+
+  /* Truth table: compact */
   .truth-table {
     font-size: var(--fs-xs);
   }
@@ -90,9 +391,149 @@
     padding: var(--space-xs) var(--space-sm);
   }
 
-  /* CRT flicker también se oculta */
+  /* Puzzle buttons: full width */
+  .puzzle__opciones {
+    flex-direction: column;
+  }
+
+  .puzzle__opcion {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* ASCII art: hide on very small screens */
+  #screen-boot .terminal__ascii {
+    font-size: 0.3rem;
+    line-height: 1.1;
+  }
+
+  /* Game over ASCII: tiny */
+  .game-over-container pre {
+    font-size: 4px !important;
+  }
+
+  /* CRT flicker also hidden */
   .crt-flicker::before {
     display: none;
+  }
+
+  /* Particles: reduce z-index impact */
+  #particles-canvas,
+  .particles-canvas {
+    opacity: 0.5;
+  }
+}
+
+/* ── Very small phones (≤ 360px) ──────────────────── */
+@media (max-width: 360px) {
+  :root {
+    --fs-3xl:     1.5rem;
+    --fs-2xl:     1.2rem;
+    --fs-xl:      1.1rem;
+    --fs-lg:      1rem;
+  }
+
+  .menu-content h1 {
+    font-size: 1.1rem;
+    word-break: break-word;
+  }
+
+  .menu-btn {
+    font-size: 10px;
+    padding: 8px 10px;
+    letter-spacing: 0.05em;
+  }
+
+  /* Hide boot ASCII on tiny screens */
+  #screen-boot .terminal__ascii {
+    display: none;
+  }
+}
+
+/* ── Landscape mobile ─────────────────────────────── */
+@media (max-height: 500px) and (orientation: landscape) {
+  .screen {
+    height: 100%;
+    height: 100dvh;
+  }
+
+  #screen-menu {
+    padding: var(--space-sm);
+  }
+
+  .menu-content {
+    padding: var(--space-sm);
+  }
+
+  .menu-content h1 {
+    font-size: var(--fs-xl);
+    margin-bottom: 4px;
+  }
+
+  .menu-subtitle {
+    margin-bottom: var(--space-sm);
+  }
+
+  .menu-btn {
+    padding: 6px var(--space-md);
+    min-height: 36px;
+    font-size: 10px;
+  }
+
+  .menu-nav {
+    gap: 4px;
+  }
+
+  .menu-version {
+    margin-top: var(--space-sm);
+  }
+
+  /* Game: HUD minimal in landscape */
+  .hud {
+    max-height: 20vh;
+  }
+
+  .hud__section {
+    padding: 4px 6px;
+  }
+
+  /* Puzzle: fit in landscape */
+  .puzzle {
+    max-height: 85vh;
+    max-height: 85dvh;
+  }
+}
+
+/* ── Touch device optimizations ───────────────────── */
+@media (hover: none) and (pointer: coarse) {
+  /* Disable hover effects on touch */
+  .menu-btn:hover {
+    transform: none;
+    background: rgba(0, 255, 65, 0.03);
+    border-color: var(--border-primary);
+    color: var(--text-secondary);
+    box-shadow: none;
+  }
+
+  .menu-btn:hover::before {
+    transform: scaleY(0);
+  }
+
+  /* Active state for touch feedback */
+  .menu-btn:active {
+    background: rgba(0, 255, 65, 0.12) !important;
+    border-color: var(--green-bright) !important;
+    color: var(--green-bright) !important;
+  }
+
+  /* Ensure tap targets are large enough (44x44 minimum) */
+  button, a, input[type="text"], input[type="submit"], select, .menu-btn, .puzzle__opcion {
+    min-height: 44px;
+  }
+
+  /* Remove custom cursors entirely */
+  * {
+    cursor: auto !important;
   }
 }
 
@@ -110,6 +551,12 @@
   .crt-flicker::before {
     display: none;
   }
+
+  /* Disable matrix rain and particles */
+  #matrix-rain-canvas,
+  #particles-canvas {
+    display: none !important;
+  }
 }
 
 /* ── Alto contraste ───────────────────────────────── */
@@ -119,5 +566,20 @@
     --bg-secondary:  #0a0a0a;
     --text-primary:  #00ff41;
     --border-primary: rgba(0, 255, 65, 0.5);
+  }
+}
+
+/* ── Safe area insets (notch/iPhone) ──────────────── */
+@supports (padding: env(safe-area-inset-top)) {
+  .screen {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  #nexus-autosave-indicator {
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    right: calc(10px + env(safe-area-inset-right));
   }
 }

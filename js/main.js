@@ -350,6 +350,13 @@ if (typeof window !== 'undefined') {
 onScreenEnter('screen-menu', () => {
   initMatrixRain();
   buildMenu();
+  // Fix: Reset scroll position to top to prevent menu appearing scrolled down
+  const menuEl = document.getElementById('screen-menu');
+  if (menuEl) {
+    menuEl.scrollTop = 0;
+  }
+  // Also reset window scroll in case body/html scrolled
+  window.scrollTo(0, 0);
 });
 
 // Pantalla Intro Narrativa
@@ -939,6 +946,8 @@ async function runAllTests() {
 
 // Exponer en window para pruebas interactivas en la consola
 if (typeof window !== 'undefined') {
+  window.navigateTo = navigateTo;
+  window.startNewGame = startNewGame;
   window.Conjuntos = Conjuntos;
   window.Logica = Logica;
   window.terminal = terminal;

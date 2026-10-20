@@ -303,7 +303,7 @@ export async function renderRankingScreen(target = 'ranking-content') {
       </div>
 
       <!-- PANEL DE RÉCORD DEL USUARIO LOCAL -->
-      <div style="background: rgba(0, 255, 65, 0.04); border: 1px solid var(--border-primary); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-2xl); display: flex; justify-content: space-between; align-items: center; flex-wrap: gap: var(--space-md);">
+      <div style="background: rgba(0, 255, 65, 0.04); border: 1px solid var(--border-primary); border-radius: var(--radius-md); padding: var(--space-lg); margin-bottom: var(--space-2xl); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-md);">
         <div style="text-align: left;">
           <span style="font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--text-dim);">TU RÉCORD LOCAL ACTUAL:</span>
           <div style="font-family: var(--font-display); font-size: var(--fs-xl); color: var(--green-bright); font-weight: bold;">
@@ -354,7 +354,11 @@ export async function renderRankingScreen(target = 'ranking-content') {
   });
 
   document.getElementById('btn-back-from-ranking-hall')?.addEventListener('click', () => {
-    import('./router.js').then(r => r.navigateTo('screen-menu'));
+    if (typeof window !== 'undefined' && typeof window.navigateTo === 'function') {
+      window.navigateTo('screen-menu');
+    } else {
+      import('./router.js').then(r => r.navigateTo('screen-menu'));
+    }
   });
 }
 

@@ -104,6 +104,10 @@ export async function navigateTo(targetId, opts = {}) {
   currentScreen = targetId;
   isTransitioning = false;
 
+  // Reset scroll position for the new screen
+  targetEl.scrollTop = 0;
+  window.scrollTo(0, 0);
+
   // ── Disparar callbacks de entrada ──
   if (onEnterCallbacks[targetId]) {
     for (const cb of onEnterCallbacks[targetId]) {
@@ -136,6 +140,10 @@ export function showImmediate(screenId) {
 // ── Export de pantallas disponibles ──
 export { SCREENS };
 
+if (typeof window !== 'undefined') {
+  window.navigateTo = navigateTo;
+}
+
 // ── Utilidad ──
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -164,7 +172,7 @@ export function testRouter() {
     }
   }
 
-  assert(Array.isArray(SCREENS) && SCREENS.length === 9, 'El router debe registrar las 9 pantallas del spec');
+  assert(Array.isArray(SCREENS) && SCREENS.length === 12, 'El router debe registrar las pantallas del sistema (12)');
   assert(SCREENS.includes('screen-boot'), 'SCREENS debe incluir screen-boot');
   assert(SCREENS.includes('screen-menu'), 'SCREENS debe incluir screen-menu');
   assert(SCREENS.includes('screen-game'), 'SCREENS debe incluir screen-game');
