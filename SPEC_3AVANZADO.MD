@@ -811,7 +811,7 @@ Cada fase se puede pedir por separado:
 
 # ⚠️ ADVERTENCIAS
 
-1. **No implementes todo de golpe.** Cada fase debe ser testeable.
+1. **No implementes todo de golpe.** Cada fase debe ser testeable. 
 2. **La seguridad del sandbox es crítica.** Nunca uses `eval` con código del usuario.
 3. **Los derechos de música importan.** Si usas música libre, respeta la licencia (CC-BY, etc.).
 4. **El ARG debe ser opcional.** No bloquees el juego principal por él.

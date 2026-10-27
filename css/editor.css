@@ -1,0 +1,386 @@
+/* ============================================================
+   EDITOR.CSS — Estilos para el Editor Integrado CodeMirror 6
+   Especificación: SPEC_3AVANZADO.MD (Prompt B2)
+   ============================================================ */
+
+.editor-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay, rgba(3, 7, 5, 0.88));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-base, 0.25s ease);
+}
+
+.editor-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.editor-window {
+  background: rgba(10, 16, 12, 0.97);
+  border: 1px solid var(--cyan, #00e5ff);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.25), 0 10px 40px rgba(0, 0, 0, 0.8);
+  width: 92%;
+  max-width: 980px;
+  height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Cabecera de la ventana ───────────────────────────────── */
+.editor-header {
+  background: rgba(4, 8, 6, 0.95);
+  border-bottom: 1px solid var(--border-primary, rgba(0, 255, 65, 0.3));
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  user-select: none;
+}
+
+.editor-header__left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.editor-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.editor-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.editor-dot--red { background: #ff3333; box-shadow: 0 0 6px rgba(255, 51, 51, 0.5); }
+.editor-dot--yellow { background: #ffbb00; box-shadow: 0 0 6px rgba(255, 187, 0, 0.5); }
+.editor-dot--green { background: #00ff41; box-shadow: 0 0 6px rgba(0, 255, 65, 0.5); }
+
+.editor-title {
+  font-family: var(--font-display, 'Orbitron', monospace);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  color: var(--cyan, #00e5ff);
+  font-weight: bold;
+}
+
+.editor-badge {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 10px;
+  background: rgba(0, 229, 255, 0.12);
+  border: 1px solid var(--cyan, #00e5ff);
+  color: var(--cyan, #00e5ff);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.editor-header__close {
+  background: transparent;
+  border: 1px solid rgba(255, 51, 51, 0.4);
+  color: #ff5252;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.editor-header__close:hover {
+  background: rgba(255, 51, 51, 0.2);
+  border-color: #ff5252;
+  box-shadow: 0 0 8px rgba(255, 51, 51, 0.4);
+}
+
+/* ── Barra de herramientas (Toolbar) ───────────────────────── */
+.editor-toolbar {
+  background: rgba(6, 11, 8, 0.9);
+  border-bottom: 1px solid var(--border-primary, rgba(0, 255, 65, 0.2));
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.editor-toolbar__group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.editor-btn {
+  font-family: var(--font-display, 'Orbitron', monospace);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  padding: 6px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.editor-btn--run {
+  background: rgba(0, 255, 65, 0.15);
+  border-color: var(--green-bright, #00ff41);
+  color: var(--green-bright, #00ff41);
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+}
+
+.editor-btn--run:hover {
+  background: rgba(0, 255, 65, 0.3);
+  box-shadow: 0 0 16px rgba(0, 255, 65, 0.5);
+  transform: translateY(-1px);
+}
+
+.editor-btn--verify {
+  background: rgba(0, 229, 255, 0.15);
+  border-color: var(--cyan, #00e5ff);
+  color: var(--cyan, #00e5ff);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.2);
+}
+
+.editor-btn--verify:hover {
+  background: rgba(0, 229, 255, 0.3);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.editor-btn--secondary {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary, #c8e6c9);
+}
+
+.editor-btn--secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--text-primary, #c8e6c9);
+}
+
+.editor-select {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--border-primary, rgba(0, 255, 65, 0.3));
+  color: var(--text-primary, #c8e6c9);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  padding: 5px 8px;
+  border-radius: 4px;
+  outline: none;
+}
+
+/* ── Cuerpo del editor: Split View (Código + Consola) ──────── */
+.editor-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.editor-pane-code {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  background: #080c09;
+}
+
+.editor-container {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ── CodeMirror 6 Custom Styling & Fallback Engine ─────────── */
+.cm-editor {
+  height: 100%;
+  background: transparent !important;
+  color: #c8e6c9 !important;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace) !important;
+  font-size: 13px !important;
+}
+
+.cm-scroller {
+  font-family: inherit !important;
+  line-height: 1.55 !important;
+  padding: 8px 0;
+}
+
+.cm-gutters {
+  background: #050806 !important;
+  border-right: 1px solid rgba(0, 255, 65, 0.2) !important;
+  color: #44664a !important;
+  user-select: none;
+}
+
+.cm-activeLineGutter {
+  color: var(--green-bright, #00ff41) !important;
+  background: rgba(0, 255, 65, 0.1) !important;
+}
+
+.cm-activeLine {
+  background: rgba(0, 255, 65, 0.04) !important;
+}
+
+.cm-cursor {
+  border-left-color: var(--green-bright, #00ff41) !important;
+  border-left-width: 2px !important;
+}
+
+/* Tokens de resaltado GhostScript */
+.cm-ghost-keyword { color: #00e5ff !important; font-weight: bold; text-shadow: 0 0 6px rgba(0, 229, 255, 0.3); }
+.cm-ghost-string  { color: #a3e635 !important; }
+.cm-ghost-number  { color: #ffb74d !important; font-weight: bold; }
+.cm-ghost-comment { color: #5a7d63 !important; font-style: italic; }
+.cm-ghost-cmd     { color: #ce93d8 !important; font-weight: bold; text-shadow: 0 0 6px rgba(206, 147, 216, 0.3); }
+.cm-ghost-ident   { color: #e0f2f1 !important; }
+.cm-ghost-op      { color: #ffffff !important; }
+
+/* ── Editor nativo fallback de alta fidelidad ──────────────── */
+.ghost-fallback-editor {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background: #080c09;
+}
+
+.ghost-gutter {
+  width: 48px;
+  background: #050806;
+  border-right: 1px solid rgba(0, 255, 65, 0.2);
+  color: #44664a;
+  font-family: var(--font-mono, monospace);
+  font-size: 12px;
+  line-height: 1.55;
+  text-align: right;
+  padding: 10px 8px 10px 0;
+  user-select: none;
+  overflow: hidden;
+}
+
+.ghost-code-area-wrapper {
+  flex: 1;
+  position: relative;
+  overflow: auto;
+}
+
+.ghost-highlight-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 10px 14px;
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-all;
+  pointer-events: none;
+  color: #c8e6c9;
+}
+
+.ghost-textarea {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 10px 14px;
+  font-family: var(--font-mono, monospace);
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--green-bright, #00ff41);
+  border: none;
+  outline: none;
+  resize: none;
+  tab-size: 2;
+  box-sizing: border-box;
+}
+
+/* ── Consola de salida integrada ──────────────────────────── */
+.editor-pane-console {
+  flex: 2;
+  border-top: 1px solid var(--border-primary, rgba(0, 255, 65, 0.3));
+  background: #050805;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.editor-console-header {
+  background: rgba(8, 14, 10, 0.95);
+  padding: 6px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.editor-console-title {
+  font-family: var(--font-display, monospace);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--text-dim, #77aa88);
+}
+
+.editor-console-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 14px;
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.console-line {
+  margin-bottom: 2px;
+  word-break: break-all;
+}
+
+.console-line--info { color: var(--cyan, #00e5ff); }
+.console-line--success { color: var(--green-bright, #00ff41); font-weight: bold; }
+.console-line--error { color: #ff5252; font-weight: bold; }
+.console-line--stdout { color: #e0f2f1; }
+.console-line--dim { color: #6a8770; font-style: italic; }
+
+/* ── Barra de estado inferior ─────────────────────────────── */
+.editor-statusbar {
+  background: rgba(4, 7, 5, 0.98);
+  border-top: 1px solid rgba(0, 255, 65, 0.15);
+  padding: 4px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono, monospace);
+  font-size: 10px;
+  color: var(--text-dim, #77aa88);
+}
+

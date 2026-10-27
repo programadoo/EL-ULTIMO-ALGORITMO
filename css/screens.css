@@ -607,6 +607,64 @@
 /* ═════════════════════════════════════════════════
    MULTIPLAYER CO-OP & LOBBY
    ═════════════════════════════════════════════════ */
+/* ═════════════════════════════════════════════════
+   RANKING DE SOLUCIONES GHOSTSCRIPT (ELEGANCIA)
+   ═════════════════════════════════════════════════ */
+#screen-script-ranking {
+  background: var(--bg-primary);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-md);
+  overflow-y: auto;
+}
+
+#script-ranking-content {
+  max-width: 1040px;
+  width: 95%;
+  margin: 0 auto;
+}
+
+.rank-filter-btn, .rank-sort-btn {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-dim);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.rank-filter-btn:hover, .rank-sort-btn:hover {
+  border-color: var(--green-bright);
+  color: var(--text-primary);
+}
+
+.rank-filter-btn.active {
+  background: rgba(255, 187, 0, 0.15);
+  border-color: var(--yellow-warn);
+  color: #ffeb3b;
+  font-weight: bold;
+  box-shadow: 0 0 10px rgba(255, 187, 0, 0.3);
+}
+
+.rank-sort-btn.active {
+  background: rgba(0, 229, 255, 0.15);
+  border-color: var(--cyan);
+  color: var(--cyan);
+  font-weight: bold;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+
+.rank-view-code-btn:hover {
+  background: rgba(0, 255, 65, 0.15) !important;
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+}
+
+
 #screen-multiplayer {
   background: var(--bg-primary);
   display: flex;

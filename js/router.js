@@ -18,6 +18,7 @@ const SCREENS = [
   'screen-twist',
   'screen-decision',
   'screen-ranking',
+  'screen-script-ranking',
   'screen-multiplayer',
   'screen-game-over',
   'screen-logros',

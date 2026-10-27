@@ -471,6 +471,17 @@ export function registrarLogEncontrado(logIdOrName) {
   return registerLogFound(log.id);
 }
 
+/**
+ * Determina si un log es un documento narrativo clave con audio-registro disponible.
+ * @param {string|object} logIdOrName
+ * @returns {boolean}
+ */
+export function esLogImportante(logIdOrName) {
+  const log = typeof logIdOrName === 'object' && logIdOrName !== null ? logIdOrName : getHiddenLog(logIdOrName);
+  if (!log) return false;
+  return !!(log.hiddenLog || log.chekhovGun || (log.autor && (log.autor.includes('Vera') || log.autor.includes('NEXUS'))));
+}
+
 // ─────────────────────────────────────────────────
 // SUITE DE TESTS CON CONSOLE.ASSERT
 // ─────────────────────────────────────────────────
@@ -532,6 +543,11 @@ export function testLogs() {
   // Validar método registrarLogEncontrado
   const pts = registrarLogEncontrado('vera.txt');
   assert(typeof pts === 'number', 'registrarLogEncontrado debe retornar un número de puntos');
+
+  // Validar método esLogImportante (Prompt D3)
+  assert(typeof esLogImportante === 'function', 'esLogImportante debe existir');
+  assert(esLogImportante('vera.txt') === true, 'vera.txt debe ser considerado log importante');
+  assert(esLogImportante('nexus_manifesto.txt') === true, 'nexus_manifesto.txt debe ser considerado log importante');
 
   const fallados = total - pasados;
   if (fallados === 0) {

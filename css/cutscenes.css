@@ -1,0 +1,326 @@
+/* ============================================================
+   CUTSCENES.CSS — Sistema Cinemático (Canvas + CSS)
+   Especificación: SPEC_3AVANZADO.MD (Sección 4.1 y Prompt D1)
+   ============================================================ */
+
+.cutscene-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99990;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  font-family: var(--font-mono, monospace);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.cutscene-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ── Franjas cinematográficas (Widescreen Letterbox) ───────── */
+.cutscene-letterbox {
+  width: 100%;
+  height: 12vh;
+  min-height: 60px;
+  background: #000;
+  z-index: 20;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(0, 255, 65, 0.15);
+  box-shadow: 0 0 25px rgba(0, 0, 0, 0.95);
+  transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.cutscene-letterbox--bottom {
+  border-bottom: none;
+  border-top: 1px solid rgba(0, 255, 65, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30px;
+}
+
+/* ── Viewport central de la escena ─────────────────────────── */
+.cutscene-viewport {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Canvas de efectos procedurales ────────────────────────── */
+.cutscene-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ── Capa de ilustración vectorial / Arte cinematográfico ──── */
+.cutscene-visual-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.5s ease;
+}
+
+.cutscene-art-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: cutsceneArtFadeIn 0.8s ease forwards;
+  max-width: 90%;
+  max-height: 80%;
+}
+
+@keyframes cutsceneArtFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.cutscene-svg-illustration {
+  filter: drop-shadow(0 0 15px rgba(0, 255, 65, 0.3));
+  transition: transform 0.5s ease;
+}
+
+/* ── Filtros ambientales y CRT Scanlines ────────────────────── */
+.cutscene-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: radial-gradient(circle at center, transparent 35%, rgba(0, 0, 0, 0.85) 100%);
+}
+
+.cutscene-scanlines {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0) 50%,
+    rgba(0, 0, 0, 0.3) 50%,
+    rgba(0, 0, 0, 0.3)
+  );
+  background-size: 100% 4px;
+  opacity: 0.7;
+}
+
+/* ── Cuadro de diálogos y subtítulos (Caja Narrativa) ───────── */
+.cutscene-ui-layer {
+  position: absolute;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 860px;
+  z-index: 10;
+  background: rgba(7, 14, 10, 0.88);
+  border: 1px solid var(--border-primary, rgba(0, 255, 65, 0.3));
+  border-radius: var(--radius-sm, 4px);
+  padding: 18px 26px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), 0 0 20px rgba(0, 255, 65, 0.12);
+  backdrop-filter: blur(10px);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+.cutscene-ui-layer--danger {
+  border-color: var(--red-alert, #ff0040);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), 0 0 25px rgba(255, 0, 64, 0.25);
+}
+
+.cutscene-badge {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--cyan, #00d9ff);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cutscene-badge::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+  border-radius: 50%;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.cutscene-speaker {
+  font-size: 13px;
+  font-weight: bold;
+  color: #ffeb3b;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+  font-family: var(--font-display, sans-serif);
+}
+
+.cutscene-speaker--danger {
+  color: var(--red-alert, #ff0040);
+}
+
+.cutscene-subtitles {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-white, #e0ffe0);
+  font-family: var(--font-narrative, monospace);
+  min-height: 48px;
+}
+
+.cutscene-quote {
+  display: block;
+  font-size: 17px;
+  font-weight: bold;
+  color: var(--green-bright, #00ff41);
+  text-align: center;
+  margin: 10px 0;
+  text-shadow: 0 0 12px rgba(0, 255, 65, 0.5);
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.05em;
+  animation: cutsceneGlowQuote 2s ease-in-out infinite alternate;
+}
+
+.cutscene-quote--danger {
+  color: var(--red-alert, #ff0040);
+  text-shadow: 0 0 12px rgba(255, 0, 64, 0.6);
+}
+
+@keyframes cutsceneGlowQuote {
+  from {
+    text-shadow: 0 0 8px currentColor;
+    transform: scale(0.99);
+  }
+  to {
+    text-shadow: 0 0 18px currentColor;
+    transform: scale(1.01);
+  }
+}
+
+/* ── HUD de Controles y Barra de Tiempo ─────────────────────── */
+.cutscene-hud {
+  position: absolute;
+  top: 14px;
+  right: 20px;
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cutscene-progress-container {
+  width: 140px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.cutscene-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--green-bright, #00ff41);
+  box-shadow: 0 0 8px var(--green-bright, #00ff41);
+  transition: width 0.1s linear;
+}
+
+.cutscene-nav-prompt {
+  font-size: 11px;
+  color: var(--text-dim, #667766);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cutscene-skip-btn {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: var(--text-dim, #888);
+  font-family: var(--font-mono, monospace);
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm, 3px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.05em;
+}
+
+.cutscene-skip-btn:hover {
+  border-color: var(--cyan, #00d9ff);
+  color: var(--cyan, #00d9ff);
+  background: rgba(0, 217, 255, 0.1);
+  box-shadow: 0 0 10px rgba(0, 217, 255, 0.25);
+}
+
+/* ── Efecto Glitch y Transición de Escena ────────────────────── */
+.cutscene-glitch-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  background: rgba(255, 0, 64, 0.15);
+  mix-blend-mode: color-dodge;
+  opacity: 0;
+}
+
+.cutscene-glitch-overlay.active {
+  animation: cutsceneFlashGlitch 0.3s steps(3) forwards;
+}
+
+@keyframes cutsceneFlashGlitch {
+  0% { opacity: 0.9; transform: translate(3px, -2px); }
+  33% { opacity: 0.4; transform: translate(-3px, 2px); }
+  66% { opacity: 0.7; transform: translate(2px, 1px); }
+  100% { opacity: 0; transform: translate(0, 0); }
+}
+
+/* ── Indicador de pulso de audio / visualizador ─────────────── */
+.cutscene-audio-indicator {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+
+.cutscene-audio-bar {
+  width: 2px;
+  height: 100%;
+  background: var(--cyan, #00d9ff);
+  animation: cutsceneAudioBounce 0.8s ease infinite alternate;
+}
+
+.cutscene-audio-bar:nth-child(2) { animation-delay: 0.15s; }
+.cutscene-audio-bar:nth-child(3) { animation-delay: 0.3s; }
+.cutscene-audio-bar:nth-child(4) { animation-delay: 0.45s; }
+
+@keyframes cutsceneAudioBounce {
+  0% { height: 20%; }
+  100% { height: 100%; }
+}
+

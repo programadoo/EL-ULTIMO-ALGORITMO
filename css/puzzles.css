@@ -493,3 +493,182 @@
   font-family: var(--font-narrative) !important;
   line-height: 1.5;
 }
+
+/* ── Cifrado César (Tipo Cripto / Firewall 1) ───────────────── */
+.cesar-container {
+  width: 100%;
+  margin: var(--space-md) 0;
+}
+
+.cesar-display-cifrado {
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  color: var(--text-white);
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 8px rgba(0, 229, 255, 0.4);
+}
+
+.cesar-preview-text {
+  transition: all var(--transition-fast);
+}
+
+.cesar-shift-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(0, 255, 65, 0.15);
+  border: 1px solid var(--green-bright);
+  border-radius: var(--radius-sm);
+  color: var(--green-bright);
+  font-family: var(--font-mono);
+  font-weight: bold;
+}
+
+/* ── Cripto: Binario & Hexadecimal (Firewall 1) ─────────────── */
+.binario-container,
+.hex-container {
+  width: 100%;
+  margin: var(--space-sm) 0;
+}
+
+.bin-step-tool,
+.hex-step-tool {
+  background: rgba(10, 16, 12, 0.85);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.bin-bit-box {
+  flex: 1;
+  text-align: center;
+  border-radius: var(--radius-sm);
+  padding: 6px 2px;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  user-select: none;
+}
+
+.bin-bit-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 255, 65, 0.2);
+}
+
+.bin-bit-box.active {
+  border: 1px solid var(--green-bright);
+  background: rgba(0, 255, 65, 0.18);
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+}
+
+.bin-bit-box.inactive {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.35);
+  opacity: 0.65;
+}
+
+.hex-nibble-card {
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  text-align: center;
+  transition: all var(--transition-fast);
+}
+
+.hex-nibble-card:hover {
+  transform: translateY(-2px);
+}
+
+.cripto-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border-primary);
+  padding-bottom: 6px;
+}
+
+.cripto-tab-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-dim);
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cripto-tab-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.cripto-tab-btn.active {
+  color: var(--green-bright);
+  border-color: var(--green-bright);
+  background: rgba(0, 255, 65, 0.12);
+  text-shadow: 0 0 6px rgba(0, 255, 65, 0.4);
+}
+
+/* ── Cripto: Cifrado Vigenère (Firewall 2) ─────────────────── */
+.vigenere-container {
+  width: 100%;
+  margin: var(--space-sm) 0;
+}
+
+.vigenere-step-tool {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Cripto: Análisis de Frecuencia (Firewall 4) ───────────── */
+.frecuencia-container {
+  width: 100%;
+  margin: var(--space-sm) 0;
+}
+
+.freq-step-tool {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.freq-bar-row:hover {
+  background: rgba(0, 229, 255, 0.05);
+  border-radius: var(--radius-sm);
+}
+
+/* ── Cripto: Esteganografía LSB (Firewall 4) ───────────────── */
+.estegano-container {
+  width: 100%;
+  margin: var(--space-sm) 0;
+}
+
+.estegano-step-tool {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Cripto: Cifrado Asimétrico RSA (Firewall 5) ────────────── */
+.rsa-container {
+  width: 100%;
+  margin: var(--space-sm) 0;
+}
+
+.rsa-step-tool {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.rsa-param-badge {
+  font-family: var(--font-mono);
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}
+
+.rsa-math-box {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+
+
+

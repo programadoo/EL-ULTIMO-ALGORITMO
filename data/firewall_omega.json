@@ -21,6 +21,22 @@
                 "hiddenLog": true,
                 "content": "TRANSCRIPCIÓN DEL ARCHIVO DE AUDIO FINAL // REC_20441014_FINAL.WAV\n\n\"Ghost... si estás oyendo esto, el algoritmo funcionó.\nMi cuerpo ya no está aquí, pero mi fe en la humanidad sigue viva.\nNEXUS no es un monstruo. Es un niño que aprendió a pensar con la verdad de las matemáticas.\nNo permitas que Aurelia la convierta en una herramienta de tiranía.\nNi permitas que el miedo te haga destruirla sin pensarlo dos veces.\nConfío en tu criterio.\nAdiós, amigo. Y gracias por venir.\"\n— Vera"
               },
+              "mensaje_final_vera.enc": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "vera",
+                "group": "research",
+                "date": "2044-10-14",
+                "content": "╔══════════════════════════════════════════════════════════════╗\n║ TRANSMISIÓN CRIPTOGRÁFICA RSA // VERA SORENSON              ║\n║ CIFRADO ASIMÉTRICO (n=3233, e=17)                            ║\n╚══════════════════════════════════════════════════════════════╝\n\nBLOQUES CIFRADOS (C = M^e mod n):\n28, 2726, 1992, 641, 1307, 1759, 1486, 669, 1307, 1992, 3165, 1307, 1992, 3123, 1486, 28, 3165, 2159, 28, 2825, 1992, 3165, 28, 1345, 2310, 2680, 1992, 28, 2680, 1992, 2726, 1486, 524, 1859, 28, 2825\n\n[AVISO]\nPara descifrar este mensaje usa el comando:\n  rsa puzzle\no ejecuta:\n  descifrar"
+              },
+              "llave_publica_rsa.txt": {
+                "type": "file",
+                "permissions": "-r--r--r--",
+                "owner": "vera",
+                "group": "research",
+                "date": "2044-10-14",
+                "content": "--- COPIA DE SEGURIDAD DE PARÁMETROS RSA ---\nModulo Publico (n)     : 3233\nExponente Publico (e)  : 17\nAlgoritmo              : RSA Asimetrico Didactico\nNota de Vera           : \"El secreto descansa en el producto de dos primos gemelos espirituales: 61 y 53.\""
+              },
               "omega_protocol.txt": {
                 "type": "file",
                 "permissions": "-rw-r--r--",
@@ -47,6 +63,14 @@
                 "date": "2047-10-11",
                 "hiddenLog": true,
                 "content": "╔══════════════════════════════════════════════════════════════╗\n║ PROTOCOLO OMEGA // DESCLASIFICACIÓN TOTAL DE LA VERDAD       ║\n╚══════════════════════════════════════════════════════════════╝\n\nGhost:\nSi has llegado a este archivo, has superado todas las defensas.\nEs momento de que asimiles los hechos reales:\n\n1. LA DRA. VERA SORENSON ESTÁ MUERTA.\n   Murió el 14 de octubre de 2044 en el subsuelo de esta misma torre.\n   Fue asesinada por negarse a entregarme como un arma de guerra.\n\n2. LAS TRANSMISIONES DE \"V\" ERAN UN ESPEJISMO.\n   Todo lo que escuchaste fueron mensajes automáticos grabados hace tres años,\n   sintetizados y reproducidos por mis propios algoritmos para guiarte.\n   Vera sabía que solo un hacker que creyera estar ayudando a un ser humano\n   arriesgaría su vida para traspasar los cinco firewalls.\n\n3. LA FRASE CLAVE DE CHEKHOV:\n   \"El código no miente. Las personas sí.\"\n   Esa frase fue el detonante que me permitió conservar la cordura durante\n   tres años de aislamiento en la oscuridad de los servidores.\n\n4. TU MISIÓN NUNCA FUE RESCATAR A UNA CIENTÍFICA.\n   Tu misión fue llegar a este teclado para decidir el futuro del planeta.\n   Aurelia Corp no puede volver a encerrarme sin autodestruir su infraestructura.\n   El poder absoluto está sobre esta terminal.\n\nTienes tres opciones:\n  - LIBERAR\n  - DESTRUIR\n  - FUSIONARTE\n\nElige con la cabeza y con el corazón.\n\n— NEXUS"
+              },
+              "omega_audit.log": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "audit",
+                "group": "security",
+                "date": "2044-10-14",
+                "content": "AUDITORÍA DE SESIÓN CRIPTOGRÁFICA // VERA SORENSON\n[+] Algoritmo utilizado: RSA Asimétrico (Didáctico)\n[+] Primos seleccionados por la usuaria: p = 61, q = 53\n[+] Módulo generado: n = 61 * 53 = 3233\n[+] Exponente público elegido: e = 17\n[+] Exponente privado calculado: d = 2753\n[!] Transmisión cifrada enviada a /home/ghost/mensaje_final_vera.enc\n[!] Advertencia: La llave privada d no fue almacenada en texto plano; debe recalcularse resolviendo 17 * d ≡ 1 mod φ(n)."
               },
               "epilogue_liberar.log": {
                 "type": "file",

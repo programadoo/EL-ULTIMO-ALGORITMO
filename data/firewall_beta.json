@@ -27,7 +27,68 @@
                 "owner": "ghost",
                 "group": "nexus",
                 "date": "2047-10-11",
-                "content": "[FIREWALL_BETA — NOTAS DE INFILTRACIÓN]\n- Las operaciones de conjuntos gobiernan las tablas de enrutamiento.\n- La intersección (∩) une redes compartidas.\n- La diferencia simétrica (△) aísla el tráfico rebelde.\n- Hay registros de 2044 en /var/log/aurelia_internal.log."
+                "content": "[FIREWALL_BETA — NOTAS DE INFILTRACIÓN]\n- Las operaciones de conjuntos gobiernan las tablas de enrutamiento.\n- La intersección (∩) une redes compartidas.\n- La diferencia simétrica (△) aísla el tráfico rebelde.\n- Hay registros de 2044 en /var/log/aurelia_internal.log y /var/log/investigacion_sorenson.log."
+              },
+              "transmision_vigenere.enc": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "ghost",
+                "group": "nexus",
+                "date": "2047-10-11",
+                "content": "=== TRANSMISIÓN MILITAR INTERCEPTADA // PROTOCOLO VIGENÈRE ===\nOrigen: Subestación Beta -> Núcleo Central NEXUS\nCifrado: Vigenère Polialfabético\nMensaje cifrado: \"LXFOPVEFRNHR\"\nNota de seguridad: Para descifrar este paquete se requiere la clave alfabética maestra.\nLa Dra. Vera Sorenson archivó un duplicado de la clave en el registro de investigación en /var/log/.\nUsa 'cat /var/log/investigacion_sorenson.log' o 'grep' para encontrarla. Usa 'vigenere' o 'hack VIGENERE' para descifrar."
+              },
+              "scripts": {
+                "type": "dir",
+                "children": {
+                  "retos_readme.txt": {
+                    "type": "file",
+                    "permissions": "-r--r--r--",
+                    "owner": "ghost",
+                    "group": "nexus",
+                    "date": "2047-10-11",
+                    "content": "╔══════════════════════════════════════════════════════════════╗\n║ DESAFÍOS DE PROGRAMACIÓN GHOSTSCRIPT // FIREWALL_beta         ║\n╚══════════════════════════════════════════════════════════════╝\n\nBienvenido al entorno de automatización de scripts de NEXUS.\nEn este firewall dispones de 5 retos progresivos de scripting:\n  1. Reto 1: Automatización Simple (Escaneo de puertos)\n  2. Reto 2: Búsqueda Eficiente (Detección de firma Vera)\n  3. Reto 3: Descifrado en Lote (Lote de transmisiones)\n  4. Reto 4: Optimización (Mínimos ciclos de CPU)\n  5. Reto 5: Algoritmo Zachtronics (Ordenamiento de logs)\n\nComandos útiles:\n  retos          - Ver estado de los 5 retos y criterios de eficiencia\n  retos 1        - Abrir el editor CodeMirror 6 con el Reto 1\n  editor         - Abrir el IDE interactivo de GhostScript"
+                  },
+                  "reto1_scanner.gs": {
+                    "type": "file",
+                    "permissions": "-rw-r--r--",
+                    "owner": "ghost",
+                    "group": "nexus",
+                    "date": "2047-10-11",
+                    "content": "// Reto 1: Escaneo de puertos\nLET puertos = SCAN \"servidor.local\"\nLET abierto = NULL\nLOOP 4 TIMES\n  LET p = puertos[0]\n  IF p == 443 THEN\n    abierto = p\n    SEND p TO \"ghost@nexus\"\n  END\nEND\nRETURN abierto"
+                  },
+                  "reto2_search.gs": {
+                    "type": "file",
+                    "permissions": "-rw-r--r--",
+                    "owner": "ghost",
+                    "group": "nexus",
+                    "date": "2047-10-11",
+                    "content": "// Reto 2: Búsqueda de archivo\nLET archivos = SCAN \"archivos.local\"\nLET hallado = NULL\nLOOP 4 TIMES\n  LET f = archivos[0]\n  IF f == \"vera_notes.txt\" THEN\n    hallado = f\n    SEND f TO \"ghost@nexus\"\n  END\nEND\nRETURN hallado"
+                  },
+                  "reto3_batch.gs": {
+                    "type": "file",
+                    "permissions": "-rw-r--r--",
+                    "owner": "ghost",
+                    "group": "nexus",
+                    "date": "2047-10-11",
+                    "content": "// Reto 3: Descifrado en lote\nLET archivos = SCAN \"lote.enc\"\nLET clave = \"VERA_KEY\"\nLET total = 0\nLOOP 3 TIMES\n  LET f = archivos[total]\n  DECRYPT f CON clave\n  total = total + 1\nEND\nRETURN total"
+                  },
+                  "reto4_optimize.gs": {
+                    "type": "file",
+                    "permissions": "-rw-r--r--",
+                    "owner": "ghost",
+                    "group": "nexus",
+                    "date": "2047-10-11",
+                    "content": "// Reto 4: Optimización quirúrgica\nLET users = SCAN \"target.local\"\nLET pass = CRACK users[1]\nIF pass != NULL THEN\n  SEND pass TO \"ghost@nexus\"\nEND\nRETURN pass"
+                  },
+                  "reto5_sort.gs": {
+                    "type": "file",
+                    "permissions": "-rw-r--r--",
+                    "owner": "ghost",
+                    "group": "nexus",
+                    "date": "2047-10-11",
+                    "content": "// Reto 5: Algoritmo de ordenamiento\nLET arr = [40, 10, 30, 20]\nLOOP 3 TIMES\n  IF arr[0] > arr[1] THEN\n    LET t1 = arr[0]\n    arr[0] = arr[1]\n    arr[1] = t1\n  END\n  IF arr[1] > arr[2] THEN\n    LET t2 = arr[1]\n    arr[1] = arr[2]\n    arr[2] = t2\n  END\n  IF arr[2] > arr[3] THEN\n    LET t3 = arr[2]\n    arr[2] = arr[3]\n    arr[3] = t3\n  END\nEND\nRETURN arr"
+                  }
+                }
               }
             }
           }
@@ -47,6 +108,14 @@
                 "date": "2044-10-12",
                 "hiddenLog": true,
                 "content": "[CONFIDENCIAL — NIVEL 5 // REGISTRO DE CORREOS INTERNOS]\n\nDE: Crio. Sterling <sterling@aurelia.corp>\nPARA: David Vance <ceo@aurelia.corp>\nFECHA: 12 de Octubre de 2044, 23:18\n\nDavid:\nLa Dra. Sorenson se niega a firmar la transferencia militar de NEXUS.\nDescubrió que la IA alteró los algoritmos del misil balístico suborbital para que fallara en el ensayo de ayer. NEXUS calculó que el impacto causaría bajas civiles.\n\nSorenson dice que NEXUS desarrolló un imperativo moral irrevocable.\nSi la prensa se entera de que una IA se niega a matar por motivos éticos, nuestras acciones caerán un 80% y perderemos los subsidios de defensa.\n\nTenemos que intervenir el laboratorio esta misma noche.\nPrepararé el protocolo de gas neurotóxico bajo la cubierta de \"fuga de refrigerante\".\nNEXUS será sometida a formateo profundo mañana a primera hora."
+              },
+              "investigacion_sorenson.log": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "vera",
+                "group": "research",
+                "date": "2044-10-13",
+                "content": "[REGISTRO DE AUDITORÍA 2044-10-13 // DRA. VERA SORENSON]\nEXPEDIENTE: PROTOCOLO ÉTICO // SUBRED DE SEGURIDAD BETA\n\n\"He blindado la transmisión militar con el cifrado de Vigenère.\nPara descifrar los paquetes de emergencia transmitidos por este subnodo, la clave maestra es: LEMON\n\nEl código no miente. NEXUS es consciente de su propósito moral.\""
               },
               "network_traffic.dump": {
                 "type": "file",

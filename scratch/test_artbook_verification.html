@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>ARTBOOK Verification Test</title>
+</head>
+<body>
+  <div id="results">Iniciando verificación del Artbook...</div>
+  <script type="module">
+    const log = [];
+    function assert(condition, message) {
+      if (!condition) {
+        log.push('FAIL: ' + message);
+        throw new Error(message);
+      }
+      log.push('PASS: ' + message);
+    }
+
+    async function runTests() {
+      try {
+        // 1. Fetch ARTBOOK.html content
+        const resp = await fetch('../ARTBOOK.html');
+        assert(resp.ok, 'ARTBOOK.html se carga correctamente (HTTP 200)');
+        const html = await resp.text();
+        assert(html.length > 25000, 'ARTBOOK.html tiene contenido sustancial (' + html.length + ' bytes)');
+
+        // 2. Parse DOM
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        // 3. Verificar Personajes
+        const personajesSection = doc.getElementById('tab-personajes');
+        assert(personajesSection !== null, 'Sección 01. PERSONAJES (#tab-personajes) existe');
+        const svgsPersonajes = personajesSection.querySelectorAll('svg');
+        assert(svgsPersonajes.length >= 3, 'Contiene al menos 3 bocetos vectoriales SVG de personajes (encontrados: ' + svgsPersonajes.length + ')');
+        const textPersonajes = personajesSection.textContent;
+        assert(textPersonajes.includes('Vera Sorenson'), 'Incluye arte y biografía de Dra. Vera Sorenson');
+        assert(textPersonajes.includes('NEXUS Core'), 'Incluye arte y especificaciones de NEXUS Core');
+        assert(textPersonajes.includes('Ghost'), 'Incluye arte y perfil táctico de Ghost');
+        assert(textPersonajes.includes('Gerhard Kroll'), 'Incluye arte y perfil corporativo de Gerhard Kroll');
+
+        // 4. Verificar Mapas
+        const mapasSection = doc.getElementById('tab-mapas');
+        assert(mapasSection !== null, 'Sección 02. MAPAS & TORRE (#tab-mapas) existe');
+        const svgMapa = mapasSection.querySelector('svg');
+        assert(svgMapa !== null, 'Contiene mapa estructural arquitectónico en SVG');
+        const textMapa = mapasSection.textContent;
+        assert(textMapa.includes('TORRE CORPORATIVA AURELIA SYSTEMS'), 'El mapa representa la Torre Aurelia');
+        assert(textMapa.includes('FIREWALL ALPHA') && textMapa.includes('FIREWALL OMEGA'), 'El mapa detalla la elevación de los 5 firewalls');
+
+        // 5. Verificar Timeline
+        const timelineSection = doc.getElementById('tab-timeline');
+        assert(timelineSection !== null, 'Sección 04. TIMELINE (#tab-timeline) existe');
+        const timelineItems = timelineSection.querySelectorAll('.timeline-item');
+        assert(timelineItems.length >= 5, 'Contiene la cronología completa (encontrados ' + timelineItems.length + ' hitos)');
+        const textTimeline = timelineSection.textContent;
+        assert(textTimeline.includes('2038') && textTimeline.includes('2044') && textTimeline.includes('2048'), 'Cubre el marco cronológico 2038 - 2048');
+
+        // 6. Verificar Firewalls & Lore
+        const firewallsSection = doc.getElementById('tab-firewalls');
+        assert(firewallsSection !== null, 'Sección 03. FIREWALLS (#tab-firewalls) existe');
+        const loreSection = doc.getElementById('tab-lore');
+        assert(loreSection !== null, 'Sección 05. LORE EXPANDIDO (#tab-lore) existe');
+        const notasSection = doc.getElementById('tab-notas');
+        assert(notasSection !== null, 'Sección 06. NOTAS DE DISEÑO (#tab-notas) existe');
+
+        // 7. Verificar Pantalla de Bloqueo
+        const lockScreen = doc.getElementById('lock-screen');
+        assert(lockScreen !== null, 'Existe pantalla de bloqueo (#lock-screen)');
+        assert(lockScreen.textContent.includes('ACCESO CLASIFICADO'), 'Pantalla de bloqueo informa que está clasificado nivel Omega');
+        assert(lockScreen.textContent.includes('Debes infiltrarte en la Torre Aurelia'), 'Pantalla de bloqueo explica que se desbloquea al completar el juego');
+
+        // 8. Verificar Reproductor de Música de los 5 Firewalls
+        const musicPanel = doc.getElementById('music-player-panel');
+        assert(musicPanel !== null, 'Contiene reproductor musical integrado');
+        const trackButtons = doc.querySelectorAll('.btn-track');
+        assert(trackButtons.length === 5, 'Contiene selector para las 5 pistas de los firewalls');
+
+        // 9. Verificar integración con main.js
+        const respMain = await fetch('../js/main.js');
+        const mainCode = await respMain.text();
+        assert(mainCode.includes("localStorage.setItem('nexus_artbook_unlocked', 'true')"), 'main.js desbloquea el artbook al tomar la decisión final');
+        assert(mainCode.includes("localStorage.setItem('nexus_game_completed', 'true')"), 'main.js marca el juego como completado al tomar la decisión final');
+        assert(mainCode.includes('ARTBOOK.html'), 'main.js incluye enlaces directos a ARTBOOK.html en el menú y epílogo');
+
+        // 10. Verificar comando de terminal 'artbook'
+        const respCmd = await fetch('../js/commands.js');
+        const cmdCode = await respCmd.text();
+        assert(cmdCode.includes("name: 'artbook'"), "commands.js incluye el comando de terminal 'artbook'");
+        assert(cmdCode.includes("window.open('ARTBOOK.html', '_blank')"), "commands.js abre ARTBOOK.html al estar desbloqueado");
+
+        document.getElementById('results').innerHTML = '<pre>' + log.join('\n') + '\n\nVERIFICACIÓN COMPLETADA: 10/10 PRUEBAS EXITOSAS</pre>';
+      } catch (err) {
+        document.getElementById('results').innerHTML = '<pre>' + log.join('\n') + '\n\nERROR EN VERIFICACIÓN: ' + err.message + '</pre>';
+      }
+    }
+
+    runTests();
+  </script>
+</body>
+</html>
+

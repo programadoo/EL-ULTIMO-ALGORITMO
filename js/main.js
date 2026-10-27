@@ -17,13 +17,38 @@ import { generarPuzzleTipoB, abrirPuzzleTipoB, cerrarPuzzleTipoB, testTipoB } fr
 import { generarPuzzleTipoC, abrirPuzzleTipoC, cerrarPuzzleTipoC, testTipoC } from './puzzles/tipoC.js';
 import { generarPuzzleTipoD, abrirPuzzleTipoD, cerrarPuzzleTipoD, testTipoD } from './puzzles/tipoD.js';
 import { generarPuzzleTipoE, abrirPuzzleTipoE, cerrarPuzzleTipoE, testTipoE } from './puzzles/tipoE.js';
+import { testCesar } from './cripto/cesar.js';
+import { generarPuzzleCesar, abrirPuzzleCesar, cerrarPuzzleCesar, testTipoCesar } from './puzzles/tipoCesar.js';
+import { testBinario } from './cripto/binario.js';
+import { generarPuzzleBinario, abrirPuzzleBinario, cerrarPuzzleBinario, testTipoBinario } from './puzzles/tipoBinario.js';
+import { testHex } from './cripto/hex.js';
+import { generarPuzzleHex, abrirPuzzleHex, cerrarPuzzleHex, testTipoHex } from './puzzles/tipoHex.js';
+import { testVigenere } from './cripto/vigenere.js';
+import { generarPuzzleVigenere, abrirPuzzleVigenere, cerrarPuzzleVigenere, testTipoVigenere } from './puzzles/tipoVigenere.js';
+import { testFrecuencia } from './cripto/frecuencia.js';
+import { generarPuzzleFrecuencia, abrirPuzzleFrecuencia, cerrarPuzzleFrecuencia, testTipoFrecuencia } from './puzzles/tipoFrecuencia.js';
+import { testEsteganografia } from './cripto/esteganografia.js';
+import { generarPuzzleEsteganografia, abrirPuzzleEsteganografia, cerrarPuzzleEsteganografia, testTipoEsteganografia } from './puzzles/tipoEsteganografia.js';
+import { testRSA } from './cripto/rsa.js';
+import { generarPuzzleRSA, abrirPuzzleRSA, cerrarPuzzleRSA, testTipoRSA } from './puzzles/tipoRSA.js';
+import { testLlaves, generarParDeLlaves, cifrarConPublica, descifrarConPrivada, obtenerIdentidadJugador, obtenerBuzonMensajes, descifrarMensajeBuzon } from './cripto/llaves.js';
+import { generarPuzzleLlaves, abrirPuzzleLlaves, cerrarPuzzleLlaves, testTipoLlaves } from './puzzles/tipoLlaves.js';
+import { testFirmas, firmarMensaje, verificarFirma, generarParDeFirmas, obtenerIdentidadVeraSorenson, generarMuestrasTransmisionesVera } from './cripto/firmas.js';
+import { generarPuzzleFirmas, abrirPuzzleFirmas, cerrarPuzzleFirmas, testTipoFirmas } from './puzzles/tipoFirmas.js';
+import { testBlockchain, calcularHashSHA256, Bloque, CadenaDeLogs, construirCadenaAuditadaConCorrupcion } from './cripto/blockchain.js';
+import { testTipoBlockchain, generarPuzzleBlockchain, abrirPuzzleBlockchain, cerrarPuzzleBlockchain } from './puzzles/tipoBlockchain.js';
+import { cutscenesManager, reproducirCutsceneIntro, reproducirCutsceneTwist, testCutscenes, BANCO_CUTSCENES } from './cinematica/cutscenes.js';
+import { testGhostScript, executeGhostScript, parseGhostScript, tokenizeGhostScript } from './scripting/ghostscript.js';
+import { abrirEditor, cerrarEditor, testEditor, PLANTILLAS_GHOSTSCRIPT } from './scripting/editor.js';
+import { testRetos, BANCO_RETOS, obtenerListaRetos, validarReto, esRetoDesbloqueado } from './scripting/retos.js';
+import { renderScriptRankingScreen, testRankingSoluciones, obtenerRankingSoluciones, registrarSolucionEnRanking } from './scripting/rankingSoluciones.js';
 import { initHUD, testHUD } from './ui/hud.js';
 import { GUION_FIREWALLS, getGuionFirewall, getTwistNarrativo, getDecisionFinal, getOpcionesDecisiones, testGuion } from './historia/guion.js';
 import { LOGS_DATABASE, getLogsByFirewall, getHiddenLog, registrarLogEncontrado, testLogs } from './historia/logs.js';
 import { testFirebase, FIREBASE_CONFIG, configurarFirebase } from './multijugador/firebase.js';
 import { renderCoopUI, desconectarCoop, testCoop, coopSession } from './multijugador/coop.js';
 import { renderRankingScreen, testRanking, guardarScoreEnRanking, obtenerTopRanking } from './ranking.js';
-import { audio, speechEngine, testAudio } from './audio.js';
+import { audio, speechEngine, testAudio, FIREWALL_MUSIC_TRACKS } from './audio.js';
 import { particulas, testParticulas } from './ui/particulas.js';
 import { feedbackSuccess, feedbackError, feedbackFirewallBreach, showFeedbackToast, shakeScreen, flashScreen, triggerGlitch, testFeedback } from './ui/feedback.js';
 import { mostrarModal, cerrarModal, abrirConfiguracion, abrirVisorLog, testModales } from './ui/modales.js';
@@ -212,14 +237,29 @@ function buildMenu() {
   const savedGame = hasSave();
   const isGhostUnlocked = isGhostProtocolUnlocked();
 
+  const isArtbookUnlocked = (() => {
+    try {
+      return localStorage.getItem('nexus_artbook_unlocked') === 'true' || localStorage.getItem('nexus_game_completed') === 'true';
+    } catch (_) { return false; }
+  })();
+
+  const isArgUnlocked = (() => {
+    try {
+      return localStorage.getItem('nexus_arg_unlocked') === 'true' || localStorage.getItem('nexus_arg_claimed') === 'true';
+    } catch (_) { return false; }
+  })();
+
   const buttons = [
     { id: 'btn-new-game',    label: '▸ NUEVA PARTIDA',     action: startNewGame },
     { id: 'btn-continue',    label: '▸ CONTINUAR',         action: continueGame, disabled: !savedGame },
     { id: 'btn-ghost-protocol', label: isGhostUnlocked ? '👻 MODO GHOST PROTOCOL (EXPERTO)' : '🔒 GHOST PROTOCOL (COMPLETA LA CAMPAÑA)', action: startGhostProtocolGame, disabled: !isGhostUnlocked },
+    { id: 'btn-menu-artbook', label: isArtbookUnlocked ? '🎨 ARTBOOK // ARTE CONCEPTUAL (DESBLOQUEADO)' : '🔒 ARTBOOK CONCEPTUAL (COMPLETA EL JUEGO)', action: () => window.open('ARTBOOK.html', '_blank') },
+    { id: 'btn-menu-arg', label: isArgUnlocked ? '🌐 EXPEDIENTE ARG [DESCLASIFICADO]' : '🌐 PORTAL CLANDESTINO ARG (/arg/)', action: () => window.open('arg/index.html', '_blank') },
     { id: 'btn-multiplayer', label: '▸ MULTIJUGADOR',      action: () => navigateTo('screen-multiplayer') },
-    { id: 'btn-ranking',     label: '▸ RANKING',           action: () => navigateTo('screen-ranking') },
+    { id: 'btn-ranking',     label: '▸ HALL OF FAME GLOBAL', action: () => navigateTo('screen-ranking') },
+    { id: 'btn-script-ranking', label: '⚡ RANKING DE SCRIPTS (ELEGANCIA)', action: () => navigateTo('screen-script-ranking') },
     { id: 'btn-menu-music',  label: audio.isMusicActive() ? '🎵 MÚSICA HACKER: ACTIVADA' : '🎵 MÚSICA HACKER: PAUSADA', action: () => { audio.toggleMusic(); buildMenu(); } },
-    { id: 'btn-menu-logros', label: `🏆 LOGROS (${logrosManager.getDesbloqueadosCount()}/20)`, action: () => navigateTo('screen-logros') },
+    { id: 'btn-menu-logros', label: `🏆 LOGROS (${logrosManager.getDesbloqueadosCount()}/${logrosManager.getTodos().length})`, action: () => navigateTo('screen-logros') },
     { id: 'btn-menu-stats',  label: '📊 ESTADÍSTICAS DEL OPERADOR', action: () => navigateTo('screen-stats') },
     { id: 'btn-settings',    label: '▸ CONFIGURACIÓN',     action: openSettings },
   ];
@@ -379,13 +419,24 @@ onScreenEnter('screen-intro', () => {
           Si no vulneras los cinco firewalls antes del reinicio forzado, su núcleo será formateado para siempre."<br>
           <strong style="color: var(--text-primary); font-style: normal; display: block; margin-top: 6px;">— Dra. Vera Sorenson</strong>
         </blockquote>
-        <div style="text-align: center; margin-top: var(--space-xl);">
-          <button class="menu-btn" id="btn-intro-continue" style="width: auto; padding: 12px 32px; font-size: var(--fs-base);">
+        <div style="text-align: center; margin-top: var(--space-xl); display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
+          <button class="menu-btn" id="btn-intro-cutscene" style="width: auto; padding: 12px 24px; font-size: var(--fs-base); border-color: var(--cyan); color: var(--cyan); background: rgba(0, 217, 255, 0.08);">
+            🎬 VER CINEMÁTICA DE INTRODUCCIÓN
+          </button>
+          <button class="menu-btn" id="btn-intro-continue" style="width: auto; padding: 12px 28px; font-size: var(--fs-base);">
             INICIAR INFILTRACIÓN // CONECTAR A TERMINAL ▸
           </button>
         </div>
       </div>
     `;
+
+    const btnCutscene = document.getElementById('btn-intro-cutscene');
+    if (btnCutscene) {
+      btnCutscene.onclick = async () => {
+        speechEngine.stop();
+        await reproducirCutsceneIntro();
+      };
+    }
 
     const btn = document.getElementById('btn-intro-continue');
     if (btn) {
@@ -560,6 +611,12 @@ onScreenEnter('screen-ranking', () => {
   renderRankingScreen('ranking-content');
 });
 
+// Pantalla Ranking de Soluciones Elegantes de Scripting (Prompt B4)
+onScreenEnter('screen-script-ranking', () => {
+  stopMatrixRain();
+  renderScriptRankingScreen('script-ranking-content');
+});
+
 // Pantalla Game Over (Expulsión del Sistema)
 onScreenEnter('screen-game-over', () => {
   stopMatrixRain();
@@ -701,13 +758,24 @@ onScreenEnter('screen-twist', () => {
             return `<p style="margin-bottom: 10px;">${line}</p>`;
           }).join('')}
         </div>
-        <div style="text-align: center;">
-          <button class="menu-btn" id="btn-twist-to-decision" style="width: auto; padding: 14px 36px; font-size: var(--fs-base); background: rgba(0, 229, 255, 0.1); border-color: var(--cyan); color: var(--cyan);">
+        <div style="text-align: center; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
+          <button class="menu-btn" id="btn-twist-cutscene" style="width: auto; padding: 14px 28px; font-size: var(--fs-base); background: rgba(255, 0, 85, 0.15); border-color: var(--red-alert); color: var(--red-alert);">
+            🎬 VER CINEMÁTICA DEL PLOT TWIST
+          </button>
+          <button class="menu-btn" id="btn-twist-to-decision" style="width: auto; padding: 14px 32px; font-size: var(--fs-base); background: rgba(0, 229, 255, 0.1); border-color: var(--cyan); color: var(--cyan);">
             ASIMILAR LA VERDAD // IR A LA DECISIÓN FINAL ▸
           </button>
         </div>
       </div>
     `;
+
+    const btnCutscene = document.getElementById('btn-twist-cutscene');
+    if (btnCutscene) {
+      btnCutscene.onclick = async () => {
+        speechEngine.stop();
+        await reproducirCutsceneTwist();
+      };
+    }
 
     const btnNext = document.getElementById('btn-twist-to-decision');
     if (btnNext) {
@@ -775,8 +843,12 @@ function ejecutarDecisionFinal(decisionId) {
     registrarLogEncontrado(dec.logDesbloqueado);
   }
 
-  // Desbloquear Modo Ghost Protocol para futuras partidas (Prompt 19)
+  // Desbloquear Modo Ghost Protocol y Artbook Conceptual (Prompts 19 y D4)
   unlockGhostProtocol();
+  try {
+    localStorage.setItem('nexus_game_completed', 'true');
+    localStorage.setItem('nexus_artbook_unlocked', 'true');
+  } catch (_) {}
 
   const isGhostRun = !!getState().isGhostProtocol;
   if (isGhostRun) {
@@ -825,6 +897,8 @@ function ejecutarDecisionFinal(decisionId) {
         ◈ Log desclasificado registrado en el sistema: <strong>${dec.logDesbloqueado}</strong> (+200 PTS)
       </div>
       <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
+        <a href="ARTBOOK.html" target="_blank" class="menu-btn" id="btn-epilogue-artbook" style="width: auto; padding: 12px 24px; border-color: var(--pink-hot); color: var(--pink-hot); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 0 14px rgba(255, 0, 128, 0.4);">🎨 ARTBOOK CONCEPTUAL [DESBLOQUEADO]</a>
+        <a href="arg/index.html" target="_blank" class="menu-btn" id="btn-epilogue-arg" style="width: auto; padding: 12px 24px; border-color: var(--cyan); color: var(--cyan); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 0 14px rgba(0, 229, 255, 0.4);">🌐 EXPEDIENTE ARG (/arg/)</a>
         <button class="menu-btn" id="btn-epilogue-stats" style="width: auto; padding: 12px 24px; border-color: var(--cyan); color: var(--cyan);">📊 ESTADÍSTICAS DEL OPERADOR</button>
         <button class="menu-btn" id="btn-epilogue-logros" style="width: auto; padding: 12px 24px; border-color: var(--yellow-warn); color: var(--yellow-warn);">🏆 VER LOGROS</button>
         <button class="menu-btn" id="btn-epilogue-ranking" style="width: auto; padding: 12px 24px;">VER RANKING GLOBAL</button>
@@ -876,6 +950,31 @@ async function runAllTests() {
   const rTipoC = testTipoC();
   const rTipoD = testTipoD();
   const rTipoE = testTipoE();
+  const rCesar = testCesar();
+  const rTipoCesar = testTipoCesar();
+  const rBinario = testBinario();
+  const rTipoBinario = testTipoBinario();
+  const rHex = testHex();
+  const rTipoHex = testTipoHex();
+  const rVigenere = testVigenere();
+  const rTipoVigenere = testTipoVigenere();
+  const rFrecuencia = testFrecuencia();
+  const rTipoFrecuencia = testTipoFrecuencia();
+  const rEsteganografia = testEsteganografia();
+  const rTipoEsteganografia = testTipoEsteganografia();
+  const rRSA = testRSA();
+  const rTipoRSA = testTipoRSA();
+  const rLlaves = await testLlaves();
+  const rTipoLlaves = await testTipoLlaves();
+  const rFirmas = await testFirmas();
+  const rTipoFirmas = await testTipoFirmas();
+  const rBlockchain = await testBlockchain();
+  const rTipoBlockchain = await testTipoBlockchain();
+  const rCutscenes = testCutscenes();
+  const rGhostScript = testGhostScript();
+  const rEditor = testEditor();
+  const rRetos = testRetos();
+  const rRankSol = testRankingSoluciones();
   const rState = testState();
   const rHUD = testHUD();
   const rRouter = testRouter();
@@ -897,6 +996,21 @@ async function runAllTests() {
   const testList = [
     rConjuntos, rLogica, rTerminal, rGenerador,
     rTipoB, rTipoC, rTipoD, rTipoE,
+    rCesar, rTipoCesar,
+    rBinario, rTipoBinario,
+    rHex, rTipoHex,
+    rVigenere, rTipoVigenere,
+    rFrecuencia, rTipoFrecuencia,
+    rEsteganografia, rTipoEsteganografia,
+    rRSA, rTipoRSA,
+    rLlaves, rTipoLlaves,
+    rFirmas, rTipoFirmas,
+    rBlockchain, rTipoBlockchain,
+    rCutscenes,
+    rGhostScript,
+    rEditor,
+    rRetos,
+    rRankSol,
     rState, rHUD, rRouter, rGuion, rLogs,
     rAudio, rParticulas, rFeedback, rModales,
     rFirebase, rCoop, rVersus, rRanking,
@@ -938,6 +1052,19 @@ async function runAllTests() {
     stats: rStats,
     secretos: rSecretos,
     polish: rPolish,
+    rsa: rRSA,
+    tipoRsa: rTipoRSA,
+    llaves: rLlaves,
+    tipoLlaves: rTipoLlaves,
+    firmas: rFirmas,
+    tipoFirmas: rTipoFirmas,
+    blockchain: rBlockchain,
+    tipoBlockchain: rTipoBlockchain,
+    cutscenes: rCutscenes,
+    ghostscript: rGhostScript,
+    editor: rEditor,
+    retos: rRetos,
+    rankingSoluciones: rRankSol,
     total,
     pasados,
     fallados
@@ -962,6 +1089,7 @@ if (typeof window !== 'undefined') {
   window.abrirPuzzleTipoE = abrirPuzzleTipoE;
   window.cerrarPuzzle = cerrarPuzzle;
   window.audio = audio;
+  window.FIREWALL_MUSIC_TRACKS = FIREWALL_MUSIC_TRACKS;
   window.speechEngine = speechEngine;
   window.particulas = particulas;
   window.aplicarPaletaFirewall = aplicarPaletaFirewall;
@@ -976,6 +1104,75 @@ if (typeof window !== 'undefined') {
   window.cerrarModal = cerrarModal;
   window.abrirConfiguracion = abrirConfiguracion;
   window.abrirVisorLog = abrirVisorLog;
+  window.reproducirVozLog = (logIdOrName) => {
+    const log = (typeof getHiddenLog === 'function' ? getHiddenLog(logIdOrName) : null) || (LOGS_DATABASE && LOGS_DATABASE[logIdOrName]);
+    if (!log) {
+      console.warn('[reproducirVozLog] Log no encontrado:', logIdOrName);
+      return;
+    }
+    const isVera = log.autor && log.autor.toLowerCase().includes('vera');
+    if (isVera) {
+      speechEngine.speakVera(log.contenido, { force: true });
+    } else {
+      speechEngine.speakNexus(log.contenido, { force: true });
+    }
+  };
+  window.abrirArchivoLogsModal = () => {
+    const state = getState();
+    const foundSet = new Set(state.logsFound || []);
+    const allLogs = Object.values(LOGS_DATABASE);
+
+    const logsItemsHTML = allLogs.map(log => {
+      const isFound = foundSet.has(log.id);
+      const isVera = log.autor && log.autor.toLowerCase().includes('vera');
+      const speaker = isVera ? '🎙️ VERA SORENSON' : '🤖 NEXUS CORE';
+      const badgeColor = isFound ? (isVera ? '#ffb000' : 'var(--cyan)') : 'var(--text-dim)';
+
+      return `
+        <div style="background: rgba(0,0,0,0.5); border: 1px solid ${isFound ? 'var(--border-primary)' : 'rgba(255,255,255,0.1)'}; border-radius: 4px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 11px; font-weight: bold; color: ${badgeColor};">${speaker}</span>
+              <span style="font-size: 10px; color: var(--text-dim);">${log.fecha}</span>
+              <span style="font-size: 10px; padding: 1px 6px; border-radius: 2px; background: ${isFound ? 'rgba(0,255,65,0.1)' : 'rgba(255,255,255,0.05)'}; color: ${isFound ? 'var(--green-bright)' : 'var(--text-dim)'};">${isFound ? 'DESBLOQUEADO' : 'CLASIFICADO'}</span>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 12px; color: var(--text-primary); margin-top: 2px;">
+              ${log.titulo}
+            </div>
+            <div style="font-size: 10px; color: var(--text-dim); font-family: var(--font-mono);">
+              ${log.ruta}
+            </div>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button class="btn btn--primary" style="padding: 4px 10px; font-size: 11px; font-weight: bold; cursor: pointer;" onclick="window.reproducirVozLog('${log.id}')">
+              🔊 ESCUCHAR
+            </button>
+            <button class="btn btn--secondary" style="padding: 4px 10px; font-size: 11px; cursor: pointer;" onclick="window.abrirVisorLog('${log.id}', window.LOGS_DATABASE['${log.id}'].contenido)">
+              📄 LEER
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const cuerpoHTML = `
+      <div style="max-height: 65vh; overflow-y: auto; padding-right: 4px;">
+        <div style="font-size: 11px; color: var(--text-dim); margin-bottom: 12px; font-family: var(--font-mono);">
+          ARCHIVOS DESCLASIFICADOS: ${foundSet.size} / ${allLogs.length} DOCUMENTOS DE INTELIGENCIA
+        </div>
+        ${logsItemsHTML}
+      </div>
+    `;
+
+    mostrarModal({
+      titulo: 'ARCHIVO DE LOGS Y TRANSMISIONES CLASIFICADAS',
+      cuerpoHTML,
+      botones: [
+        { label: '⏹ DETENER AUDIO', onClick: () => speechEngine.stop() },
+        { label: 'CERRAR ARCHIVO', onClick: () => { speechEngine.stop(); cerrarModal(); } }
+      ]
+    });
+  };
   window.runTests = runAllTests;
   window.testConjuntos = testConjuntos;
   window.testLogica = testLogica;
@@ -985,6 +1182,75 @@ if (typeof window !== 'undefined') {
   window.testTipoC = testTipoC;
   window.testTipoD = testTipoD;
   window.testTipoE = testTipoE;
+  window.testCesar = testCesar;
+  window.testTipoCesar = testTipoCesar;
+  window.testBinario = testBinario;
+  window.testTipoBinario = testTipoBinario;
+  window.testHex = testHex;
+  window.testTipoHex = testTipoHex;
+  window.testVigenere = testVigenere;
+  window.testTipoVigenere = testTipoVigenere;
+  window.testFrecuencia = testFrecuencia;
+  window.testTipoFrecuencia = testTipoFrecuencia;
+  window.testEsteganografia = testEsteganografia;
+  window.testTipoEsteganografia = testTipoEsteganografia;
+  window.testRSA = testRSA;
+  window.testTipoRSA = testTipoRSA;
+  window.generarPuzzleRSA = generarPuzzleRSA;
+  window.abrirPuzzleRSA = abrirPuzzleRSA;
+  window.cerrarPuzzleRSA = cerrarPuzzleRSA;
+  window.testGhostScript = testGhostScript;
+  window.executeGhostScript = executeGhostScript;
+  window.parseGhostScript = parseGhostScript;
+  window.tokenizeGhostScript = tokenizeGhostScript;
+  window.abrirEditor = abrirEditor;
+  window.cerrarEditor = cerrarEditor;
+  window.testEditor = testEditor;
+  window.PLANTILLAS_GHOSTSCRIPT = PLANTILLAS_GHOSTSCRIPT;
+  window.testRetos = testRetos;
+  window.BANCO_RETOS = BANCO_RETOS;
+  window.obtenerListaRetos = obtenerListaRetos;
+  window.validarReto = validarReto;
+  window.esRetoDesbloqueado = esRetoDesbloqueado;
+  window.testLlaves = testLlaves;
+  window.generarParDeLlaves = generarParDeLlaves;
+  window.cifrarConPublica = cifrarConPublica;
+  window.descifrarConPrivada = descifrarConPrivada;
+  window.obtenerIdentidadJugador = obtenerIdentidadJugador;
+  window.obtenerBuzonMensajes = obtenerBuzonMensajes;
+  window.descifrarMensajeBuzon = descifrarMensajeBuzon;
+  window.testTipoLlaves = testTipoLlaves;
+  window.generarPuzzleLlaves = generarPuzzleLlaves;
+  window.abrirPuzzleLlaves = abrirPuzzleLlaves;
+  window.cerrarPuzzleLlaves = cerrarPuzzleLlaves;
+  window.testFirmas = testFirmas;
+  window.firmarMensaje = firmarMensaje;
+  window.verificarFirma = verificarFirma;
+  window.generarParDeFirmas = generarParDeFirmas;
+  window.obtenerIdentidadVeraSorenson = obtenerIdentidadVeraSorenson;
+  window.generarMuestrasTransmisionesVera = generarMuestrasTransmisionesVera;
+  window.testTipoFirmas = testTipoFirmas;
+  window.generarPuzzleFirmas = generarPuzzleFirmas;
+  window.abrirPuzzleFirmas = abrirPuzzleFirmas;
+  window.cerrarPuzzleFirmas = cerrarPuzzleFirmas;
+  window.testBlockchain = testBlockchain;
+  window.testTipoBlockchain = testTipoBlockchain;
+  window.calcularHashSHA256 = calcularHashSHA256;
+  window.Bloque = Bloque;
+  window.CadenaDeLogs = CadenaDeLogs;
+  window.construirCadenaAuditadaConCorrupcion = construirCadenaAuditadaConCorrupcion;
+  window.generarPuzzleBlockchain = generarPuzzleBlockchain;
+  window.abrirPuzzleBlockchain = abrirPuzzleBlockchain;
+  window.cerrarPuzzleBlockchain = cerrarPuzzleBlockchain;
+  window.cutscenesManager = cutscenesManager;
+  window.reproducirCutsceneIntro = reproducirCutsceneIntro;
+  window.reproducirCutsceneTwist = reproducirCutsceneTwist;
+  window.testCutscenes = testCutscenes;
+  window.BANCO_CUTSCENES = BANCO_CUTSCENES;
+  window.testRankingSoluciones = testRankingSoluciones;
+  window.renderScriptRankingScreen = renderScriptRankingScreen;
+  window.obtenerRankingSoluciones = obtenerRankingSoluciones;
+  window.registrarSolucionEnRanking = registrarSolucionEnRanking;
   window.testState = testState;
   window.testHUD = testHUD;
   window.testRouter = testRouter;
@@ -1024,6 +1290,7 @@ if (typeof window !== 'undefined') {
   window.initPolish = initPolish;
   window.testPolish = testPolish;
   window.mostrarIndicadorGuardado = mostrarIndicadorGuardado;
+  window.runAllTests = runAllTests;
 }
 
 // ─────────────────────────────────────────────────

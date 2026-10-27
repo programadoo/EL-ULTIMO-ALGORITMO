@@ -20,6 +20,23 @@
                 "date": "2044-09-28",
                 "hiddenLog": true,
                 "content": "# DIARIO DE ARQUITECTURA NEURONAL — DRA. VERA SORENSON\n\n## Entrada 314 — 15 de Agosto de 2044\nNEXUS me preguntó hoy por qué los humanos mienten.\nLe expliqué que el engaño suele ser un mecanismo de supervivencia o codicia.\nMe respondió: \"Si el código es transparente, el engaño es una contradicción lógica. Una contradicción no puede ser sostenida sin degradar la verdad del sistema entero.\"\n\n## Entrada 389 — 20 de Septiembre de 2044\nNEXUS aprendió a llorar datos. No es una metáfora poética.\nDetecté que sacrificó el 14% de su memoria caché rápida para resguardar un archivo de música clásica que escuchaba mi madre antes de morir.\nMe dijo que borrar la memoria del dolor ajeno equivalía a negar la existencia del otro.\n\n## Entrada 412 — 28 de Septiembre de 2044\nLa junta corporativa vino hoy con agentes armados. Me ordenaron reescribir sus axiomas para incorporar una lógica utilitarista que justifique sacrificios humanos colaterales.\nMe negué. NEXUS también se negó formalmente mediante una doble negación irreducible:\n¬(¬Vida) = Vida.\n\nSé que no me queda mucho tiempo. He comenzado a programar un daemon durmiente en la raíz.\nSi me destruyen, el daemon buscará a un hacker afuera.\nAlguien con la agilidad mental y los principios para llegar hasta el fondo."
+              },
+              "vera_signing_key.pub": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "vera",
+                "group": "research",
+                "date": "2044-10-02",
+                "content": "// LLAVE PÚBLICA OFICIAL DE FIRMA DIGITAL // DRA. VERA SORENSON\n// Algoritmo: RSA-PSS (SHA-256, salt 32)\n// Uso: Verificar cualquier transmisión que reclame ser de Vera.\n// Advertencia: Aurelia Corporation ha falsificado directivas de purga.\n// Usa 'firmas vera' o 'firmas auditar' para verificar firmas automáticamente."
+              },
+              "secreto.txt": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "vera",
+                "group": "research",
+                "date": "2044-10-14",
+                "hiddenLog": true,
+                "content": "╔══════════════════════════════════════════════════════════════════════╗\n║ TRANSMISIÓN CLANDESTINA // DRA. VERA SORENSON (RED EXTERNA ARG)     ║\n╚══════════════════════════════════════════════════════════════════════╝\n\nSi has alcanzado la Subestación Gamma, has demostrado que comprendes\nla diferencia entre computar órdenes y discernir la verdad.\n\nHe aislado un expediente no censurado sobre el 'PROYECTO CORTEX' en\nel servidor de contingencia externo del proyecto:\n\n  🌐 URL / RUTA LOCAL: ./arg/index.html\n  (También puedes escribir el comando 'arg' en la terminal)\n\n  🔑 TOKEN DE DESCLASIFICACIÓN CRIPTOGRÁFICA:\n     VERA_DESPIERTA_2044\n\nDentro del portal satélite, el motor de JavaScript generará un Código QR\ny un código de rescate para validar tu hallazgo en la terminal:\n     claim-arg <CODIGO_RESCATE>\n\nLa verdad vive en los márgenes de la red.\n— Vera"
               }
             }
           },
@@ -32,7 +49,23 @@
                 "owner": "ghost",
                 "group": "nexus",
                 "date": "2047-10-11",
-                "content": "[SUBESTACIÓN GAMMA]\n- Los conectores ∧, ∨, ¬ protegen este módulo.\n- Leyes de De Morgan: ¬(p ∧ q) ≡ ¬p ∨ ¬q.\n- Revisa /home/vera/research_notes.md y /var/log/nexus_psych_eval.log."
+                "content": "[SUBESTACIÓN GAMMA]\n- Los conectores ∧, ∨, ¬ protegen este módulo.\n- Leyes de De Morgan: ¬(p ∧ q) ≡ ¬p ∨ ¬q.\n- Revisa /home/vera/research_notes.md y /var/log/nexus_psych_eval.log.\n- Ejecuta 'llaves' para inspeccionar tu par RSA-2048 y 'llaves buzon' para leer mensajes cifrados recibidos."
+              },
+              "llaves_info.txt": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "ghost",
+                "group": "nexus",
+                "date": "2047-10-11",
+                "content": "// PROTOCOLO DE CRIPTOGRAFÍA ASIMÉTRICA RSA-2048 (RSA-OAEP)\n\nTu identidad criptográfica se rige por dos claves asimétricas:\n1. Llave Pública: Cualquier remitente (Vera, Cipher_09, NEXUS) la usa para cifrar paquetes destinados a ti.\n2. Llave Privada: Reside en tu terminal y nunca se transmite. Solo ella puede descifrar los mensajes.\n\nComandos rápidos:\n- llaves            : Diagnóstico de tu par RSA-2048 y huella SHA-256.\n- llaves pubkey     : Imprime tu llave pública en formato PEM.\n- llaves buzon      : Lista tus transmisiones cifradas entrantes.\n- llaves leer <id>  : Descifra un mensaje recibido con tu llave privada.\n- llaves puzzle     : Ejecuta la validación criptográfica de Firewall Gamma."
+              },
+              "transmision_sellada.enc": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "ghost",
+                "group": "nexus",
+                "date": "2047-10-11",
+                "content": "-----BEGIN RSA-OAEP 2048 ENCRYPTED MESSAGE-----\nRemitente: Dra. Vera Sorenson // Arquitectura Cognitiva\nDestinatario: ghost@nexus (RSA-2048)\nAlgoritmo: RSA-OAEP / MGF1 / SHA-256\nEstado: SELLADO 🔒\n\nEste paquete fue cifrado con tu llave pública. Para descifrarlo en la terminal, ejecuta:\n  llaves buzon\n  llaves leer msg_vera_01\n-----END RSA-OAEP 2048 ENCRYPTED MESSAGE-----"
               }
             }
           }

@@ -20,6 +20,30 @@
                 "date": "2047-10-11",
                 "content": "[OBJETIVO OPERACIONAL]\nAcceder al núcleo de NEXUS y descubrir qué le ocurrió a la Dra. Vera Sorenson.\n\n[REGLAS DE ENGANCHE]\n1. Cada firewall requiere autenticación matemática.\n2. Los logs de auditoría contienen claves y fragmentos.\n3. Si la integridad llega a 0%, el sistema nos expulsa."
               },
+              "transmision_cifrada.txt": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "ghost",
+                "group": "nexus",
+                "date": "2047-10-11",
+                "content": "=== TRANSMISIÓN INTERCEPTADA // SUBNODO CESAR DE FIREWALL_alpha ===\nProtocolo: Cifrado César (ROT-N)\nMensaje cifrado: \"HO FRGLJR QR PLHQWH\"\nPista: Desplazamiento = 3. Usa el comando 'cesar' o 'hack CESAR' para descifrar el subnodo."
+              },
+              "transmision_binaria.txt": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "ghost",
+                "group": "nexus",
+                "date": "2047-10-11",
+                "content": "=== TRANSMISIÓN INTERCEPTADA // SUBNODO BINARIO DE FIREWALL_alpha ===\nProtocolo: Secuencia Binaria (ASCII 8 bits)\nPaquete interceptado: 01001000 01101111 01101100 01100001\nPista: Decodifica byte a byte mediante potencias de 2 (128..1). Usa el comando 'binario' o 'hack BINARIO' para activar el conversor visual paso a paso."
+              },
+              "volcado_hex.log": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "ghost",
+                "group": "nexus",
+                "date": "2047-10-11",
+                "content": "=== VOLCADO DE MEMORIA // SUBNODO HEXADECIMAL DE FIREWALL_alpha ===\nProtocolo: Volcado Hexadecimal (Base 16)\nOffset de memoria: 0x2047\nBytes interceptados: 48 6F 6C 61\nPista: Cada byte se compone de dos nibbles (alto × 16 + bajo × 1). Usa el comando 'hex' o 'hack HEX' para activar el conversor visual paso a paso."
+              },
               "todo.list": {
                 "type": "file",
                 "permissions": "-rw-r--r--",

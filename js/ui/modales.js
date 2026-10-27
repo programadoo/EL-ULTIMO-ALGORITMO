@@ -8,6 +8,7 @@
 
 import { audio, speechEngine } from '../audio.js';
 import { resetState } from '../state.js';
+import { getHiddenLog } from '../historia/logs.js';
 
 let activeModalOverlay = null;
 
@@ -291,30 +292,104 @@ export function abrirConfiguracion() {
 }
 
 /**
- * Abre el visor de documentos desclasificados / logs.
+ * Abre el visor de documentos desclasificados / logs con reproductor de audio Web Speech API.
  * @param {string} nombreArchivo
  * @param {string} contenido
  */
 export function abrirVisorLog(nombreArchivo, contenido) {
+  const logInfo = getHiddenLog ? getHiddenLog(nombreArchivo) : null;
+  const autor = logInfo ? logInfo.autor : (nombreArchivo.toLowerCase().includes('vera') ? 'Dra. Vera Sorenson' : 'NEXUS');
+  const isVera = autor.toLowerCase().includes('vera');
+  const isNexus = autor.toLowerCase().includes('nexus');
+  const speakerName = isVera ? 'Dra. Vera Sorenson' : (isNexus ? 'NEXUS Core' : autor);
+  const voiceDesc = isVera
+    ? 'Filtro de Grabación Antigua (Bandpass 2000Hz, Q 0.5) // Pitch 1.1'
+    : 'Voz Sintetizada Cuántica (Pitch: 0.4 / Rate: 0.75)';
+
   const cuerpoHTML = `
-    <div style="background: rgba(0,0,0,0.5); padding: 16px; border: 1px solid var(--border-primary); border-radius: 4px; font-family: var(--font-mono); font-size: 13px; white-space: pre-wrap; color: var(--text-primary); line-height: 1.6;">
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <!-- Barra superior interactiva de audio (Prompt D3) -->
+      <div id="log-audio-bar" style="background: rgba(0, 255, 65, 0.04); border: 1px solid var(--border-primary); border-radius: 4px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div id="log-audio-indicator" style="width: 10px; height: 10px; border-radius: 50%; background: ${isVera ? '#ffb000' : 'var(--cyan)'}; box-shadow: 0 0 8px ${isVera ? '#ffb000' : 'var(--cyan)'}; transition: all 0.3s ease;"></div>
+          <div>
+            <div style="font-family: var(--font-mono); font-size: 11px; font-weight: bold; color: var(--text-primary); letter-spacing: 0.5px;">
+              REGISTRO DE AUDIO // ${speakerName.toUpperCase()}
+            </div>
+            <div style="font-size: 10px; color: var(--text-dim); font-family: var(--font-mono);">
+              ${voiceDesc}
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button id="btn-modal-listen-log" class="btn btn--primary" style="padding: 4px 14px; font-size: 11px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            <span>▶</span>
+            <span>ESCUCHAR</span>
+          </button>
+          <button id="btn-modal-stop-log" class="btn btn--secondary" style="padding: 4px 10px; font-size: 11px; cursor: pointer;" title="Detener audio">
+            ⏹ DETENER
+          </button>
+        </div>
+      </div>
+
+      <!-- Contenido textual del log -->
+      <div style="background: rgba(0,0,0,0.6); padding: 16px; border: 1px solid var(--border-primary); border-radius: 4px; font-family: var(--font-mono); font-size: 13px; white-space: pre-wrap; color: var(--text-primary); line-height: 1.6; max-height: 52vh; overflow-y: auto;">
 ${contenido}
+      </div>
     </div>
   `;
+
+  function startLogSpeech() {
+    if (isVera) {
+      speechEngine.speakVera(contenido, { force: true });
+    } else {
+      speechEngine.speakNexus(contenido, { force: true });
+    }
+  }
 
   mostrarModal({
     titulo: `VISOR DE INTELIGENCIA // ${nombreArchivo}`,
     cuerpoHTML,
     botones: [
       {
-        label: '🎙️ TRANSMISIÓN DE VOZ (VERA)',
+        label: isVera ? '🎙️ ESCUCHAR (VERA)' : '🎙️ ESCUCHAR (NEXUS)',
         onClick: () => {
-          speechEngine.speakVera(contenido);
+          startLogSpeech();
         }
       },
-      { label: 'CERRAR ARCHIVO', onClick: cerrarModal }
+      {
+        label: '⏹ DETENER AUDIO',
+        onClick: () => {
+          speechEngine.stop();
+        }
+      },
+      {
+        label: 'CERRAR ARCHIVO',
+        onClick: () => {
+          speechEngine.stop();
+          cerrarModal();
+        }
+      }
     ]
   });
+
+  // Conectar botones incrustados en el HTML del modal
+  setTimeout(() => {
+    const btnListen = document.getElementById('btn-modal-listen-log');
+    if (btnListen) {
+      btnListen.onclick = (e) => {
+        e.stopPropagation();
+        startLogSpeech();
+      };
+    }
+    const btnStop = document.getElementById('btn-modal-stop-log');
+    if (btnStop) {
+      btnStop.onclick = (e) => {
+        e.stopPropagation();
+        speechEngine.stop();
+      };
+    }
+  }, 50);
 }
 
 /**

@@ -13,7 +13,51 @@
  * 5. Arpegios neón flotantes y pads de sintetizador retro-futuristas.
  * 6. Efectos sonoros integrados: tecleo, éxito, fallo, glitch, alarmas y CRT hum.
  * 7. Control de volumen, mute y listeners de estado para visualizadores del HUD.
+ * 8. Integración con Howler.js: 5 pistas temáticas (una por firewall) con crossfade suave y respeto al mute.
  */
+
+// ─────────────────────────────────────────────────
+// PISTAS MUSICALES POR FIREWALL (HOWLER.JS)
+// Especificación: SPEC_3AVANZADO.MD (Sección 4.2 y Prompt D2)
+// ─────────────────────────────────────────────────
+
+export const FIREWALL_MUSIC_TRACKS = [
+  {
+    id: 'firewall_1',
+    firewall: 1,
+    nombre: 'FIREWALL_alpha // Perímetro Clandestino',
+    estilo: 'Electrónica suave / Ambient synth (A menor)',
+    src: ['assets/music/firewall_1.wav', 'assets/music/firewall_1.mp3']
+  },
+  {
+    id: 'firewall_2',
+    firewall: 2,
+    nombre: 'FIREWALL_beta // Tráfico Corporativo',
+    estilo: 'Tenso, percusión industrial (D menor, 128 BPM)',
+    src: ['assets/music/firewall_2.wav', 'assets/music/firewall_2.mp3']
+  },
+  {
+    id: 'firewall_3',
+    firewall: 3,
+    nombre: 'FIREWALL_gamma // Dorsal Cuántica',
+    estilo: 'Misterioso, sub-bass drone y pads oscuros (F# menor)',
+    src: ['assets/music/firewall_3.wav', 'assets/music/firewall_3.mp3']
+  },
+  {
+    id: 'firewall_4',
+    firewall: 4,
+    nombre: 'FIREWALL_delta // Capa Onírica',
+    estilo: 'Melancólico, piano eléctrico y arpegios lentos (C menor)',
+    src: ['assets/music/firewall_4.wav', 'assets/music/firewall_4.mp3']
+  },
+  {
+    id: 'firewall_5',
+    firewall: 5,
+    nombre: 'FIREWALL_omega // Núcleo de Singularidad',
+    estilo: 'Épico, orquestal cyberpunk y marcha cuántica (E menor)',
+    src: ['assets/music/firewall_5.wav', 'assets/music/firewall_5.mp3']
+  }
+];
 
 class CyberpunkAudioEngine {
   constructor() {
@@ -42,6 +86,12 @@ class CyberpunkAudioEngine {
     this.ambientFilter = null;
     this.isHeartbeatActive = false;
     this.heartbeatTimer = null;
+
+    // Integración Howler.js (Prompt D2)
+    this.howlTracks = {};
+    this.currentHowl = null;
+    this.currentHowlId = null;
+    this.howlerInitialized = false;
 
     // Cargar preferencia de mute y música desde localStorage
     try {
@@ -79,6 +129,48 @@ class CyberpunkAudioEngine {
     if (this.ctx && this.ctx.state === 'suspended') {
       this.ctx.resume().catch(() => {});
     }
+
+    this.initHowler();
+  }
+
+  /**
+   * Inicializa las pistas de audio de Howler.js si la librería está disponible.
+   */
+  initHowler() {
+    if (typeof window === 'undefined') return;
+    const HowlClass = window.Howl;
+    if (!HowlClass) return;
+
+    if (Object.keys(this.howlTracks).length === 0) {
+      FIREWALL_MUSIC_TRACKS.forEach(track => {
+        try {
+          this.howlTracks[track.id] = new HowlClass({
+            src: track.src,
+            loop: true,
+            volume: this.muted ? 0 : this.musicVolume,
+            html5: false, // Web Audio backend para fades suaves y sin delay
+            preload: true
+          });
+        } catch (_) {}
+      });
+      this.howlerInitialized = true;
+    }
+
+    if (typeof window.Howler !== 'undefined') {
+      try { window.Howler.mute(this.muted); } catch (_) {}
+    }
+  }
+
+  /**
+   * Obtiene la instancia Howl correspondiente a un firewall (0..4 o 1..5).
+   * @param {number} fwIndex
+   * @returns {object|null}
+   */
+  getHowlTrack(fwIndex = 0) {
+    this.initHowler();
+    const idx = (typeof fwIndex === 'number' && fwIndex >= 1 && fwIndex <= 5) ? fwIndex - 1 : Math.max(0, Math.min(4, fwIndex || 0));
+    const meta = FIREWALL_MUSIC_TRACKS[idx];
+    return meta ? this.howlTracks[meta.id] || null : null;
   }
 
   isMuted() {
@@ -90,6 +182,21 @@ class CyberpunkAudioEngine {
     try {
       localStorage.setItem('nexus_audio_muted', String(this.muted));
     } catch (_) {}
+
+    // Respetar mute en Howler.js globalmente y por pista activa
+    if (typeof window !== 'undefined' && typeof window.Howler !== 'undefined') {
+      try { window.Howler.mute(this.muted); } catch (_) {}
+    }
+
+    if (this.currentHowl) {
+      try {
+        if (this.muted) {
+          this.currentHowl.volume(0, this.currentHowlId);
+        } else {
+          this.currentHowl.volume(this.musicVolume, this.currentHowlId);
+        }
+      } catch (_) {}
+    }
 
     if (this.masterGain && this.ctx) {
       this.masterGain.gain.setValueAtTime(this.muted ? 0 : this.volume, this.ctx.currentTime);
@@ -107,12 +214,20 @@ class CyberpunkAudioEngine {
     if (this.masterGain && this.ctx && !this.muted) {
       this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
     }
+    if (typeof window !== 'undefined' && typeof window.Howler !== 'undefined') {
+      try { window.Howler.volume(this.volume); } catch (_) {}
+    }
   }
 
   setMusicVolume(vol) {
     this.musicVolume = Math.max(0, Math.min(1, vol));
     if (this.musicGain && this.ctx) {
       this.musicGain.gain.setValueAtTime(this.musicVolume, this.ctx.currentTime);
+    }
+    if (this.currentHowl && !this.muted) {
+      try {
+        this.currentHowl.volume(this.musicVolume, this.currentHowlId);
+      } catch (_) {}
     }
   }
 
@@ -128,44 +243,155 @@ class CyberpunkAudioEngine {
   }
 
   // ─────────────────────────────────────────────────
-  // SINTETIZADOR DE MÚSICA PROCEDURAL (CYBERPUNK HACKER THEME)
+  // SINTETIZADOR DE MÚSICA & HOWLER CROSSFADING
   // ─────────────────────────────────────────────────
 
   isMusicActive() {
     return this.isMusicPlaying;
   }
 
-  startMusic() {
+  /**
+   * Cambia la pista musical al avanzar entre firewalls con suave crossfade.
+   * Especificación: SPEC_3AVANZADO.MD (Sección 4.2 y Prompt D2)
+   * 
+   * @param {number} nuevoFirewall (0..4 o 1..5)
+   * @param {number} [duracionFade=1200] Duración del fade en milisegundos
+   * @returns {object} Metadatos del track activado
+   */
+  cambiarFirewallMusica(nuevoFirewall = 0, duracionFade = 1200) {
+    const raw = typeof nuevoFirewall === 'number' ? nuevoFirewall : 0;
+    const fwIdx = raw === 5 ? 4 : Math.max(0, Math.min(4, Math.floor(raw)));
+
+    this.currentFirewall = fwIdx;
+    this.initHowler();
+
+    const trackMeta = FIREWALL_MUSIC_TRACKS[fwIdx];
+    const newHowl = this.howlTracks[trackMeta.id];
+
+    if (this.isMusicPlaying && newHowl) {
+      const oldHowl = this.currentHowl;
+      const oldId = this.currentHowlId;
+
+      // 1. Fade out suave de la pista anterior
+      if (oldHowl && oldHowl !== newHowl) {
+        try {
+          const startVol = this.muted ? 0 : (oldHowl.volume(oldId) || this.musicVolume);
+          oldHowl.fade(startVol, 0, duracionFade, oldId);
+          setTimeout(() => {
+            if (oldHowl !== this.currentHowl) {
+              oldHowl.stop(oldId);
+            }
+          }, duracionFade + 60);
+        } catch (_) {}
+      }
+
+      // 2. Fade in suave de la nueva pista
+      if (oldHowl !== newHowl) {
+        try {
+          const targetVol = this.muted ? 0 : this.musicVolume;
+          newHowl.volume(0);
+          const newId = newHowl.play();
+          newHowl.fade(0, targetVol, duracionFade, newId);
+          this.currentHowl = newHowl;
+          this.currentHowlId = newId;
+        } catch (_) {}
+      }
+    } else if (newHowl) {
+      this.currentHowl = newHowl;
+    }
+
+    this.notifyState();
+    return trackMeta;
+  }
+
+  /**
+   * Alias de cambiarFirewallMusica
+   */
+  cambiarFirewall(nuevoFirewall = 0, duracionFade = 1200) {
+    return this.cambiarFirewallMusica(nuevoFirewall, duracionFade);
+  }
+
+  getCurrentFirewallMusic() {
+    return this.currentFirewall;
+  }
+
+  getCurrentTrack() {
+    return FIREWALL_MUSIC_TRACKS[this.currentFirewall] || FIREWALL_MUSIC_TRACKS[0];
+  }
+
+  getCurrentTrackTitle() {
+    const t = this.getCurrentTrack();
+    return t ? t.nombre : '';
+  }
+
+  startMusic(firewallIndex = null) {
     this.initContext();
-    if (!this.ctx) return;
+    this.initHowler();
+
+    if (firewallIndex !== null && firewallIndex !== undefined) {
+      const raw = typeof firewallIndex === 'number' ? firewallIndex : 0;
+      this.currentFirewall = raw === 5 ? 4 : Math.max(0, Math.min(4, Math.floor(raw)));
+    }
+
     if (this.isMusicPlaying) return;
 
     this.isMusicPlaying = true;
     try { localStorage.setItem('nexus_music_enabled', 'true'); } catch (_) {}
 
-    if (!this.musicGain) {
-      this.musicGain = this.ctx.createGain();
-      this.musicGain.gain.setValueAtTime(this.musicVolume, this.ctx.currentTime);
-      this.musicGain.connect(this.masterGain);
-    } else {
-      this.musicGain.gain.cancelScheduledValues(this.ctx.currentTime);
-      this.musicGain.gain.linearRampToValueAtTime(this.musicVolume, this.ctx.currentTime + 1.2);
+    // 1. Reproducir pista de Howler.js con fade in de entrada
+    const trackMeta = FIREWALL_MUSIC_TRACKS[this.currentFirewall] || FIREWALL_MUSIC_TRACKS[0];
+    const targetHowl = this.howlTracks[trackMeta.id];
+
+    if (targetHowl) {
+      try {
+        const targetVol = this.muted ? 0 : this.musicVolume;
+        targetHowl.volume(0);
+        this.currentHowlId = targetHowl.play();
+        targetHowl.fade(0, targetVol, 1200, this.currentHowlId);
+        this.currentHowl = targetHowl;
+      } catch (_) {}
     }
 
-    this.currentStep = 0;
-    this.nextStepTime = this.ctx.currentTime + 0.1;
+    // 2. Mantener scheduler procedural para sincronización y fallback
+    if (this.ctx) {
+      if (!this.musicGain) {
+        this.musicGain = this.ctx.createGain();
+        this.musicGain.gain.setValueAtTime(this.muted ? 0 : this.musicVolume, this.ctx.currentTime);
+        this.musicGain.connect(this.masterGain);
+      } else {
+        this.musicGain.gain.cancelScheduledValues(this.ctx.currentTime);
+        this.musicGain.gain.linearRampToValueAtTime(this.muted ? 0 : this.musicVolume, this.ctx.currentTime + 1.2);
+      }
 
-    // Scheduler de alta precisión (25ms lookahead)
-    if (this.schedulerTimer) clearInterval(this.schedulerTimer);
-    this.schedulerTimer = setInterval(() => this.runMusicScheduler(), 25);
+      this.currentStep = 0;
+      this.nextStepTime = this.ctx.currentTime + 0.1;
+
+      if (this.schedulerTimer) clearInterval(this.schedulerTimer);
+      this.schedulerTimer = setInterval(() => this.runMusicScheduler(), 25);
+    }
+
     this.notifyState();
   }
 
-  stopMusic() {
+  stopMusic(duracionFade = 800) {
     if (!this.isMusicPlaying) return;
     this.isMusicPlaying = false;
     try { localStorage.setItem('nexus_music_enabled', 'false'); } catch (_) {}
 
+    // 1. Fade out en Howler.js
+    if (this.currentHowl) {
+      try {
+        const curVol = this.muted ? 0 : (this.currentHowl.volume(this.currentHowlId) || this.musicVolume);
+        this.currentHowl.fade(curVol, 0, duracionFade, this.currentHowlId);
+        const howlToStop = this.currentHowl;
+        const idToStop = this.currentHowlId;
+        setTimeout(() => {
+          try { howlToStop.stop(idToStop); } catch (_) {}
+        }, duracionFade + 50);
+      } catch (_) {}
+    }
+
+    // 2. Detener scheduler procedural
     if (this.schedulerTimer) {
       clearInterval(this.schedulerTimer);
       this.schedulerTimer = null;
@@ -173,7 +399,7 @@ class CyberpunkAudioEngine {
 
     if (this.musicGain && this.ctx) {
       this.musicGain.gain.cancelScheduledValues(this.ctx.currentTime);
-      this.musicGain.gain.linearRampToValueAtTime(0.0001, this.ctx.currentTime + 0.8);
+      this.musicGain.gain.linearRampToValueAtTime(0.0001, this.ctx.currentTime + (duracionFade / 1000));
     }
     this.notifyState();
   }
@@ -726,7 +952,14 @@ class CyberpunkAudioEngine {
    * @param {number} fwIndex (0..4)
    */
   setFirewallDrone(fwIndex = 0) {
+    const prev = this.currentFirewall;
     this.currentFirewall = Math.max(0, Math.min(4, fwIndex));
+
+    // Si la música está sonando y el firewall cambió, transicionar la pista de Howler.js
+    if (this.isMusicPlaying && prev !== this.currentFirewall) {
+      this.cambiarFirewallMusica(this.currentFirewall, 1200);
+    }
+
     if (!this.ctx || !this.isAmbientPlaying) return;
 
     const droneProfiles = [
@@ -1039,20 +1272,99 @@ class CyberpunkAudioEngine {
       noise.start(now);
     } catch (_) {}
   }
+
+  /**
+   * Filtro de grabación antigua (Web Audio API)
+   * Especificación: SPEC_3AVANZADO.MD Sección 4.3 y Prompt D3
+   * Aplica un filtro bandpass (2000 Hz, Q 0.5) con textura de cinta y sutil estática analógica.
+   */
+  startTapeFilter() {
+    if (this.muted) return;
+    this.initContext();
+    if (!this.ctx) return;
+    this.stopTapeFilter();
+
+    try {
+      const now = this.ctx.currentTime;
+      // 1. Buffer de textura analógica / cinta magnética
+      const bufferSize = Math.floor(this.ctx.sampleRate * 2.0);
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      let lastOut = 0.0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = (Math.random() * 2 - 1) * 0.22;
+        // Filtro paso-bajo suave para emular ruido de cinta analógica (tape hiss)
+        lastOut = (lastOut * 0.94) + (white * 0.06);
+        // Ocasional micro-click analógico de cinta desgastada
+        const crackle = Math.random() < 0.0008 ? (Math.random() * 0.35 - 0.175) : 0;
+        data[i] = lastOut + crackle;
+      }
+
+      const noise = this.ctx.createBufferSource();
+      noise.buffer = buffer;
+      noise.loop = true;
+
+      // 2. Filtro Bandpass a 2000 Hz con Q = 0.5 (Spec 4.3)
+      const bandpass = this.ctx.createBiquadFilter();
+      bandpass.type = 'bandpass';
+      bandpass.frequency.value = 2000;
+      bandpass.Q.value = 0.5;
+
+      // 3. Ganancia del filtro de grabación antigua
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.055, now + 0.2);
+
+      noise.connect(bandpass);
+      bandpass.connect(gain);
+      gain.connect(this.masterGain);
+
+      noise.start(now);
+      this.tapeNoiseNode = { noise, bandpass, gain };
+    } catch (_) {}
+  }
+
+  /** Detiene el filtro de grabación analógica */
+  stopTapeFilter() {
+    if (!this.tapeNoiseNode) return;
+    try {
+      const { noise, gain } = this.tapeNoiseNode;
+      if (this.ctx && gain) {
+        const now = this.ctx.currentTime;
+        gain.gain.cancelScheduledValues(now);
+        gain.gain.linearRampToValueAtTime(0.0001, now + 0.15);
+      }
+      setTimeout(() => {
+        try {
+          noise.stop();
+          noise.disconnect();
+        } catch (_) {}
+      }, 180);
+    } catch (_) {}
+    this.tapeNoiseNode = null;
+  }
 }
 
 // ─────────────────────────────────────────────────
-// MOTOR DE VOZ SINTETIZADA (PROMPT 12 / SPEC 1.4)
+// MOTOR DE VOZ SINTETIZADA (WEB SPEECH API - PROMPT D3 / SPEC 4.3)
 // ─────────────────────────────────────────────────
 
 export class CyberpunkSpeechEngine {
   constructor() {
-    this.enabled = false; // Voz sintetizada desactivada permanentemente por solicitud del usuario
+    this.enabled = true;
     try {
       if (typeof localStorage !== 'undefined') {
-        localStorage.setItem('nexus_voice_enabled', 'false');
+        const stored = localStorage.getItem('nexus_voice_enabled');
+        if (stored !== null) {
+          this.enabled = stored === 'true';
+        }
       }
     } catch (_) {}
+
+    this.isSpeaking = false;
+    this.currentSpeaker = null;
+    this.currentUtterance = null;
+    this.listeners = new Set();
   }
 
   isVoiceEnabled() {
@@ -1071,39 +1383,199 @@ export class CyberpunkSpeechEngine {
     return this.setVoiceEnabled(!this.enabled);
   }
 
-  stop() {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      try { window.speechSynthesis.cancel(); } catch (_) {}
+  addListener(fn) {
+    this.listeners.add(fn);
+    return () => this.listeners.delete(fn);
+  }
+
+  notifyListeners(evt, data) {
+    for (const fn of this.listeners) {
+      try { fn(evt, data); } catch (_) {}
     }
   }
 
-  getVoiceForLang() {
-    return null;
+  stop() {
+    if (this.currentUtterance) {
+      this.currentUtterance.onstart = null;
+      this.currentUtterance.onend = null;
+      this.currentUtterance.onerror = null;
+      this.currentUtterance = null;
+    }
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try { window.speechSynthesis.cancel(); } catch (_) {}
+    }
+    if (audio && typeof audio.stopTapeFilter === 'function') {
+      audio.stopTapeFilter();
+    }
+    const prev = this.currentSpeaker;
+    this.isSpeaking = false;
+    this.currentSpeaker = null;
+    if (prev) {
+      this.notifyListeners('stop', { speaker: prev });
+    }
+  }
+
+  cleanTextForSpeech(raw) {
+    if (!raw) return '';
+    let text = String(raw);
+    // 1. Quitar cajas ASCII art, marcos y líneas decorativas
+    text = text.replace(/[╔╗╚╝║═─│┌┐└┘├┤┬┴┼━┃┏┓┗┛┣┫┳┻╋■█▄▀▓▒░]/g, ' ');
+    // 2. Quitar encabezados corporativos ruidosos
+    text = text.replace(/AURELIA SYSTEMS CORP[^\n]*/gi, '');
+    text = text.replace(/TERMINAL DE INVESTIGACIÓN[^\n]*/gi, '');
+    text = text.replace(/AUTOR:[^\n]*/gi, '');
+    // 3. Quitar markdown y bloques de código
+    text = text.replace(/```[\s\S]*?```/g, '');
+    text = text.replace(/`([^`]+)`/g, '$1');
+    text = text.replace(/[*_~#]/g, '');
+    text = text.replace(/>+/g, '');
+    // 4. Normalizar espacios
+    text = text.replace(/\s+/g, ' ').trim();
+    return text;
+  }
+
+  findVoice(character = 'nexus') {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
+    const voices = window.speechSynthesis.getVoices();
+    if (!voices || voices.length === 0) return null;
+
+    const spanishVoices = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith('es'));
+    const pool = spanishVoices.length > 0 ? spanishVoices : voices;
+
+    if (character === 'vera') {
+      const femaleRegex = /female|monica|helena|laura|lucia|elena|rosa|sofia|maria|carmen|mujer|paulina|sabina|victoria/i;
+      const found = pool.find(v => femaleRegex.test(v.name));
+      if (found) return found;
+      return pool[0] || null;
+    } else {
+      const maleRegex = /male|raul|jorge|pablo|alvaro|carlos|enrique|miguel|diego|hombre|david|alberto/i;
+      const found = pool.find(v => maleRegex.test(v.name));
+      if (found) return found;
+      return pool[pool.length - 1] || null;
+    }
   }
 
   /**
-   * Voz de NEXUS: Desactivada. Voz sintetizada eliminada.
+   * Voz de NEXUS:
+   * Prompt D3 / SPEC 4.3: pitch 0.4 (grave), rate 0.75 (lento), volume 1.
+   * Sonido sintético de procesamiento.
    */
-  speakNexus() {
-    // Voz sintetizada eliminada por solicitud (sonaba robótica e inadecuada)
+  speakNexus(texto, options = {}) {
     this.stop();
-  }
+    if (!this.enabled && !options.force) return null;
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
 
-  /**
-   * Voz de Vera: Solo emite el sutil efecto de radio-transmisión (beep / static) sin habla sintetizada.
-   */
-  speakVera() {
-    this.stop();
+    const clean = this.cleanTextForSpeech(texto);
+    if (!clean) return null;
+
     try {
-      if (audio && typeof audio.playRadioBeep === 'function') {
-        audio.playRadioBeep();
+      const utt = new SpeechSynthesisUtterance(clean);
+      utt.lang = 'es-ES';
+      utt.pitch = 0.4;    // grave (Spec 4.3)
+      utt.rate = 0.75;    // lento (Spec 4.3)
+      utt.volume = (audio && audio.isMuted()) ? 0 : 1;
+
+      const voice = this.findVoice('nexus');
+      if (voice) utt.voice = voice;
+
+      utt.onstart = () => {
+        this.isSpeaking = true;
+        this.currentSpeaker = 'NEXUS';
+        this.notifyListeners('start', { speaker: 'NEXUS', text: clean });
+        if (options.onStart) options.onStart();
+      };
+
+      utt.onend = () => {
+        this.isSpeaking = false;
+        this.currentSpeaker = null;
+        this.notifyListeners('end', { speaker: 'NEXUS' });
+        if (options.onEnd) options.onEnd();
+      };
+
+      utt.onerror = (e) => {
+        this.isSpeaking = false;
+        this.currentSpeaker = null;
+        this.notifyListeners('error', { speaker: 'NEXUS', error: e });
+        if (options.onError) options.onError(e);
+      };
+
+      if (audio && typeof audio.playCommandProcessing === 'function') {
+        audio.playCommandProcessing();
       }
-      setTimeout(() => {
-        if (audio && typeof audio.playRadioStaticEnd === 'function') {
-          audio.playRadioStaticEnd();
+
+      window.speechSynthesis.speak(utt);
+      this.currentUtterance = utt;
+      return utt;
+    } catch (e) {
+      console.warn('[SpeechEngine] Error en voz NEXUS:', e);
+      return null;
+    }
+  }
+
+  /**
+   * Voz de Vera:
+   * Prompt D3 / SPEC 4.3: pitch 1.1 (agudo/natural), rate 0.95 (normal).
+   * Efecto de "grabación antigua" via Web Audio API (filtro bandpass 2000Hz, Q 0.5, tape hiss y radio beep).
+   */
+  speakVera(texto, options = {}) {
+    this.stop();
+    if (!this.enabled && !options.force) return null;
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
+
+    const clean = this.cleanTextForSpeech(texto);
+    if (!clean) return null;
+
+    try {
+      // 1. Efecto acústico de transmisión analógica y filtro de cinta antigua (SPEC 4.3)
+      if (audio) {
+        if (typeof audio.playRadioBeep === 'function') audio.playRadioBeep();
+        if (typeof audio.startTapeFilter === 'function') audio.startTapeFilter();
+      }
+
+      const utt = new SpeechSynthesisUtterance(clean);
+      utt.lang = 'es-ES';
+      utt.pitch = 1.1;     // agudo / natural (Spec 4.3)
+      utt.rate = 0.95;     // normal (Spec 4.3)
+      utt.volume = (audio && audio.isMuted()) ? 0 : 1;
+
+      const voice = this.findVoice('vera');
+      if (voice) utt.voice = voice;
+
+      const cleanup = () => {
+        this.isSpeaking = false;
+        this.currentSpeaker = null;
+        if (audio) {
+          if (typeof audio.stopTapeFilter === 'function') audio.stopTapeFilter();
+          if (typeof audio.playRadioStaticEnd === 'function') audio.playRadioStaticEnd();
         }
-      }, 350);
-    } catch (_) {}
+      };
+
+      utt.onstart = () => {
+        this.isSpeaking = true;
+        this.currentSpeaker = 'Vera';
+        this.notifyListeners('start', { speaker: 'Vera', text: clean });
+        if (options.onStart) options.onStart();
+      };
+
+      utt.onend = () => {
+        cleanup();
+        this.notifyListeners('end', { speaker: 'Vera' });
+        if (options.onEnd) options.onEnd();
+      };
+
+      utt.onerror = (e) => {
+        cleanup();
+        this.notifyListeners('error', { speaker: 'Vera', error: e });
+        if (options.onError) options.onError(e);
+      };
+
+      window.speechSynthesis.speak(utt);
+      this.currentUtterance = utt;
+      return utt;
+    } catch (e) {
+      console.warn('[SpeechEngine] Error en voz Vera:', e);
+      return null;
+    }
   }
 }
 
@@ -1152,6 +1624,21 @@ export function testAudio() {
   assert(typeof speechEngine.toggleVoice === 'function', 'speechEngine.toggleVoice debe existir');
   assert(typeof speechEngine.isVoiceEnabled === 'function', 'speechEngine.isVoiceEnabled debe existir');
 
+  // Prompt D2 (Howler.js & 5 pistas musicales por firewall)
+  assert(Array.isArray(FIREWALL_MUSIC_TRACKS) && FIREWALL_MUSIC_TRACKS.length === 5, '5 pistas musicales configuradas (una por firewall)');
+  assert(typeof audio.cambiarFirewallMusica === 'function', 'audio.cambiarFirewallMusica debe existir');
+  assert(typeof audio.cambiarFirewall === 'function', 'audio.cambiarFirewall debe existir');
+  assert(typeof audio.initHowler === 'function', 'audio.initHowler debe existir');
+  assert(typeof audio.getHowlTrack === 'function', 'audio.getHowlTrack debe existir');
+
+  const track1 = audio.cambiarFirewallMusica(0);
+  assert(track1 && track1.firewall === 1, 'Pista Firewall 1 activada');
+  const track2 = audio.cambiarFirewallMusica(1);
+  assert(track2 && track2.firewall === 2, 'Pista Firewall 2 activada');
+  const track5 = audio.cambiarFirewallMusica(4);
+  assert(track5 && track5.firewall === 5, 'Pista Firewall 5 activada');
+  audio.cambiarFirewallMusica(0); // restaurar al firewall 1
+
   const prevMuted = audio.isMuted();
   audio.setMuted(true);
   assert(audio.isMuted() === true, 'audio.setMuted(true) debe cambiar estado a silenciado');
@@ -1165,6 +1652,14 @@ export function testAudio() {
   speechEngine.setVoiceEnabled(false);
   assert(speechEngine.isVoiceEnabled() === false, 'speechEngine.setVoiceEnabled(false) debe desactivar voz');
   speechEngine.setVoiceEnabled(prevVoice);
+
+  // Prompt D3 assertions (Voz de personajes y filtro de grabación antigua)
+  assert(typeof audio.startTapeFilter === 'function', 'audio.startTapeFilter debe existir');
+  assert(typeof audio.stopTapeFilter === 'function', 'audio.stopTapeFilter debe existir');
+  assert(typeof speechEngine.cleanTextForSpeech === 'function', 'speechEngine.cleanTextForSpeech debe existir');
+  const sampleClean = speechEngine.cleanTextForSpeech('╔═══╗\n║ AURELIA SYSTEMS CORP // AUTOR: Dra. Vera ║\n╚═══╝\n# Frag 1\n`código`');
+  assert(!sampleClean.includes('╔') && !sampleClean.includes('#') && !sampleClean.includes('`'), 'cleanTextForSpeech elimina marcos ASCII y markdown');
+  assert(typeof speechEngine.findVoice === 'function', 'speechEngine.findVoice debe existir');
 
   const fallados = total - pasados;
   if (fallados === 0) {

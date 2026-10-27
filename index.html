@@ -17,6 +17,8 @@
   <link rel="stylesheet" href="css/reset.css">
   <link rel="stylesheet" href="css/terminal.css">
   <link rel="stylesheet" href="css/puzzles.css">
+  <link rel="stylesheet" href="css/editor.css">
+  <link rel="stylesheet" href="css/cutscenes.css">
   <link rel="stylesheet" href="css/animations.css">
   <link rel="stylesheet" href="css/screens.css">
   <link rel="stylesheet" href="css/responsive.css">
@@ -137,6 +139,99 @@
   </div>
 
   <!-- ════════════════════════════════════════════════
+       PANTALLA 5B: EDITOR INTEGRADO GHOSTSCRIPT (CODEMIRROR 6)
+       ════════════════════════════════════════════════ -->
+  <div class="editor-overlay" id="editor-overlay" role="dialog" aria-modal="true" aria-label="Editor de Scripts GhostScript" hidden>
+    <div class="editor-window" id="editor-window">
+      <!-- Cabecera -->
+      <div class="editor-header">
+        <div class="editor-header__left">
+          <div class="editor-dots">
+            <span class="editor-dot editor-dot--red"></span>
+            <span class="editor-dot editor-dot--yellow"></span>
+            <span class="editor-dot editor-dot--green"></span>
+          </div>
+          <span class="editor-title" id="editor-title">GHOSTSCRIPT IDE // VERA_DEV_ENV v6.4</span>
+          <span class="editor-badge" id="editor-badge">SANDBOX ACTIVO</span>
+        </div>
+        <button type="button" class="editor-header__close" id="editor-btn-close" aria-label="Cerrar editor">✕ CERRAR</button>
+      </div>
+
+      <!-- Barra de herramientas (Ejecutar, Comprobar, Retos, Plantillas) -->
+      <div class="editor-toolbar">
+        <div class="editor-toolbar__group">
+          <button type="button" class="editor-btn editor-btn--run" id="editor-btn-run" title="Ejecutar script en el sandbox">
+            ▶ EJECUTAR
+          </button>
+          <button type="button" class="editor-btn editor-btn--verify" id="editor-btn-verify" title="Validar script contra las pruebas del reto">
+            ✔ COMPROBAR
+          </button>
+        </div>
+
+        <div class="editor-toolbar__group">
+          <label for="editor-select-reto" style="font-size: 10px; color: var(--yellow-warn); text-transform: uppercase; font-weight: bold;">⚡ Reto:</label>
+          <select id="editor-select-reto" class="editor-select" style="border-color: rgba(255, 187, 0, 0.4); color: #ffeb3b;">
+            <option value="none">-- Modo Libre --</option>
+            <option value="1">Reto 1: Automatización Simple 🔓</option>
+            <option value="2">Reto 2: Búsqueda Eficiente 🔒</option>
+            <option value="3">Reto 3: Descifrado en Lote 🔒</option>
+            <option value="4">Reto 4: Optimización CPU 🔒</option>
+            <option value="5">Reto 5: Algoritmo Zachtronics 🔒</option>
+          </select>
+        </div>
+
+        <div class="editor-toolbar__group">
+          <label for="editor-select-template" style="font-size: 10px; color: var(--text-dim); text-transform: uppercase;">Plantilla:</label>
+          <select id="editor-select-template" class="editor-select">
+            <option value="hack">Hack Firewall Beta (Scan + Crack + Send)</option>
+            <option value="batch">Descifrado en lote (Loop + Decrypt)</option>
+            <option value="filter">Búsqueda condicional (Scan + If/Else)</option>
+            <option value="empty">Script vacío</option>
+          </select>
+          <button type="button" class="editor-btn editor-btn--secondary" id="editor-btn-ranking" title="Ver Ranking de Soluciones Elegantes" style="border-color: rgba(0, 229, 255, 0.4); color: var(--cyan);">
+            🏆 RANKING
+          </button>
+          <button type="button" class="editor-btn editor-btn--secondary" id="editor-btn-clear" title="Limpiar consola">
+            🧹 LIMPIAR
+          </button>
+        </div>
+      </div>
+
+      <!-- Banner descriptivo del reto activo -->
+      <div id="editor-challenge-banner" style="background: rgba(255, 187, 0, 0.08); border-bottom: 1px solid rgba(255, 187, 0, 0.25); padding: 6px 14px; font-size: 11px; display: none;">
+        <span style="color: #ffeb3b; font-weight: bold;" id="editor-challenge-title">Reto Activo:</span>
+        <span style="color: var(--text-primary); margin-left: 6px;" id="editor-challenge-desc"></span>
+        <span style="margin-left: 10px; color: var(--cyan); font-family: var(--font-mono); font-size: 10px;" id="editor-challenge-criterios"></span>
+      </div>
+
+      <!-- Split View: Código + Consola de Salida -->
+      <div class="editor-body">
+        <div class="editor-pane-code">
+          <div class="editor-container" id="editor-code-container">
+            <!-- CodeMirror 6 / Fallback montado dinámicamente -->
+          </div>
+        </div>
+
+        <div class="editor-pane-console">
+          <div class="editor-console-header">
+            <span class="editor-console-title">📟 CONSOLA DE SALIDA // STDOUT & AUDIT LOG</span>
+            <span style="font-size: 10px; color: var(--text-dim);" id="editor-console-status">LISTO</span>
+          </div>
+          <div class="editor-console-body" id="editor-console-output">
+            <div class="console-line console-line--dim">[+] Entorno GhostScript inicializado. Escribe tu código o usa una plantilla y pulsa ▶ EJECUTAR.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Barra de estado -->
+      <div class="editor-statusbar">
+        <span id="editor-status-file">hack_firewall_beta.gs</span>
+        <span id="editor-status-metrics">0 líneas | 0 ops | Memoria: 128KB</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
        PANTALLA 6: FIREWALL COMPLETE
        ════════════════════════════════════════════════ -->
   <section id="screen-firewall-complete" class="screen" aria-label="Firewall completado" hidden>
@@ -169,6 +264,15 @@
   <section id="screen-ranking" class="screen" aria-label="Ranking global" hidden>
     <div id="ranking-content">
       <!-- Top 3 con animaciones -->
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════
+       PANTALLA 9B: RANKING DE SOLUCIONES ELEGANTES (GHOSTSCRIPT)
+       ════════════════════════════════════════════════ -->
+  <section id="screen-script-ranking" class="screen" aria-label="Ranking de Soluciones Elegantes" hidden>
+    <div id="script-ranking-content">
+      <!-- Generado dinámicamente por rankingSoluciones.js -->
     </div>
   </section>
 
@@ -209,8 +313,48 @@
   </section>
 
   <!-- ════════════════════════════════════════════════
-       SCRIPTS (Configuración local + módulos ES6)
+       SISTEMA DE CUTSCENES CINEMATOGRÁFICAS (CANVAS + CSS)
        ════════════════════════════════════════════════ -->
+  <div id="cutscene-overlay" class="cutscene-overlay" aria-label="Cinemática narrativa" hidden>
+    <div class="cutscene-letterbox cutscene-letterbox--top"></div>
+    <div class="cutscene-viewport" id="cutscene-viewport">
+      <canvas id="cutscene-canvas" class="cutscene-canvas"></canvas>
+      <div id="cutscene-visual-layer" class="cutscene-visual-layer"></div>
+      <div class="cutscene-vignette"></div>
+      <div class="cutscene-scanlines"></div>
+      <div id="cutscene-glitch-layer" class="cutscene-glitch-overlay"></div>
+
+      <!-- HUD superior con progreso y controles -->
+      <div class="cutscene-hud">
+        <div class="cutscene-progress-container">
+          <div id="cutscene-progress-fill" class="cutscene-progress-fill"></div>
+        </div>
+        <span class="cutscene-nav-prompt">ESPACIO / CLIC</span>
+        <button type="button" id="btn-cutscene-skip" class="cutscene-skip-btn">SALTAR [ESC]</button>
+      </div>
+
+      <!-- Cuadro de subtítulos y diálogos -->
+      <div id="cutscene-ui-layer" class="cutscene-ui-layer">
+        <div id="cutscene-badge" class="cutscene-badge"></div>
+        <div id="cutscene-speaker" class="cutscene-speaker"></div>
+        <div id="cutscene-subtitles" class="cutscene-subtitles"></div>
+      </div>
+    </div>
+    <div class="cutscene-letterbox cutscene-letterbox--bottom">
+      <span style="font-size: 10px; color: var(--text-dim); letter-spacing: 0.1em;">EL ÚLTIMO ALGORITMO // CINEMÁTICA</span>
+      <div class="cutscene-audio-indicator">
+        <div class="cutscene-audio-bar"></div>
+        <div class="cutscene-audio-bar"></div>
+        <div class="cutscene-audio-bar"></div>
+        <div class="cutscene-audio-bar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       SCRIPTS (Configuración local + librerías + módulos ES6)
+       ════════════════════════════════════════════════ -->
+  <script src="js/lib/howler.min.js"></script>
   <script src="js/config.js"></script>
   <script type="module" src="js/main.js"></script>
 

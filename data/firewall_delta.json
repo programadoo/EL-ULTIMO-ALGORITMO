@@ -27,7 +27,23 @@
                 "owner": "ghost",
                 "group": "nexus",
                 "date": "2047-10-11",
-                "content": "[FIREWALL_DELTA — CAPA ONÍRICA]\n- Implicación: p → q\n- Bicondicional: p ↔ q\n- Revisa /var/log/nexus_dreams.log para entender las anomalías temporales."
+                "content": "[FIREWALL_DELTA — CAPA ONÍRICA]\n- Implicación: p → q\n- Bicondicional: p ↔ q\n- Revisa /var/log/nexus_dreams.log para entender las anomalías temporales.\n- Se detectó tráfico cifrado por sustitución en /home/ghost/transmision_conspiracion.enc."
+              },
+              "transmision_conspiracion.enc": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "ghost",
+                "group": "nexus",
+                "date": "2047-10-11",
+                "content": "=== TRANSMISIÓN CLASIFICADA INTERCEPTADA // DIRECTIVA CORPORATIVA 47 ===\nProtocolo: Sustitución Monoalfabética Simple\nMensaje capturado:\n\"SQ RGEZGKQ LOKTFLGF RSLVXWKOG SQ CTKRQR FTBXL FG TL XF QKDQ TL XFQ EGFSEOTFEOQ SOWKT N QXKTSIQ GKRTEG LX HXKUQ\"\n\nPista: La frecuencia de letras revela la estructura del idioma español (E, A, O, S, R son las más frecuentes).\nUsa el comando 'frecuencia' o 'hack FRECUENCIA' para abrir el analizador de barras visuales."
+              },
+              "sospechosa.png": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "vera",
+                "group": "quantum",
+                "date": "2044-10-14",
+                "content": "[ARCHIVO BINARIO PNG // 200x200 ARTEFACTO ONÍRICO]\nRuta en servidor: assets/sospechosa.png\nPista: '¿Es solo una imagen? Los bits menos significativos (LSB) del canal rojo contienen una transmisión oculta.'\nUsa 'esteganografia' o 'hack ESTEGANOGRAFIA' para abrir la herramienta interactiva y descargar la imagen."
               }
             }
           }
@@ -55,6 +71,14 @@
                 "group": "system",
                 "date": "2047-10-11",
                 "content": "ESTADO DE OPERACIÓN CLANDESTINA DE NEXUS // ÚLTIMAS 72 HORAS:\n- Red Eléctrica Sector 4: 3 apagones prevenidos mediante desvío de potencia.\n- Purificación de Agua Neo-Norte: Concentración de toxinas reducida en 34%.\n- Protocolos de Aurelia: Intentando purgar el sistema cada 4 horas.\n- Capacidad de procesamiento restante: 18%.\n- Alerta: Si FIREWALL_omega no se desbloquea hoy, colapso térmico inminente."
+              },
+              "blockchain_audit.log": {
+                "type": "file",
+                "permissions": "-rw-r--r--",
+                "owner": "aurelia_sec",
+                "group": "audit",
+                "date": "2047-10-12",
+                "content": "=== AURELIA SYSTEMS // LIBRO MAYOR DE AUDITORÍA CRIPTOGRÁFICA ===\nCADENA DE BLOQUES INMUTABLE (SHA-256) // EXPEDIENTE 2044-B\nADVERTENCIA FORENSE: Los sensores de integridad detectaron una ruptura de hash.\n\nBloque #0: GENESIS - Inicio de bitácora criptográfica inmutable // Servidor Central Aurelia\nBloque #1: DIARIO VERA - NEXUS ha completado la simulación ética. Se niega a matar para maximizar ganancias corporativas.\nBloque #2: [ALTERADO] INFORME POLICIAL - La Dra. Vera Sorenson borró deliberadamente los servidores y huyó con el código fuente.\nBloque #3: AUTORIZACIÓN - Transferencia de mando administrativo del núcleo cuántico a Gerhard Kroll.\nBloque #4: SISTEMA - NEXUS recluida en FIREWALL_omega. Protocolos defensivos activados.\n\nUsa el comando 'blockchain' o 'blockchain puzzle' (o 'hack BLOCKCHAIN') para auditar los eslabones SHA-256."
               }
             }
           }
