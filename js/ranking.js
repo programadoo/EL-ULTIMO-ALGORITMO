@@ -321,10 +321,15 @@ export async function renderRankingScreen(target = 'ranking-content') {
         </div>
       </div>
 
-      <!-- BOTÓN VOLVER -->
-      <button class="menu-btn" id="btn-back-from-ranking-hall" style="width: auto; padding: 10px 28px; margin: 0 auto;">
-        ‹ VOLVER AL MENÚ PRINCIPAL
-      </button>
+      <!-- BOTONES DE ACCIÓN INFERIOR -->
+      <div style="display: flex; justify-content: center; gap: var(--space-md); flex-wrap: wrap;">
+        <button class="menu-btn" id="btn-back-from-ranking-hall" style="width: auto; padding: 10px 24px;">
+          ‹ VOLVER AL MENÚ PRINCIPAL
+        </button>
+        <button class="menu-btn" id="btn-go-to-script-ranking" style="width: auto; padding: 10px 24px; border-color: var(--yellow-warn); color: var(--yellow-warn);">
+          ⚡ RANKING DE SCRIPTS (ELEGANCIA)
+        </button>
+      </div>
 
     </div>
   `;
@@ -358,6 +363,14 @@ export async function renderRankingScreen(target = 'ranking-content') {
       window.navigateTo('screen-menu');
     } else {
       import('./router.js').then(r => r.navigateTo('screen-menu'));
+    }
+  });
+
+  document.getElementById('btn-go-to-script-ranking')?.addEventListener('click', () => {
+    if (typeof window !== 'undefined' && typeof window.navigateTo === 'function') {
+      window.navigateTo('screen-script-ranking');
+    } else {
+      import('./router.js').then(r => r.navigateTo('screen-script-ranking'));
     }
   });
 }

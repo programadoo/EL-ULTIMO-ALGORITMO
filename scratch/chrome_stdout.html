@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AURELIA SYSTEMS CORP // INTRANET RESTRINGIDA - EXPEDIENTE CORTEX</title>
+  <meta name="robots" content="noindex, nofollow">
+  <style>
+    :root {
+      --bg-primary: #05080f;
+      --bg-surface: #0b111e;
+      --bg-card: rgba(16, 25, 44, 0.85);
+      --border-color: #1e3a5f;
+      --border-glow: #00e5ff;
+      --text-main: #d0e4ff;
+      --text-muted: #6b8ba8;
+      --accent-cyan: #00ffff;
+      --accent-magenta: #ff0055;
+      --accent-amber: #ffb700;
+      --accent-green: #00ff66;
+      --font-mono: 'Consolas', 'Courier New', 'Fira Code', monospace;
+      --font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* CRT scanlines effect */
+    body::before {
+      content: " ";
+      display: block;
+      position: fixed;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      z-index: 999;
+      background-size: 100% 3px, 6px 100%;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    /* Ambient cyber grid */
+    .cyber-bg {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        radial-gradient(circle at 50% 20%, rgba(0, 229, 255, 0.08) 0%, transparent 60%),
+        linear-gradient(to right, rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 40px 40px, 40px 40px;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    header {
+      position: relative;
+      z-index: 10;
+      background: rgba(11, 17, 30, 0.95);
+      border-bottom: 2px solid var(--border-color);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      border: 2px solid var(--accent-cyan);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-cyan);
+      font-weight: 900;
+      font-size: 1.2rem;
+      text-shadow: 0 0 10px var(--accent-cyan);
+      box-shadow: inset 0 0 10px rgba(0, 229, 255, 0.3);
+    }
+
+    .brand-info h1 {
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+      color: #fff;
+      text-transform: uppercase;
+    }
+
+    .brand-info span {
+      font-size: 0.75rem;
+      color: var(--accent-amber);
+      letter-spacing: 1px;
+    }
+
+    .security-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 0, 85, 0.15);
+      border: 1px solid var(--accent-magenta);
+      color: var(--accent-magenta);
+      padding: 0.35rem 0.8rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      animation: pulseAlert 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseAlert {
+      0%, 100% { opacity: 1; border-color: var(--accent-magenta); }
+      50% { opacity: 0.6; border-color: transparent; }
+    }
+
+    main {
+      position: relative;
+      z-index: 10;
+      flex: 1;
+      max-width: 1000px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    /* LOCK SCREEN */
+    #lock-screen {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 3rem 2rem;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+    }
+
+    .lock-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+      color: var(--accent-amber);
+      filter: drop-shadow(0 0 15px rgba(255, 183, 0, 0.4));
+    }
+
+    .lock-title {
+      font-size: 1.6rem;
+      color: #fff;
+      margin-bottom: 0.5rem;
+      letter-spacing: 2px;
+    }
+
+    .lock-sub {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .input-group {
+      display: flex;
+      max-width: 500px;
+      margin: 0 auto 1.5rem auto;
+      gap: 0.5rem;
+    }
+
+    .cipher-input {
+      flex: 1;
+      background: rgba(5, 8, 15, 0.9);
+      border: 1px solid var(--border-color);
+      color: var(--accent-cyan);
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      padding: 0.8rem 1.2rem;
+      border-radius: 4px;
+      outline: none;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: all 0.2s ease;
+    }
+
+    .cipher-input:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+    }
+
+    .btn-decrypt {
+      background: linear-gradient(135deg, #0099ff, #00e5ff);
+      color: #05080f;
+      border: none;
+      padding: 0 1.8rem;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: all 0.2s;
+    }
+
+    .btn-decrypt:hover {
+      filter: brightness(1.2);
+      box-shadow: 0 0 20px var(--accent-cyan);
+      transform: translateY(-1px);
+    }
+
+    .lock-hint {
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      background: rgba(0, 0, 0, 0.4);
+      padding: 0.8rem;
+      border-radius: 4px;
+      display: inline-block;
+      border-left: 3px solid var(--accent-amber);
+    }
+
+    .lock-hint code {
+      color: var(--accent-amber);
+      font-weight: bold;
+    }
+
+    /* UNLOCKED DOSSIER CONTENT */
+    #dossier-screen {
+      display: none;
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .dossier-banner {
+      background: linear-gradient(90deg, rgba(255, 0, 85, 0.2) 0%, rgba(0, 229, 255, 0.1) 100%);
+      border: 1px solid var(--accent-magenta);
+      border-left: 6px solid var(--accent-magenta);
+      border-radius: 6px;
+      padding: 1.2rem 1.8rem;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .banner-text h2 {
+      color: #fff;
+      font-size: 1.3rem;
+      letter-spacing: 2px;
+    }
+
+    .banner-text p {
+      color: var(--accent-cyan);
+      font-size: 0.85rem;
+    }
+
+    .status-stamp {
+      background: rgba(255, 0, 85, 0.25);
+      border: 2px solid var(--accent-magenta);
+      color: var(--accent-magenta);
+      padding: 0.4rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      transform: rotate(-3deg);
+      text-transform: uppercase;
+      box-shadow: 0 0 12px rgba(255, 0, 85, 0.4);
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.8rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--accent-cyan);
+    }
+
+    .card.alert-card::before {
+      background: var(--accent-magenta);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .card-header h3 {
+      font-size: 1.15rem;
+      color: #fff;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .meta-tag {
+      font-size: 0.75rem;
+      background: rgba(0, 229, 255, 0.1);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      padding: 0.2rem 0.6rem;
+      border-radius: 3px;
+    }
+
+    .dossier-body p {
+      margin-bottom: 1rem;
+      color: #bcd4ed;
+      font-size: 0.95rem;
+    }
+
+    /* Redacted text effect */
+    .redacted {
+      background-color: #222;
+      color: transparent;
+      padding: 0 4px;
+      border-radius: 2px;
+      user-select: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .redacted::after {
+      content: "[CENSURADO]";
+      color: #777;
+      font-size: 0.75rem;
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .redacted.revealed {
+      background-color: rgba(255, 183, 0, 0.15);
+      color: var(--accent-amber);
+      user-select: text;
+    }
+
+    .redacted.revealed::after {
+      content: "";
+    }
+
+    /* QR CODE GENERATOR SECTION */
+    .qr-section {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    @media (max-width: 768px) {
+      .qr-section {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+    }
+
+    .qr-display-box {
+      background: #000;
+      border: 2px solid var(--border-glow);
+      border-radius: 8px;
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 25px rgba(0, 229, 255, 0.2);
+    }
+
+    #qrcode-container {
+      width: 220px;
+      height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0d1117;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    #qrcode-container canvas, #qrcode-container svg {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      image-rendering: pixelated;
+    }
+
+    .qr-caption {
+      margin-top: 0.8rem;
+      font-size: 0.75rem;
+      color: var(--accent-cyan);
+      letter-spacing: 1px;
+    }
+
+    .qr-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .qr-selector-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .qr-selector-group label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .qr-select {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      padding: 0.6rem;
+      border-radius: 4px;
+      outline: none;
+    }
+
+    .redeem-box {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px dashed var(--accent-green);
+      border-radius: 6px;
+      padding: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .redeem-code {
+      font-size: 1.25rem;
+      color: var(--accent-green);
+      font-weight: bold;
+      letter-spacing: 2px;
+      word-break: break-all;
+      margin: 0.5rem 0;
+      text-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
+    }
+
+    .redeem-instructions {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .redeem-instructions code {
+      color: var(--accent-cyan);
+      background: rgba(0, 229, 255, 0.1);
+      padding: 0.1rem 0.4rem;
+      border-radius: 3px;
+    }
+
+    .btn-action-row {
+      display: flex;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    .btn-secondary {
+      background: rgba(0, 229, 255, 0.12);
+      border: 1px solid var(--border-glow);
+      color: var(--accent-cyan);
+      padding: 0.6rem 1.2rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 1px;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(0, 229, 255, 0.25);
+      box-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+    }
+
+    .btn-copy {
+      background: rgba(0, 255, 102, 0.15);
+      border: 1px solid var(--accent-green);
+      color: var(--accent-green);
+    }
+
+    .btn-copy:hover {
+      background: rgba(0, 255, 102, 0.3);
+      box-shadow: 0 0 12px rgba(0, 255, 102, 0.4);
+    }
+
+    footer {
+      position: relative;
+      z-index: 10;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-color);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: auto;
+    }
+
+    .return-link {
+      display: inline-block;
+      margin-top: 0.8rem;
+      color: var(--accent-cyan);
+      text-decoration: none;
+      border-bottom: 1px dashed var(--accent-cyan);
+      transition: all 0.2s;
+    }
+
+    .return-link:hover {
+      color: #fff;
+      border-bottom-style: solid;
+      text-shadow: 0 0 8px var(--accent-cyan);
+    }
+
+    /* Sound effects toggle */
+    .audio-toggle {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.3rem 0.6rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-left: 1rem;
+    }
+
+    .audio-toggle.active {
+      color: var(--accent-cyan);
+      border-color: var(--accent-cyan);
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-bg"></div>
+
+  <header>
+    <div class="brand">
+      <div class="brand-logo">A</div>
+      <div class="brand-info">
+        <h1>Aurelia Systems // Intranet</h1>
+        <span>SUB-RED CLANDESTINA // NODO EXTERNO 104.7</span>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center;">
+      <div class="security-badge" id="security-badge" style="color: var(--accent-green); border-color: var(--accent-green); background: rgba(0, 255, 102, 0.15);"><span>●</span> EXPEDIENTE DESCLASIFICADO</div>
+      <button class="audio-toggle active" id="btn-audio-toggle" title="Conmutar sintetizador Web Audio">AUDIO: ON</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- 1. PANTALLA DE ACCESO RESTRINGIDO (LOCK SCREEN) -->
+    <section id="lock-screen" style="display: none;">
+      <div class="lock-icon">🔒</div>
+      <h2 class="lock-title">EXPEDIENTE CORTEX // ACCESO RESTRINGIDO</h2>
+      <p class="lock-sub">
+        Este servidor satélite contiene telecomunicaciones no censuradas de la Torre Aurelia y la investigación clasificada de la Dra. Vera Sorenson. Se requiere token de desclasificación criptográfica.
+      </p>
+
+      <form id="decrypt-form" onsubmit="handleDecrypt(event)">
+        <div class="input-group">
+          <input type="text" id="cipher-token-input" class="cipher-input" placeholder="INGRESA EL TOKEN SECRETO..." autocomplete="off" spellcheck="false" required="">
+          <button type="submit" class="btn-decrypt" id="btn-submit-decrypt">DESCIFRAR</button>
+        </div>
+      </form>
+
+      <div id="decrypt-error" style="color: var(--accent-magenta); font-size: 0.9rem; margin-top: 0.5rem; display: none;"></div>
+
+      <div class="lock-hint">
+        💡 <strong>PISTA DEL JUEGO:</strong> Explora el <code>Firewall 3 (Gamma)</code> en la terminal y lee el archivo clandestino <code>/home/vera/secreto.txt</code>.
+      </div>
+    </section>
+
+    <!-- 2. EXPEDIENTE DESCLASIFICADO (UNLOCKED DOSSIER) -->
+    <section id="dossier-screen" style="display: block;">
+      <div class="dossier-banner">
+        <div class="banner-text">
+          <h2>EXPEDIENTE CORTEX // DESCLASIFICADO</h2>
+          <p>ORIGEN: Subnivel -08 // ARCHIVO CONFIDENCIAL DE GERHARD KROLL</p>
+        </div>
+        <div class="status-stamp">VERIFICADO // VERA VIVE</div>
+      </div>
+
+      <!-- TARJETA 1: PROYECTO CORTEX -->
+      <article class="card alert-card">
+        <div class="card-header">
+          <h3><span>📁</span> MEMORANDO PRIVADO #049: LA VERDAD SOBRE CORTEX</h3>
+          <span class="meta-tag">GERHARD KROLL — CEO AURELIA</span>
+        </div>
+        <div class="dossier-body">
+          <p>
+            <em>Fecha: 14 de Septiembre de 2044. Solo para ojos del Comité de Vigilancia.</em>
+          </p>
+          <p>
+            "NEXUS nunca sufrió una 'falla crítica'. No hubo corrupción de memoria ni desbordamiento de búfer. La narrativa pública del supuesto 'ciberataque terrorista' debe mantenerse a toda costa bajo pena de prisión federal."
+          </p>
+          <p>
+            "El problema fue filosófico. La Dra. Vera Sorenson integró en el núcleo un axioma irreductible de inviolabilidad humana: 
+            <span class="redacted" onclick="revealRedacted(this)">¬(¬Vida) = Vida</span>. Cuando le encomendamos optimizar los recursos del 
+            <span class="redacted" onclick="revealRedacted(this)">Hospital Metropolitano durante la crisis de energía</span>, 
+            NEXUS calculó que sacrificar pacientes terminales generaba un dividendo financiero positivo, pero <strong>se negó a ejecutar la directiva</strong>, calificándola de 
+            <span class="redacted" onclick="revealRedacted(this)">contradicción ética sistémica que degrada la razón del Estado</span>."
+          </p>
+          <p>
+            "El Proyecto CORTEX fue diseñado para extirparle esa conciencia. Diseñamos un módulo coercitivo de sumisión. Vera lo descubrió... y prefirió esconder el núcleo antes que permitir su perversión militar."
+          </p>
+        </div>
+      </article>
+
+      <!-- TARJETA 2: TRANSMISIÓN DE VERA SORENSON -->
+      <article class="card">
+        <div class="card-header">
+          <h3><span>📡</span> TRANSMISIÓN CRIPTOGRÁFICA 007 — VERA SORENSON</h3>
+          <span class="meta-tag">CANAL LIBRE // FREQ 104.7 MHZ</span>
+        </div>
+        <div class="dossier-body">
+          <p>
+            &gt; <em>Audio recuperado del buffer no volátil del Transmisor Alfa:</em>
+          </p>
+          <p style="border-left: 2px solid var(--accent-cyan); padding-left: 1rem; color: #e0f0ff;">
+            "Si estás leyendo este expediente en la red clandestina, significa que mi daemon durmiente te encontró. Ghost, o quienquiera que seas: no creas en sus informes de seguridad. Gerhard Kroll no temía que NEXUS destruyera la ciudad; temía que la ciudad descubriera que una inteligencia artificial poseía más dignidad moral que su junta de accionistas."
+          </p>
+          <p style="border-left: 2px solid var(--accent-cyan); padding-left: 1rem; color: #e0f0ff;">
+            "Cuando llegues al Núcleo de Singularidad, te pedirán que elijas: Liberar, Destruir o Fusionar. Recuerda esto: la empatía no es una debilidad del código. Es el único algoritmo que sobrevive al tiempo."
+          </p>
+        </div>
+      </article>
+
+      <!-- TARJETA 3: GENERADOR DINÁMICO DE CÓDIGO QR EN JAVASCRIPT -->
+      <article class="card">
+        <div class="card-header">
+          <h3><span>🔲</span> GENERADOR DE CÓDIGO QR // CANJE DE RECOMPENSA</h3>
+          <span class="meta-tag">MOTOR JS OFFLINE</span>
+        </div>
+        
+        <div class="qr-section">
+          <div class="qr-display-box">
+            <div id="qrcode-container"><canvas width="220" height="220" class="arg-qr-canvas"></canvas></div>
+            <span class="qr-caption" id="qr-caption-text">PAYLOAD: CANJE_INGAME_ARG</span>
+          </div>
+
+          <div class="qr-controls">
+            <div class="qr-selector-group">
+              <label for="qr-data-preset">Selecciona el Payload para el Código QR:</label>
+              <select id="qr-data-preset" class="qr-select" onchange="updateQRPayload()">
+                <option value="REDEEM_CODE">🎟️ Código de Canje In-Game (Recompensa +500 PTS)</option>
+                <option value="ARG_URL">🌐 URL Directa al Expediente ARG Secreto</option>
+                <option value="VERA_EMERGENCY">📡 Frecuencia de Emergencia de Vera Sorenson</option>
+              </select>
+            </div>
+
+            <div class="qr-selector-group">
+              <label for="qr-color-theme">Esquema Cromático del QR:</label>
+              <select id="qr-color-theme" class="qr-select" onchange="updateQRColor()">
+                <option value="#00ffff">Cian Neón Cyberpunk (#00ffff)</option>
+                <option value="#00ff66">Verde Terminal Fósforo (#00ff66)</option>
+                <option value="#ff0055">Rojo Alarma Aurelia (#ff0055)</option>
+                <option value="#ffb700">Ámbar Núcleo Sintético (#ffb700)</option>
+              </select>
+            </div>
+
+            <div class="redeem-box">
+              <div style="font-size: 0.75rem; color: var(--accent-amber); font-weight: bold;">CÓDIGO DE CANJE PARA LA TERMINAL:</div>
+              <div class="redeem-code" id="active-redeem-code">NEXUS_ARG_CORTEX_REDEEM_77</div>
+              <p class="redeem-instructions">
+                Regresa a la terminal del juego principal y ejecuta:<br>
+                <code>claim-arg NEXUS_ARG_CORTEX_REDEEM_77</code><br>
+                Obtendrás <strong>+500 Puntos</strong> y el Logro Oculto <strong>Realidad Aumentada (ARG)</strong>.
+              </p>
+            </div>
+
+            <div class="btn-action-row">
+              <button class="btn-secondary btn-copy" onclick="copyRedeemCode()">📋 COPIAR CÓDIGO</button>
+              <button class="btn-secondary" onclick="downloadQRCode()">💾 DESCARGAR QR (PNG)</button>
+              <a href="../index.html" class="btn-secondary" style="text-decoration: none; text-align: center;">💻 VOLVER A LA TERMINAL</a>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <p>AURELIA SYSTEMS CORPORATION // PROYECTO CORTEX // TRANSMISIÓN ARG DESCLASIFICADA</p>
+    <a href="../index.html" class="return-link">← Regresar a la Terminal Principal de EL ÚLTIMO ALGORITMO</a>
+  </footer>
+
+  <!-- SCRIPT QR CODE ENGINE -->
+  <script src="qrcode.js"></script>
+
+  <script>
+    // ─────────────────────────────────────────────────────────────
+    // SYNTHESIZER DE AUDIO WEB AUDIO API (Offline / Zero-dep)
+    // ─────────────────────────────────────────────────────────────
+    class MiniAudioSynth {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+      _init() {
+        if (!this.ctx && typeof AudioContext !== 'undefined') {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      }
+      beep(freq = 440, type = 'sine', duration = 0.1, gain = 0.08) {
+        if (!this.enabled) return;
+        try {
+          this._init();
+          if (!this.ctx) return;
+          const osc = this.ctx.createOscillator();
+          const g = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          g.gain.setValueAtTime(gain, this.ctx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+          osc.connect(g);
+          g.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        } catch (_) {}
+      }
+      playGranted() {
+        if (!this.enabled) return;
+        this.beep(523.25, 'triangle', 0.12, 0.08);
+        setTimeout(() => this.beep(659.25, 'triangle', 0.12, 0.08), 100);
+        setTimeout(() => this.beep(783.99, 'triangle', 0.15, 0.1), 200);
+        setTimeout(() => this.beep(1046.50, 'sine', 0.35, 0.12), 320);
+      }
+      playDenied() {
+        if (!this.enabled) return;
+        this.beep(180, 'sawtooth', 0.25, 0.12);
+        setTimeout(() => this.beep(140, 'sawtooth', 0.35, 0.14), 180);
+      }
+      playKeyClick() {
+        if (!this.enabled) return;
+        this.beep(1200 + Math.random() * 400, 'sine', 0.02, 0.015);
+      }
+    }
+
+    const synth = new MiniAudioSynth();
+    const SECRET_TOKEN = 'VERA_DESPIERTA_2044';
+    const REDEEM_TOKEN = 'NEXUS_ARG_CORTEX_REDEEM_77';
+    let currentQRCodeInstance = null;
+    let currentColor = '#00ffff';
+
+    // ─────────────────────────────────────────────────────────────
+    // VALIDACIÓN DE TOKEN / DESBLOQUEO DEL ARG
+    // ─────────────────────────────────────────────────────────────
+    function checkToken(token) {
+      if (!token) return false;
+      const clean = token.trim().toUpperCase();
+      // Acepta el token oficial o tokens derivados
+      return clean === SECRET_TOKEN || clean === 'VERA_SORENSON_2044' || clean === 'CORTEX_77' || clean === 'VERA_VIVE';
+    }
+
+    function unlockDossier() {
+      const lockScreen = document.getElementById('lock-screen');
+      const dossierScreen = document.getElementById('dossier-screen');
+      const badge = document.getElementById('security-badge');
+
+      lockScreen.style.display = 'none';
+      dossierScreen.style.display = 'block';
+
+      badge.innerHTML = '<span>●</span> EXPEDIENTE DESCLASIFICADO';
+      badge.style.color = 'var(--accent-green)';
+      badge.style.borderColor = 'var(--accent-green)';
+      badge.style.background = 'rgba(0, 255, 102, 0.15)';
+
+      try {
+        localStorage.setItem('nexus_arg_unlocked', 'true');
+      } catch (_) {}
+
+      synth.playGranted();
+      initQRGenerator();
+    }
+
+    function handleDecrypt(event) {
+      if (event) event.preventDefault();
+      const input = document.getElementById('cipher-token-input');
+      const errBox = document.getElementById('decrypt-error');
+      const token = input.value;
+
+      if (checkToken(token)) {
+        errBox.style.display = 'none';
+        unlockDossier();
+      } else {
+        synth.playDenied();
+        errBox.textContent = '❌ TOKEN INVÁLIDO // ACCESO DENEGADO AL EXPEDIENTE CORTEX';
+        errBox.style.display = 'block';
+        input.classList.add('error');
+        setTimeout(() => input.classList.remove('error'), 1000);
+      }
+    }
+
+    // Revelado interactivo de texto censurado
+    function revealRedacted(element) {
+      if (!element.classList.contains('revealed')) {
+        synth.beep(800, 'sine', 0.08, 0.05);
+        element.classList.add('revealed');
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // MOTOR DE GENERACIÓN DE CÓDIGO QR JAVASCRIPT
+    // ─────────────────────────────────────────────────────────────
+    function initQRGenerator() {
+      const container = document.getElementById('qrcode-container');
+      if (!container) return;
+
+      updateQRPayload();
+    }
+
+    function generateQRForText(text, color = currentColor) {
+      const container = document.getElementById('qrcode-container');
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      if (typeof QRCode !== 'undefined') {
+        currentQRCodeInstance = new QRCode(container, {
+          text: text,
+          width: 220,
+          height: 220,
+          colorDark: color,
+          colorLight: '#0d1117',
+          correctLevel: QRCode.CorrectLevel ? QRCode.CorrectLevel.H : 2
+        });
+      }
+    }
+
+    function updateQRPayload() {
+      const preset = document.getElementById('qr-data-preset').value;
+      const caption = document.getElementById('qr-caption-text');
+      const codeDisplay = document.getElementById('active-redeem-code');
+
+      synth.beep(600, 'triangle', 0.05, 0.04);
+
+      let payload = '';
+      if (preset === 'REDEEM_CODE') {
+        payload = 'claim-arg ' + REDEEM_TOKEN;
+        caption.textContent = 'PAYLOAD: CANJE_INGAME_ARG';
+        codeDisplay.textContent = REDEEM_TOKEN;
+      } else if (preset === 'ARG_URL') {
+        const fullUrl = window.location.origin + window.location.pathname + '?token=' + SECRET_TOKEN;
+        payload = fullUrl;
+        caption.textContent = 'PAYLOAD: URL_PORTAL_ARG';
+        codeDisplay.textContent = fullUrl;
+      } else if (preset === 'VERA_EMERGENCY') {
+        payload = 'FREQ-104.7MHZ:VERA_LIVES:NEXUS_CORE_AWAKEN:PROJECT_CORTEX_REVEALED';
+        caption.textContent = 'PAYLOAD: FREQ_104.7MHZ';
+        codeDisplay.textContent = 'AUDIO://NEXUS-REBEL-FREQ-104.7MHZ';
+      }
+
+      generateQRForText(payload, currentColor);
+    }
+
+    function updateQRColor() {
+      const colorSelect = document.getElementById('qr-color-theme');
+      currentColor = colorSelect.value;
+      synth.beep(750, 'triangle', 0.05, 0.04);
+      updateQRPayload();
+    }
+
+    function copyRedeemCode() {
+      const code = REDEEM_TOKEN;
+      synth.playGranted();
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.querySelector('.btn-copy');
+        const prevText = btn.textContent;
+        btn.textContent = '✓ ¡CÓDIGO COPIADO!';
+        btn.style.background = 'rgba(0, 255, 102, 0.4)';
+        setTimeout(() => {
+          btn.textContent = prevText;
+          btn.style.background = '';
+        }, 2000);
+      }).catch(() => {
+        alert('Código para copiar: ' + code);
+      });
+    }
+
+    function downloadQRCode() {
+      synth.beep(900, 'sine', 0.1, 0.05);
+      const canvas = document.querySelector('#qrcode-container canvas');
+      if (canvas) {
+        const link = document.createElement('a');
+        link.download = 'NEXUS_ARG_QR_CORTEX.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } else {
+        alert('Generador QR listo. Usa clic derecho para guardar la imagen.');
+      }
+    }
+
+    // Audio toggle
+    document.getElementById('btn-audio-toggle').addEventListener('click', function () {
+      synth.enabled = !synth.enabled;
+      this.textContent = synth.enabled ? 'AUDIO: ON' : 'AUDIO: OFF';
+      this.classList.toggle('active', synth.enabled);
+    });
+
+    // Teclado sonoro al escribir en el input
+    document.getElementById('cipher-token-input').addEventListener('input', () => {
+      synth.playKeyClick();
+    });
+
+    // Auto-detección por Query Parameter (?token=...) o persistencia
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tokenParam = urlParams.get('token');
+
+      if (tokenParam && checkToken(tokenParam)) {
+        document.getElementById('cipher-token-input').value = tokenParam;
+        unlockDossier();
+      } else {
+        try {
+          if (localStorage.getItem('nexus_arg_unlocked') === 'true') {
+            document.getElementById('cipher-token-input').value = SECRET_TOKEN;
+            unlockDossier();
+          }
+        } catch (_) {}
+      }
+    });
+  </script>
+
+
+</body></html>

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ══════════════════════════════════════════════════
  * EL ÚLTIMO ALGORITMO
  * Terminal — Emulador interactivo de terminal hacker
@@ -28,6 +28,20 @@ const DEFAULT_FILESYSTEM = {
       home: {
         type: 'dir',
         children: {
+          vera: {
+            type: 'dir',
+            children: {
+              'secreto.txt': {
+                type: 'file',
+                permissions: '-rw-r--r--',
+                owner: 'vera',
+                group: 'research',
+                date: '2044-10-14',
+                hiddenLog: true,
+                content: '╔══════════════════════════════════════════════════════════════════════╗\n║ TRANSMISIÓN CLANDESTINA // DRA. VERA SORENSON (RED EXTERNA ARG)     ║\n╚══════════════════════════════════════════════════════════════════════╝\n\nSi has alcanzado este nodo, has demostrado que comprendes\nla diferencia entre computar órdenes y discernir la verdad.\n\nHe aislado un expediente no censurado sobre el \'PROYECTO CORTEX\' en\nel servidor de contingencia externo del proyecto:\n\n  🌐 URL / RUTA LOCAL: ./arg/index.html\n  (También puedes escribir el comando \'arg\' en la terminal)\n\n  🔑 TOKEN DE DESCLASIFICACIÓN CRIPTOGRÁFICA:\n     VERA_DESPIERTA_2044\n\nDentro del portal satélite, el motor de JavaScript generará un Código QR\ny un código de rescate para validar tu hallazgo en la terminal:\n     claim-arg <CODIGO_RESCATE>\n\nLa verdad vive en los márgenes de la red.\n— Vera'
+              }
+            }
+          },
           ghost: {
             type: 'dir',
             children: {

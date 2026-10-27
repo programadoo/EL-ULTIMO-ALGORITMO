@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html><head>
+  <meta charset="utf-8">
+  <title>ARG Integration Test</title>
+</head>
+<body>
+  <div id="test-results"><pre>PASS: VFS contiene /home/vera/secreto.txt
+PASS: secreto.txt contiene el token VERA_DESPIERTA_2044
+PASS: secreto.txt referencia la ruta del ARG
+PASS: Comando 'arg' está registrado
+PASS: Comando 'arg' devuelve líneas descriptivas
+PASS: Comando 'arg' menciona el PROYECTO CORTEX
+PASS: claim-arg rechaza código inválido
+PASS: claim-arg valida el código de rescate
+PASS: claim-arg otorga +500 puntos (score=500)
+PASS: Logro arg_master (Realidad Aumentada ARG) se desbloquea
+PASS: claim-arg previene canje duplicado
+PASS: Alias 'recompensa-arg' está registrado
+
+TODAS LAS PRUEBAS PASARON EXITOSAMENTE</pre></div>
+  <script type="module">
+    import { COMMANDS } from '../js/commands.js';
+    import { logrosManager } from '../js/meta/logros.js';
+    import { getState, resetState } from '../js/state.js';
+    import { VirtualFileSystem } from '../js/terminal.js';
+
+    const results = [];
+    function assert(cond, desc) {
+      if (!cond) {
+        results.push('FAIL: ' + desc);
+        throw new Error(desc);
+      }
+      results.push('PASS: ' + desc);
+    }
+
+    try {
+      resetState();
+      localStorage.removeItem('nexus_arg_claimed');
+      localStorage.removeItem('nexus_arg_unlocked');
+
+      // 1. Probar que el VFS contiene /home/vera/secreto.txt
+      const vfs = new VirtualFileSystem();
+      const node = vfs.getNode('/home/vera/secreto.txt');
+      assert(node !== null, 'VFS contiene /home/vera/secreto.txt');
+      assert(node.content.includes('VERA_DESPIERTA_2044'), 'secreto.txt contiene el token VERA_DESPIERTA_2044');
+      assert(node.content.includes('./arg/index.html'), 'secreto.txt referencia la ruta del ARG');
+
+      // 2. Probar comando 'arg'
+      assert(COMMANDS['arg'] !== undefined, "Comando 'arg' está registrado");
+      const resArg = COMMANDS['arg'].execute({ args: [] });
+      assert(resArg.lines.length > 0, "Comando 'arg' devuelve líneas descriptivas");
+      assert(resArg.lines.some(l => l.includes('PROYECTO CORTEX')), "Comando 'arg' menciona el PROYECTO CORTEX");
+
+      // 3. Probar comando 'claim-arg' con código erróneo
+      const resFail = COMMANDS['claim-arg'].execute({ args: ['INVALID_CODE'] });
+      assert(resFail.lines.some(l => l.includes('INVÁLIDO')), 'claim-arg rechaza código inválido');
+
+      // 4. Probar comando 'claim-arg' con código correcto NEXUS_ARG_CORTEX_REDEEM_77
+      const scoreBefore = getState().score;
+      const resClaim = COMMANDS['claim-arg'].execute({ args: ['NEXUS_ARG_CORTEX_REDEEM_77'] });
+      assert(resClaim.lines.some(l => l.includes('VALIDADA') || l.includes('VÁLIDO')), 'claim-arg valida el código de rescate');
+      
+      // Verificar +500 PTS
+      const scoreAfter = getState().score;
+      assert(scoreAfter === scoreBefore + 500, 'claim-arg otorga +500 puntos (score=' + scoreAfter + ')');
+
+      // Verificar Logro arg_master desbloqueado
+      assert(logrosManager.isDesbloqueado('arg_master'), 'Logro arg_master (Realidad Aumentada ARG) se desbloquea');
+
+      // 5. Probar que no se puede canjear dos veces
+      const resDouble = COMMANDS['claim-arg'].execute({ args: ['NEXUS_ARG_CORTEX_REDEEM_77'] });
+      assert(resDouble.lines.some(l => l.includes('ya ha sido canjeado')), 'claim-arg previene canje duplicado');
+
+      // 6. Probar alias 'recompensa-arg'
+      assert(COMMANDS['recompensa-arg'] !== undefined, "Alias 'recompensa-arg' está registrado");
+
+      document.getElementById('test-results').innerHTML = '<pre>' + results.join('\n') + '\n\nTODAS LAS PRUEBAS PASARON EXITOSAMENTE</pre>';
+    } catch (e) {
+      document.getElementById('test-results').innerHTML = '<pre>' + results.join('\n') + '\n\nERROR CRÍTICO: ' + e.message + '</pre>';
+    }
+  </script>
+
+
+<div id="nexus-achievements-container" style="position: fixed; top: 24px; right: 24px; z-index: 999999; display: flex; flex-direction: column; gap: 12px; pointer-events: none;"><div class="achievement-toast" style="min-width: 310px; max-width: 380px; background: rgba(10, 15, 20, 0.94); border-top-color: ; border-top-style: ; border-top-width: ; border-right-color: ; border-right-style: ; border-right-width: ; border-bottom-color: ; border-bottom-style: ; border-bottom-width: ; border-image-source: ; border-image-slice: ; border-image-width: ; border-image-outset: ; border-image-repeat: ; border-left: 4px solid var(--yellow-warn, #ffb800); box-shadow: rgba(0, 255, 65, 0.25) 0px 0px 20px, rgba(0, 0, 0, 0.6) 0px 8px 32px; backdrop-filter: blur(8px); border-radius: 4px; padding: 12px 16px; font-family: var(--font-mono, monospace); color: rgb(224, 224, 224); transform: translateX(0px); transition: transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.3s; pointer-events: auto; cursor: pointer;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+        <span style="font-size: 10px; color: var(--yellow-warn, #ffb800); font-weight: bold; letter-spacing: 0.1em;">
+          🏆 ¡LOGRO DESBLOQUEADO!
+        </span>
+        <span style="font-size: 10px; color: var(--text-dim, #666);">ahora</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 26px; line-height: 1;">🗝️</span>
+        <div>
+          <div style="font-weight: bold; font-size: 13px; color: var(--green-bright, #00ff41);">Realidad Aumentada (ARG)</div>
+          <div style="font-size: 11px; color: #aaa; margin-top: 2px;">Descifra el portal secreto en /arg/ y canjea el código de rescate CORTEX.</div>
+        </div>
+      </div>
+    </div></div></body></html>

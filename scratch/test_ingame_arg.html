@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>ARG Integration Test</title>
+</head>
+<body>
+  <div id="test-results">Iniciando pruebas...</div>
+  <script type="module">
+    import { COMMANDS } from '../js/commands.js';
+    import { logrosManager } from '../js/meta/logros.js';
+    import { getState, resetState } from '../js/state.js';
+    import { VirtualFileSystem } from '../js/terminal.js';
+
+    const results = [];
+    function assert(cond, desc) {
+      if (!cond) {
+        results.push('FAIL: ' + desc);
+        throw new Error(desc);
+      }
+      results.push('PASS: ' + desc);
+    }
+
+    try {
+      resetState();
+      localStorage.removeItem('nexus_arg_claimed');
+      localStorage.removeItem('nexus_arg_unlocked');
+
+      // 1. Probar que el VFS contiene /home/vera/secreto.txt
+      const vfs = new VirtualFileSystem();
+      const node = vfs.getNode('/home/vera/secreto.txt');
+      assert(node !== null, 'VFS contiene /home/vera/secreto.txt');
+      assert(node.content.includes('VERA_DESPIERTA_2044'), 'secreto.txt contiene el token VERA_DESPIERTA_2044');
+      assert(node.content.includes('./arg/index.html'), 'secreto.txt referencia la ruta del ARG');
+
+      // 2. Probar comando 'arg'
+      assert(COMMANDS['arg'] !== undefined, "Comando 'arg' está registrado");
+      const resArg = COMMANDS['arg'].execute({ args: [] });
+      assert(resArg.lines.length > 0, "Comando 'arg' devuelve líneas descriptivas");
+      assert(resArg.lines.some(l => l.includes('PROYECTO CORTEX')), "Comando 'arg' menciona el PROYECTO CORTEX");
+
+      // 3. Probar comando 'claim-arg' con código erróneo
+      const resFail = COMMANDS['claim-arg'].execute({ args: ['INVALID_CODE'] });
+      assert(resFail.lines.some(l => l.includes('INVÁLIDO')), 'claim-arg rechaza código inválido');
+
+      // 4. Probar comando 'claim-arg' con código correcto NEXUS_ARG_CORTEX_REDEEM_77
+      const scoreBefore = getState().score;
+      const resClaim = COMMANDS['claim-arg'].execute({ args: ['NEXUS_ARG_CORTEX_REDEEM_77'] });
+      assert(resClaim.lines.some(l => l.includes('VALIDADA') || l.includes('VÁLIDO')), 'claim-arg valida el código de rescate');
+      
+      // Verificar +500 PTS
+      const scoreAfter = getState().score;
+      assert(scoreAfter === scoreBefore + 500, 'claim-arg otorga +500 puntos (score=' + scoreAfter + ')');
+
+      // Verificar Logro arg_master desbloqueado
+      assert(logrosManager.isDesbloqueado('arg_master'), 'Logro arg_master (Realidad Aumentada ARG) se desbloquea');
+
+      // 5. Probar que no se puede canjear dos veces
+      const resDouble = COMMANDS['claim-arg'].execute({ args: ['NEXUS_ARG_CORTEX_REDEEM_77'] });
+      assert(resDouble.lines.some(l => l.includes('ya ha sido canjeado')), 'claim-arg previene canje duplicado');
+
+      // 6. Probar alias 'recompensa-arg'
+      assert(COMMANDS['recompensa-arg'] !== undefined, "Alias 'recompensa-arg' está registrado");
+
+      document.getElementById('test-results').innerHTML = '<pre>' + results.join('\n') + '\n\nTODAS LAS PRUEBAS PASARON EXITOSAMENTE</pre>';
+    } catch (e) {
+      document.getElementById('test-results').innerHTML = '<pre>' + results.join('\n') + '\n\nERROR CRÍTICO: ' + e.message + '</pre>';
+    }
+  </script>
+</body>
+</html>

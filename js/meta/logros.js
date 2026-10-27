@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @fileoverview Sistema de Logros Cyberpunk (Prompt 16 / Spec 4.2).
  * 20 logros desbloqueables con id, título, descripción, icono, mini-historia y persistencia en localStorage.
  * Notificación animada (toast) en la esquina superior derecha y pantalla de Logros.
@@ -141,6 +141,13 @@ export const LOGROS_DEFINICIONES = [
     descripcion: 'Descubre los 3 desenlaces posibles (Liberar, Destruir, Fusionar).',
     icono: '🌌',
     historia: 'Presenciaste cada línea temporal concebible para la conciencia sintética.'
+  },
+  {
+    id: 'arg_master',
+    titulo: 'Realidad Aumentada (ARG)',
+    descripcion: 'Descifra el portal secreto en /arg/ y canjea el código de rescate CORTEX.',
+    icono: '🗝️',
+    historia: 'Cruzaste las fronteras del código del juego hacia la realidad paralela de Aurelia.'
   },
   {
     id: 'ghost_protocol',

@@ -12,6 +12,16 @@ import { generarPuzzleTipoB } from './tipoB.js';
 import { generarPuzzleTipoC } from './tipoC.js';
 import { generarPuzzleTipoD } from './tipoD.js';
 import { generarPuzzleTipoE } from './tipoE.js';
+import { generarPuzzleCesar } from './tipoCesar.js';
+import { generarPuzzleBinario } from './tipoBinario.js';
+import { generarPuzzleHex } from './tipoHex.js';
+import { generarPuzzleVigenere } from './tipoVigenere.js';
+import { generarPuzzleFrecuencia } from './tipoFrecuencia.js';
+import { generarPuzzleEsteganografia } from './tipoEsteganografia.js';
+import { generarPuzzleRSA } from './tipoRSA.js';
+import { generarPuzzleLlaves } from './tipoLlaves.js';
+import { generarPuzzleFirmas } from './tipoFirmas.js';
+import { generarPuzzleBlockchain } from './tipoBlockchain.js';
 
 // ─────────────────────────────────────────────────
 // 1. UTILIDADES MATEMÁTICAS Y DE AZAR
@@ -391,6 +401,39 @@ export function generarPuzzle(tipo = 'A', nivel = 1) {
       return generarPuzzleTipoD(nivel);
     case 'E':
       return generarPuzzleTipoE(nivel);
+    case 'CESAR':
+    case 'CRIPTO':
+      return generarPuzzleCesar(nivel);
+    case 'BINARIO':
+    case 'BIN':
+      return generarPuzzleBinario(nivel);
+    case 'HEX':
+    case 'HEXADECIMAL':
+      return generarPuzzleHex(nivel);
+    case 'VIGENERE':
+      return generarPuzzleVigenere(nivel);
+    case 'FRECUENCIA':
+    case 'SUSTITUCION':
+      return generarPuzzleFrecuencia(nivel);
+    case 'ESTEGANOGRAFIA':
+    case 'LSB':
+      return generarPuzzleEsteganografia(nivel);
+    case 'RSA':
+      return generarPuzzleRSA(nivel);
+    case 'LLAVES':
+    case 'KEYS':
+    case 'ASIMETRICO':
+      return generarPuzzleLlaves(nivel);
+    case 'FIRMA':
+    case 'FIRMAS':
+    case 'RSAPSS':
+    case 'PSS':
+      return generarPuzzleFirmas(nivel);
+    case 'BLOCKCHAIN':
+    case 'CADENA':
+    case 'SHA256':
+    case 'LEDGER':
+      return generarPuzzleBlockchain(nivel);
     default:
       console.warn(`[Generador] Tipo '${tipo}' desconocido, generando Tipo A por defecto.`);
       return generarPuzzleConjuntos(nivel);
@@ -429,6 +472,59 @@ export async function abrirCualquierPuzzle(tipo = 'A', nivel = 1, onCompletado =
     case 'E': {
       const { abrirPuzzleTipoE } = await import('./tipoE.js');
       return abrirPuzzleTipoE(nivelEfectivo, onCompletado);
+    }
+    case 'CESAR':
+    case 'CRIPTO': {
+      const { abrirPuzzleCesar } = await import('./tipoCesar.js');
+      return abrirPuzzleCesar(nivelEfectivo, onCompletado);
+    }
+    case 'BINARIO':
+    case 'BIN': {
+      const { abrirPuzzleBinario } = await import('./tipoBinario.js');
+      return abrirPuzzleBinario(nivelEfectivo, onCompletado);
+    }
+    case 'HEX':
+    case 'HEXADECIMAL': {
+      const { abrirPuzzleHex } = await import('./tipoHex.js');
+      return abrirPuzzleHex(nivelEfectivo, onCompletado);
+    }
+    case 'VIGENERE': {
+      const { abrirPuzzleVigenere } = await import('./tipoVigenere.js');
+      return abrirPuzzleVigenere(nivelEfectivo, onCompletado);
+    }
+    case 'FRECUENCIA':
+    case 'SUSTITUCION': {
+      const { abrirPuzzleFrecuencia } = await import('./tipoFrecuencia.js');
+      return abrirPuzzleFrecuencia(nivelEfectivo, onCompletado);
+    }
+    case 'ESTEGANOGRAFIA':
+    case 'LSB': {
+      const { abrirPuzzleEsteganografia } = await import('./tipoEsteganografia.js');
+      return abrirPuzzleEsteganografia(nivelEfectivo, onCompletado);
+    }
+    case 'RSA': {
+      const { abrirPuzzleRSA } = await import('./tipoRSA.js');
+      return abrirPuzzleRSA(nivelEfectivo, onCompletado);
+    }
+    case 'LLAVES':
+    case 'KEYS':
+    case 'ASIMETRICO': {
+      const { abrirPuzzleLlaves } = await import('./tipoLlaves.js');
+      return abrirPuzzleLlaves(nivelEfectivo, onCompletado);
+    }
+    case 'FIRMA':
+    case 'FIRMAS':
+    case 'RSAPSS':
+    case 'PSS': {
+      const { abrirPuzzleFirmas } = await import('./tipoFirmas.js');
+      return abrirPuzzleFirmas(nivelEfectivo, onCompletado);
+    }
+    case 'BLOCKCHAIN':
+    case 'CADENA':
+    case 'SHA256':
+    case 'LEDGER': {
+      const { abrirPuzzleBlockchain } = await import('./tipoBlockchain.js');
+      return abrirPuzzleBlockchain(nivelEfectivo, onCompletado);
     }
     default: {
       const { abrirPuzzleTipoA } = await import('./tipoA.js');
@@ -522,6 +618,43 @@ export function testGenerador() {
   assert(puzzleE.tipo === 'E', "generarPuzzle('E') debe devolver tipo 'E'");
   assert(Array.isArray(puzzleE.premisas) && puzzleE.premisas.length >= 2, "Tipo E debe contener premisas");
   assert(puzzleE.opciones.includes(puzzleE.respuestaCorrecta), "Tipo E debe incluir la conclusión correcta");
+
+  // 11. Generación de Puzzle Tipo Binario
+  const puzzleBin = generarPuzzle('BINARIO', 1);
+  assert(puzzleBin.tipo === 'BINARIO', "generarPuzzle('BINARIO') debe devolver tipo 'BINARIO'");
+  assert(typeof puzzleBin.codigoBinario === 'string' && puzzleBin.codigoBinario.length > 0, "Tipo Binario debe generar codigoBinario");
+  assert(puzzleBin.opciones.includes(puzzleBin.respuestaCorrecta), "Tipo Binario debe incluir respuesta correcta");
+
+  // 12. Generación de Puzzle Tipo Hexadecimal
+  const puzzleHex = generarPuzzle('HEX', 1);
+  assert(puzzleHex.tipo === 'HEX', "generarPuzzle('HEX') debe devolver tipo 'HEX'");
+  assert(typeof puzzleHex.codigoHex === 'string' && puzzleHex.codigoHex.length > 0, "Tipo Hex debe generar codigoHex");
+  assert(puzzleHex.opciones.includes(puzzleHex.respuestaCorrecta), "Tipo Hex debe incluir respuesta correcta");
+
+  // 13. Generación de Puzzle Tipo Vigenère
+  const puzzleVig = generarPuzzle('VIGENERE', 2);
+  assert(puzzleVig.tipo === 'VIGENERE', "generarPuzzle('VIGENERE') debe devolver tipo 'VIGENERE'");
+  assert(typeof puzzleVig.textoCifrado === 'string' && puzzleVig.textoCifrado.length > 0, "Tipo Vigenère debe generar textoCifrado");
+  assert(puzzleVig.opciones.includes(puzzleVig.respuestaCorrecta), "Tipo Vigenère debe incluir respuesta correcta");
+
+  // 14. Generación de Puzzle Tipo Frecuencia
+  const puzzleFreq = generarPuzzle('FRECUENCIA', 4);
+  assert(puzzleFreq.tipo === 'FRECUENCIA', "generarPuzzle('FRECUENCIA') debe devolver tipo 'FRECUENCIA'");
+  assert(typeof puzzleFreq.textoCifrado === 'string' && puzzleFreq.textoCifrado.length > 0, "Tipo Frecuencia debe generar textoCifrado");
+  assert(puzzleFreq.opciones.includes(puzzleFreq.respuestaCorrecta), "Tipo Frecuencia debe incluir respuesta correcta");
+
+  // 15. Generación de Puzzle Tipo Esteganografía LSB
+  const puzzleEsteg = generarPuzzle('ESTEGANOGRAFIA', 4);
+  assert(puzzleEsteg.tipo === 'ESTEGANOGRAFIA', "generarPuzzle('ESTEGANOGRAFIA') debe devolver tipo 'ESTEGANOGRAFIA'");
+  assert(typeof puzzleEsteg.mensajeSecreto === 'string' && puzzleEsteg.mensajeSecreto.length > 0, "Tipo Esteganografía debe generar mensajeSecreto");
+  assert(puzzleEsteg.opciones.includes(puzzleEsteg.respuestaCorrecta), "Tipo Esteganografía debe incluir respuesta correcta");
+
+  // 16. Generación de Puzzle Tipo RSA (Firewall 5)
+  const puzzleRSA = generarPuzzle('RSA', 5);
+  assert(puzzleRSA.tipo === 'RSA', "generarPuzzle('RSA') debe devolver tipo 'RSA'");
+  assert(typeof puzzleRSA.textoPlano === 'string' && puzzleRSA.textoPlano.length > 0, "Tipo RSA debe generar textoPlano");
+  assert(Array.isArray(puzzleRSA.numerosCifrados) && puzzleRSA.numerosCifrados.length > 0, "Tipo RSA debe generar numerosCifrados");
+  assert(puzzleRSA.opciones.includes(puzzleRSA.respuestaCorrecta), "Tipo RSA debe incluir respuesta correcta");
 
   const fallados = total - pasados;
   if (fallados === 0) {

@@ -187,9 +187,10 @@ export function renderHUD(prevState, nextState) {
           ${isGhost ? '🚫 Sin saltos' : `⏭ Salto (${skips})`}
         </button>
       </div>
-      <div class="hud__logs-count">
+      <div class="hud__logs-count" id="btn-hud-logs" style="cursor: pointer; transition: all 0.2s ease;" title="Haz clic para inspeccionar logs descubiertos y escuchar grabaciones">
         <span>◈ LOGS SECRETOS:</span>
         <strong style="color: var(--cyan);">${logsCount} / 5</strong>
+        <span style="font-size: 10px; color: var(--text-dim); margin-left: 4px;">[🎙️ ESCUCHAR]</span>
       </div>
 
       <!-- Controlador de música cyberpunk en tiempo real -->
@@ -225,6 +226,19 @@ export function renderHUD(prevState, nextState) {
       btnMusic.onclick = (e) => {
         e.stopPropagation();
         audio.toggleMusic();
+      };
+    }
+
+    const btnLogs = document.getElementById('btn-hud-logs');
+    if (btnLogs) {
+      btnLogs.onclick = (e) => {
+        e.stopPropagation();
+        if (typeof window.abrirArchivoLogsModal === 'function') {
+          window.abrirArchivoLogsModal();
+        } else if (typeof window.abrirVisorLog === 'function') {
+          const logData = window.LOGS_DATABASE ? window.LOGS_DATABASE['vera.txt'] : null;
+          window.abrirVisorLog('vera.txt', logData ? logData.contenido : 'Registro inicial de Vera Sorenson.');
+        }
       };
     }
   }
