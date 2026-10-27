@@ -83,6 +83,8 @@ export function createDefaultState() {
 
     // Meta
     playerName: 'Ghost',
+    nombreJugador: 'Ghost',
+    generoJugador: 'masculino',
     startedAt: null,
     totalTime: 0,             // segundos jugados
     isGhostProtocol: false,   // Modo Ghost Protocol (Prompt 19 / Spec 4.1)
@@ -472,6 +474,17 @@ export function unlockGhostProtocol() {
  * - Integridad inicial reducida a 50
  * - Dificultad extrema de puzzles
  */
+export function setPlayerIdentity(opts = {}) {
+  const nombre = String(opts.nombreJugador ?? opts.nombre ?? state.nombreJugador ?? 'Ghost').trim() || 'Ghost';
+  const genero = String(opts.generoJugador ?? opts.genero ?? state.generoJugador ?? 'masculino').toLowerCase().trim();
+  update({
+    playerName: nombre,
+    nombreJugador: nombre,
+    generoJugador: genero
+  });
+  return { nombreJugador: nombre, generoJugador: genero };
+}
+
 export function startGhostProtocolMode() {
   resetState();
   update({

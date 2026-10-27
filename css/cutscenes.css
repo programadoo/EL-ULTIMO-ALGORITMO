@@ -324,3 +324,49 @@
   100% { height: 100%; }
 }
 
+/* ── Transiciones fluidas de escena y atmósfera V4 ────────── */
+.cutscene-viewport {
+  transition: filter 0.7s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cutscene-viewport--memory-bw {
+  filter: grayscale(100%) contrast(1.08);
+}
+
+.cutscene-viewport--luxury-gold .cutscene-ui-layer {
+  border-color: rgba(212, 175, 55, 0.65);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.92), 0 0 24px rgba(212, 175, 55, 0.22);
+}
+
+.cutscene-scene-enter {
+  animation: cutsceneSceneFadeSlide 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cutsceneSceneFadeSlide {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.cutscene-typewriter-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 15px;
+  margin-left: 4px;
+  vertical-align: middle;
+  background: var(--green-bright, #00ff41);
+  box-shadow: 0 0 8px var(--green-bright, #00ff41);
+  animation: cutsceneCursorBlink 0.75s steps(2) infinite;
+}
+
+@keyframes cutsceneCursorBlink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+

@@ -10,6 +10,14 @@ import { registerLogFound, getState, registerPuzzleSolvedInFirewall, isGhostProt
 import { abrirCualquierPuzzle } from './puzzles/generador.js';
 import { audio, speechEngine, FIREWALL_MUSIC_TRACKS } from './audio.js';
 import { LOGS_DATABASE, getHiddenLog, esLogImportante } from './historia/logs.js';
+import {
+  notificarEventoFirewall4Marcus,
+  elegirRespuestaMarcus,
+  minimizarChatExternoMarcus,
+  abrirChatExternoMarcus,
+  obtenerOpcionesDisponiblesMarcus,
+  getEstadoChatMarcus
+} from './historia/guion.js';
 import { logrosManager } from './meta/logros.js';
 import { statsManager } from './meta/stats.js';
 import { secretosManager } from './meta/secretos.js';
@@ -55,7 +63,15 @@ import {
   CASOS_LORE_BLOCKCHAIN
 } from './cripto/blockchain.js';
 import { abrirPuzzleBlockchain } from './puzzles/tipoBlockchain.js';
-import { cutscenesManager, reproducirCutsceneIntro, reproducirCutsceneTwist, BANCO_CUTSCENES } from './cinematica/cutscenes.js';
+import {
+  cutscenesManager,
+  reproducirCutsceneIntro,
+  reproducirCutsceneOrfanato,
+  reproducirCutsceneMetaficcion,
+  reproducirCutsceneMarcus,
+  reproducirCutsceneTwist,
+  BANCO_CUTSCENES
+} from './cinematica/cutscenes.js';
 
 /**
  * Convierte un patrón glob (ej. "*.log", "*vera*") a RegExp.
@@ -234,12 +250,18 @@ export const COMMANDS = {
           }
         }
 
-        // Imprimir contenido del archivo
-        const contentLines = String(node.content || '').split('\n');
+        // Si es un log narrativo en LOGS_DATABASE (Versión 4), priorizar su contenido literario
+        const logData = (typeof getHiddenLog === 'function' ? getHiddenLog(cleanName) : null) || (LOGS_DATABASE && LOGS_DATABASE[cleanName]);
+        const rawText = (logData && logData.contenido) ? logData.contenido : String(node.content || '');
+        const contentLines = String(rawText).split('\n');
         lines.push(...contentLines);
 
+        // Si el jugador lee nexus_dreams.log en el Firewall 4, Marcus reacciona en su chat flotante externo
+        if (cleanName.toLowerCase() === 'nexus_dreams.log' && getState().currentFirewall === 3) {
+          notificarEventoFirewall4Marcus('log_dreams');
+        }
+
         // Si es un log narrativo importante con voz disponible (Prompt D3 / Spec 4.3)
-        const logData = (typeof getHiddenLog === 'function' ? getHiddenLog(cleanName) : null) || (LOGS_DATABASE && LOGS_DATABASE[cleanName]);
         if (logData || node.hiddenLog || (node.name && (node.name.endsWith('.txt') || node.name.endsWith('.log') || node.name.endsWith('.md')))) {
           const isVera = logData && logData.autor && logData.autor.toLowerCase().includes('vera');
           const isNexus = logData && logData.autor && logData.autor.toLowerCase().includes('nexus');
@@ -704,6 +726,10 @@ export const COMMANDS = {
 
           // Comprobar logros de puzzle
           const st = getState();
+          // Si estamos en el Firewall 4 (currentFirewall === 3), notificar al chat externo flotante de Marcus
+          if (st.currentFirewall === 3) {
+            notificarEventoFirewall4Marcus(`puzzle_${breach.solved}`);
+          }
           logrosManager.verificar('puzzle_acertado', {
             streak: st.streak,
             integridad: st.integrity,
@@ -2150,8 +2176,8 @@ export const COMMANDS = {
 
   cutscene: {
     name: 'cutscene',
-    description: 'Reproduce cinemáticas narrativas animadas (Canvas + CSS)',
-    usage: 'cutscene [intro|twist|lista]',
+    description: 'Reproduce las 5 cinemáticas narrativas clave V4 (Canvas + CSS)',
+    usage: 'cutscene [intro|orfanato|metaficcion|marcus|twist|lista]',
     async execute({ args = [], terminal }) {
       const sub = (args[0] || 'intro').toLowerCase();
 
@@ -2159,10 +2185,13 @@ export const COMMANDS = {
         return {
           lines: [
             '╔══════════════════════════════════════════════════════════════╗',
-            '║ 🎬 ARCHIVO DE CINEMÁTICAS NARRATIVAS // CANVAS + CSS         ║',
+            '║ 🎬 ARCHIVO DE LAS 5 CINEMÁTICAS V4 // CANVAS + CSS           ║',
             '╠══════════════════════════════════════════════════════════════╣',
-            '║  1. cutscene intro  : El mensaje de las 3:47 AM / Despertar  ║',
-            '║  2. cutscene twist  : La Verdad sobre Vera Sorenson y NEXUS  ║',
+            '║  1. cutscene intro       : El mensaje de las 3:47 AM         ║',
+            '║  2. cutscene orfanato    : El abandono a los 8 años (B/N)    ║',
+            '║  3. cutscene metaficcion : El salto metaficcional (FW3)      ║',
+            '║  4. cutscene marcus      : Presentación de Marcus Sorenson   ║',
+            '║  5. cutscene twist       : El ojo digital y el encierro      ║',
             '╠══════════════════════════════════════════════════════════════╣',
             '║ Controles: ESPACIO/CLIC para avanzar | ESC para saltar       ║',
             '╚══════════════════════════════════════════════════════════════╝'
@@ -2170,19 +2199,52 @@ export const COMMANDS = {
         };
       }
 
-      if (sub === 'twist' || sub === 'revelacion' || sub === 'verdad') {
-        terminal.print('> Iniciando cinemática: DESCLASIFICACIÓN TOTAL // PLOT TWIST...', 'line--warning');
+      if (sub === 'orfanato' || sub === 'abandono' || sub === '2') {
+        terminal.print('> Reproduciendo Cutscene 2: RECUERDO DEL ORFANATO (8 AÑOS)...', 'line--info');
+        await reproducirCutsceneOrfanato();
+        return {
+          lines: [
+            '[+] Cinemática del recuerdo del orfanato completada.',
+            '> "Tardé 18 años en entender la diferencia."'
+          ]
+        };
+      }
+
+      if (sub === 'metaficcion' || sub === 'meta' || sub === '3') {
+        terminal.print('> Reproduciendo Cutscene 3: EL SALTO METAFICCIONAL...', 'line--warning');
+        await reproducirCutsceneMetaficcion();
+        return {
+          lines: [
+            '[+] Cinemática metaficcional completada.',
+            '> NEXUS: "Perdón. Solo quería que supieras que estoy aquí."'
+          ]
+        };
+      }
+
+      if (sub === 'marcus' || sub === 'tio' || sub === '4') {
+        terminal.print('> Reproduciendo Cutscene 4: PRESENTACIÓN DE MARCUS SORENSON...', 'line--warning');
+        await reproducirCutsceneMarcus();
+        return {
+          lines: [
+            '[+] Cinemática de Marcus Sorenson completada.',
+            '> "También es mi tío. Aunque yo no lo sabía. Aunque él sí."'
+          ]
+        };
+      }
+
+      if (sub === 'twist' || sub === 'revelacion' || sub === 'verdad' || sub === '5') {
+        terminal.print('> Iniciando Cutscene 5: EL GRAN TWIST // EL OJO DIGITAL Y LA VERDAD...', 'line--warning');
         await reproducirCutsceneTwist();
         return {
           lines: [
-            '[+] Cinemática del Plot Twist finalizada.',
-            '> Toda la verdad ha sido desclasificada en tu consola.'
+            '[+] Cinemática del Gran Twist finalizada.',
+            '> Toda la verdad sobre el encierro de Vera ha sido revelada.'
           ]
         };
       }
 
       // Default: intro
-      terminal.print('> Desplegando cinemática: EL MENSAJE DE LAS 3:47 AM...', 'line--info');
+      terminal.print('> Desplegando Cutscene 1: EL MENSAJE DE LAS 3:47 AM...', 'line--info');
       await reproducirCutsceneIntro();
       return {
         lines: [
