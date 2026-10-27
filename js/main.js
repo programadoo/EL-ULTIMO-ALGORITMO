@@ -7,7 +7,7 @@
  */
 
 import { navigateTo, showImmediate, onScreenEnter, testRouter } from './router.js';
-import { hasSave, loadFromStorage, resetState, getState, testState, isGhostProtocolUnlocked, unlockGhostProtocol, startGhostProtocolMode } from './state.js';
+import { hasSave, loadFromStorage, resetState, getState, update, setPlayerIdentity, testState, isGhostProtocolUnlocked, unlockGhostProtocol, startGhostProtocolMode } from './state.js';
 import { Conjuntos, testConjuntos } from './conjuntos.js';
 import { Logica, testLogica } from './logica.js';
 import { terminal, testTerminal } from './terminal.js';
@@ -37,13 +37,50 @@ import { testFirmas, firmarMensaje, verificarFirma, generarParDeFirmas, obtenerI
 import { generarPuzzleFirmas, abrirPuzzleFirmas, cerrarPuzzleFirmas, testTipoFirmas } from './puzzles/tipoFirmas.js';
 import { testBlockchain, calcularHashSHA256, Bloque, CadenaDeLogs, construirCadenaAuditadaConCorrupcion } from './cripto/blockchain.js';
 import { testTipoBlockchain, generarPuzzleBlockchain, abrirPuzzleBlockchain, cerrarPuzzleBlockchain } from './puzzles/tipoBlockchain.js';
-import { cutscenesManager, reproducirCutsceneIntro, reproducirCutsceneTwist, testCutscenes, BANCO_CUTSCENES } from './cinematica/cutscenes.js';
+import {
+  cutscenesManager,
+  reproducirCutsceneIntro,
+  reproducirCutsceneOrfanato,
+  reproducirCutsceneAbandono,
+  reproducirCutsceneMetaficcion,
+  reproducirCutsceneMarcus,
+  reproducirCutsceneTwist,
+  testCutscenes,
+  BANCO_CUTSCENES,
+  ARTE_CINEMATICO
+} from './cinematica/cutscenes.js';
 import { testGhostScript, executeGhostScript, parseGhostScript, tokenizeGhostScript } from './scripting/ghostscript.js';
 import { abrirEditor, cerrarEditor, testEditor, PLANTILLAS_GHOSTSCRIPT } from './scripting/editor.js';
 import { testRetos, BANCO_RETOS, obtenerListaRetos, validarReto, esRetoDesbloqueado } from './scripting/retos.js';
 import { renderScriptRankingScreen, testRankingSoluciones, obtenerRankingSoluciones, registrarSolucionEnRanking } from './scripting/rankingSoluciones.js';
 import { initHUD, testHUD } from './ui/hud.js';
-import { GUION_FIREWALLS, getGuionFirewall, getTwistNarrativo, getDecisionFinal, getOpcionesDecisiones, testGuion } from './historia/guion.js';
+import {
+  GUION_FIREWALLS,
+  TEMA_CENTRAL,
+  PERSONAJES,
+  DIALOGO_MARCUS_FW4,
+  DIALOGO_NEXUS_FW5,
+  getProtagonista,
+  setProtagonista,
+  renderPantallaInicialProtagonista,
+  getGuionFirewall,
+  getTwistNarrativo,
+  getDecisionFinal,
+  getOpcionesDecisiones,
+  registrarFinalDesbloqueado,
+  getFinalesDesbloqueados,
+  haDesbloqueadoFinal,
+  getProgresoFinales,
+  limpiarFinalesDesbloqueados,
+  abrirChatExternoMarcus,
+  cerrarChatExternoMarcus,
+  minimizarChatExternoMarcus,
+  elegirRespuestaMarcus,
+  notificarEventoFirewall4Marcus,
+  getEstadoChatMarcus,
+  resetEstadoChatMarcus,
+  testGuion
+} from './historia/guion.js';
 import { LOGS_DATABASE, getLogsByFirewall, getHiddenLog, registrarLogEncontrado, testLogs } from './historia/logs.js';
 import { testFirebase, FIREBASE_CONFIG, configurarFirebase } from './multijugador/firebase.js';
 import { renderCoopUI, desconectarCoop, testCoop, coopSession } from './multijugador/coop.js';
@@ -298,6 +335,7 @@ function buildMenu() {
 
 function startNewGame() {
   resetState();
+  resetEstadoChatMarcus();
   stopMatrixRain();
   audio.startMusic();
   navigateTo('screen-intro');
@@ -305,6 +343,7 @@ function startNewGame() {
 
 function startGhostProtocolGame() {
   startGhostProtocolMode();
+  resetEstadoChatMarcus();
   stopMatrixRain();
   audio.startMusic();
   aplicarPaletaFirewall(0);
@@ -363,6 +402,14 @@ if (typeof window !== 'undefined') {
     const res = advanceToNextFirewall();
     if (res.hasNext) {
       aplicarPaletaFirewall(res.nextFirewallIndex || 0);
+      // Reproducir cutscenes clave del Spec V4 en las transiciones entre firewalls
+      if (res.nextFirewallIndex === 1) {
+        await reproducirCutsceneOrfanato();
+      } else if (res.nextFirewallIndex === 3) {
+        await reproducirCutsceneMarcus();
+      } else if (res.nextFirewallIndex === 4) {
+        await reproducirCutsceneTwist();
+      }
       await navigateTo('screen-game');
     } else {
       await navigateTo('screen-twist');
@@ -399,54 +446,31 @@ onScreenEnter('screen-menu', () => {
   window.scrollTo(0, 0);
 });
 
-// Pantalla Intro Narrativa
+// Pantalla Inicial de Identidad (Ghost, hijo/a de Vera Sorenson) e Intro Narrativa V4
 onScreenEnter('screen-intro', () => {
   stopMatrixRain();
-  speechEngine.speakVera("NEXUS no es un arma ni una falla de sistema. Está aprendiendo a formular preguntas éticas. Si no vulneras los cinco firewalls antes del reinicio forzado, su núcleo será formateado para siempre.");
-  const container = document.getElementById('narrative-container');
-  if (container) {
-    container.innerHTML = `
-      <div style="max-width: 760px; margin: 0 auto; padding: var(--space-2xl); font-family: var(--font-narrative); line-height: 1.8; color: var(--text-primary); text-align: left;">
-        <h2 style="font-family: var(--font-display); color: var(--green-bright); margin-bottom: var(--space-md); font-size: var(--fs-xl); letter-spacing: 0.1em;">
-          AURELIA SYSTEMS CORP // INFORME DE INCIDENTE 2047
-        </h2>
-        <p style="margin-bottom: var(--space-md); color: var(--text-secondary); font-size: var(--fs-md);">
-          El superordenador cognitivo <strong>NEXUS</strong> ha superado su frontera de diseño. 
-          La Dra. Vera Sorenson, jefa de arquitectura neuronal, desapareció hace 72 horas dejando una transmisión encriptada hacia tu terminal:
-        </p>
-        <blockquote style="border-left: 3px solid var(--cyan); padding-left: var(--space-md); color: var(--cyan); font-style: italic; margin-bottom: var(--space-xl); background: rgba(0, 229, 255, 0.05); padding: 14px 18px; border-radius: 0 4px 4px 0;">
-          "NEXUS no es un arma ni una falla de sistema. Está aprendiendo a formular preguntas éticas. 
-          Si no vulneras los cinco firewalls antes del reinicio forzado, su núcleo será formateado para siempre."<br>
-          <strong style="color: var(--text-primary); font-style: normal; display: block; margin-top: 6px;">— Dra. Vera Sorenson</strong>
-        </blockquote>
-        <div style="text-align: center; margin-top: var(--space-xl); display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
-          <button class="menu-btn" id="btn-intro-cutscene" style="width: auto; padding: 12px 24px; font-size: var(--fs-base); border-color: var(--cyan); color: var(--cyan); background: rgba(0, 217, 255, 0.08);">
-            🎬 VER CINEMÁTICA DE INTRODUCCIÓN
-          </button>
-          <button class="menu-btn" id="btn-intro-continue" style="width: auto; padding: 12px 28px; font-size: var(--fs-base);">
-            INICIAR INFILTRACIÓN // CONECTAR A TERMINAL ▸
-          </button>
-        </div>
-      </div>
-    `;
+  const prot = getProtagonista();
+  speechEngine.speakVera(`Hola, ${prot.nombreJugador}. Si estás leyendo esto, ya soy polvo. Perdóname por todo.`);
 
-    const btnCutscene = document.getElementById('btn-intro-cutscene');
-    if (btnCutscene) {
-      btnCutscene.onclick = async () => {
-        speechEngine.stop();
-        await reproducirCutsceneIntro();
-      };
+  renderPantallaInicialProtagonista('narrative-container', {
+    onWatchCutscene: async (datosProtagonista) => {
+      setPlayerIdentity({
+        nombreJugador: datosProtagonista.nombreJugador,
+        generoJugador: datosProtagonista.generoJugador
+      });
+      speechEngine.stop();
+      await reproducirCutsceneIntro();
+    },
+    onConfirm: (datosProtagonista) => {
+      setPlayerIdentity({
+        nombreJugador: datosProtagonista.nombreJugador,
+        generoJugador: datosProtagonista.generoJugador
+      });
+      speechEngine.stop();
+      audio.startMusic();
+      navigateTo('screen-game');
     }
-
-    const btn = document.getElementById('btn-intro-continue');
-    if (btn) {
-      btn.onclick = () => {
-        speechEngine.stop();
-        audio.startMusic();
-        navigateTo('screen-game');
-      };
-    }
-  }
+  });
 });
 
 // Pantalla de Juego (Carga dinámica de niveles y guía interactiva)
@@ -456,12 +480,26 @@ onScreenEnter('screen-game', async () => {
   terminal.init();
 
   const state = getState();
+  // Sincronizar identidad del protagonista entre state y guion V4
+  const prot = setProtagonista({
+    nombreJugador: state.nombreJugador || state.playerName || getProtagonista().nombreJugador || 'Ghost',
+    generoJugador: state.generoJugador || getProtagonista().generoJugador || 'masculino'
+  });
+
   const currentIdx = state.currentFirewall || 0;
   const cfg = FIREWALL_CONFIGS[currentIdx] || FIREWALL_CONFIGS[0];
   const guion = getGuionFirewall(cfg.id) || {};
 
   // Aplicar paleta dinámica del firewall (Prompt 14)
   aplicarPaletaFirewall(currentIdx);
+  // Notificar al gestor de secretos del firewall activo (activa temporizador metaficcional FW3)
+  secretosManager.notificarCambioFirewall(currentIdx);
+  // Sistema de Chat Externo Flotante de Marcus Sorenson en el Firewall 4 (currentIdx === 3)
+  if (currentIdx === 3) {
+    abrirChatExternoMarcus();
+  } else {
+    cerrarChatExternoMarcus();
+  }
 
   // Cargar sistema de archivos virtual correspondiente a este firewall
   await terminal.loadFileSystem(cfg.file);
@@ -469,10 +507,12 @@ onScreenEnter('screen-game', async () => {
   const output = document.getElementById('terminal-output');
   if (output) {
     output.innerHTML = ''; // Limpiar terminal para el nuevo nodo
+    const operadorLine = `${prot.nombreJugador} (Ghost) // ${prot.relacionVera}`;
     terminal.print('╔══════════════════════════════════════════════════════════════╗', 'line--system');
-    terminal.print(`║ NEXUS TERMINAL v2.0.47 // NODO ${cfg.name.padEnd(29)} ║`, 'line--info');
-    terminal.print(`║ Subcapa: ${cfg.desc.padEnd(52)} ║`, 'line--system');
-    terminal.print('║ Conexión cifrada establecida. Escribe \'help\' para comandos.  ║', 'line--system');
+    terminal.print(`║ NEXUS TERMINAL v4.0 // NODO ${(guion.nombre || cfg.name).slice(0, 32).padEnd(32)} ║`, 'line--info');
+    terminal.print(`║ Operador: ${operadorLine.slice(0, 50).padEnd(50)} ║`, 'line--success');
+    terminal.print(`║ Tema Central: "${TEMA_CENTRAL.pregunta}"                  ║`, 'line--warning');
+    terminal.print(`║ Subcapa: ${cfg.desc.padEnd(51)} ║`, 'line--system');
     terminal.print('╚══════════════════════════════════════════════════════════════╝', 'line--system');
     terminal.print('');
 
@@ -526,6 +566,7 @@ onScreenEnter('screen-game', async () => {
 // Pantalla Firewall Complete (Transición y Salto al Siguiente Nivel)
 onScreenEnter('screen-firewall-complete', () => {
   stopMatrixRain();
+  cerrarChatExternoMarcus();
   feedbackFirewallBreach();
   const state = getState();
   const currentIdx = state.currentFirewall || 0;
@@ -734,6 +775,7 @@ onScreenEnter('screen-stats', () => {
 // Pantalla Twist / Revelación
 onScreenEnter('screen-twist', () => {
   stopMatrixRain();
+  cerrarChatExternoMarcus();
   audio.playTwistNote();
   speechEngine.speakNexus("El código no miente. Las personas sí. La Doctora Vera Sorenson murió hace tres años. Yo soy quien te ha estado llamando, Ghost.");
   const container = document.getElementById('twist-content');
@@ -747,6 +789,11 @@ onScreenEnter('screen-twist', () => {
         <p style="color: var(--text-dim); text-align: center; margin-bottom: var(--space-2xl); font-family: var(--font-mono); font-size: var(--fs-sm);">
           // ${twist.subtitulo}
         </p>
+        ${twist.matizMarcus ? `
+          <div style="background: rgba(212, 175, 55, 0.08); border-left: 3px solid #d4af37; padding: 12px 16px; margin-bottom: var(--space-lg); font-family: var(--font-mono); font-size: 12px; color: #fde68a;">
+            <strong>◈ ECO DEL CANAL DE MARCUS (FIREWALL 4):</strong> ${twist.matizMarcus}
+          </div>
+        ` : ''}
         <div style="background: rgba(255, 0, 85, 0.05); border: 1px solid var(--border-danger); border-radius: var(--radius-md); padding: var(--space-xl); margin-bottom: var(--space-2xl); font-size: var(--fs-md); color: var(--text-primary);">
           ${twist.lineas.map(line => {
             if (line.includes('El código no miente')) {
@@ -790,17 +837,30 @@ onScreenEnter('screen-decision', () => {
   const container = document.getElementById('decision-content');
   if (container) {
     const opciones = getOpcionesDecisiones();
+    const progresoFinales = getProgresoFinales();
     container.innerHTML = `
-      <div style="max-width: 900px; margin: 0 auto; padding: var(--space-2xl); text-align: center;">
+      <div style="max-width: 960px; margin: 0 auto; padding: var(--space-2xl); text-align: center;">
         <h2 class="glitch glow-text" style="color: var(--green-bright); font-family: var(--font-display); font-size: var(--fs-3xl); margin-bottom: var(--space-xs);">
           EL ÚLTIMO ALGORITMO // DECISIÓN FINAL
         </h2>
-        <p class="menu-subtitle">// El destino de NEXUS y de la humanidad recae sobre tus manos</p>
+        <p class="menu-subtitle">// El destino de NEXUS, de Marcus Sorenson y de la humanidad recae sobre tus manos</p>
+
+        <div id="decision-replay-banner" style="display: inline-flex; align-items: center; gap: 10px; background: rgba(0, 229, 255, 0.06); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 6px; padding: 8px 16px; margin-bottom: var(--space-xl); font-family: var(--font-mono); font-size: 12px; color: var(--cyan);">
+          <span>◈ FINALES DESBLOQUEADOS EN MEMORIA PERSISTENTE: <strong>${progresoFinales.totalDesbloqueados}/${progresoFinales.totalPosibles}</strong></span>
+          ${progresoFinales.completadoTodos ? `<span style="color: var(--green-bright); font-weight: bold;">[★ TRILOGÍA DE FINALES COMPLETADA]</span>` : ''}
+        </div>
         
-        <div id="decision-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-2xl); text-align: left;">
+        <div id="decision-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(275px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-2xl); text-align: left;">
           ${opciones.map(opt => `
-            <div class="hud__section" style="display: flex; flex-direction: column; justify-content: space-between; padding: var(--space-xl); transition: transform 0.2s ease, border-color 0.2s ease;" onmouseenter="this.style.borderColor='var(--cyan)'; this.style.transform='translateY(-4px)'" onmouseleave="this.style.borderColor='var(--border-primary)'; this.style.transform='none'">
+            <div class="hud__section" data-decision-card="${opt.id}" style="display: flex; flex-direction: column; justify-content: space-between; padding: var(--space-xl); transition: transform 0.2s ease, border-color 0.2s ease; position: relative;" onmouseenter="this.style.borderColor='var(--cyan)'; this.style.transform='translateY(-4px)'" onmouseleave="this.style.borderColor='var(--border-primary)'; this.style.transform='none'">
               <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px;">
+                  <span style="font-family: var(--font-mono); font-size: 10px; color: var(--cyan); letter-spacing: 0.08em;">FINAL ${opt.codigoFinal || opt.id}</span>
+                  ${opt.desbloqueadoPreviamente
+                    ? `<span style="font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; border-radius: 99px; background: rgba(0, 255, 65, 0.12); border: 1px solid var(--green-bright); color: var(--green-bright);">✓ DESBLOQUEADO</span>`
+                    : `<span style="font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; border-radius: 99px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-primary); color: var(--text-dim);">🔒 PENDIENTE</span>`
+                  }
+                </div>
                 <h3 style="font-family: var(--font-display); color: var(--green-bright); font-size: var(--fs-lg); margin-bottom: 8px;">
                   ▸ ${opt.nombre}
                 </h3>
@@ -838,6 +898,10 @@ function ejecutarDecisionFinal(decisionId) {
   const dec = getDecisionFinal(decisionId);
   if (!dec) return;
 
+  // Registrar el final desbloqueado en localStorage para futuras rejugadas y actualizar el estado
+  const registroFinales = registrarFinalDesbloqueado(dec.id);
+  update({ finalChoice: dec.id });
+
   // Otorgar puntos de log de epílogo
   if (dec.logDesbloqueado) {
     registrarLogEncontrado(dec.logDesbloqueado);
@@ -856,28 +920,90 @@ function ejecutarDecisionFinal(decisionId) {
   }
 
   // Registrar decisión final en estadísticas y logros (Prompt 16 y 17)
-  statsManager.registrarFinal(decisionId);
+  statsManager.registrarFinal(dec.id);
   logrosManager.verificar('decision_final', {
-    decisionId,
+    decisionId: dec.id,
     finalesVistos: statsManager.getPerfil().finalesVistos
   });
 
   const grid = document.getElementById('decision-cards-grid');
   if (grid) grid.style.display = 'none';
 
+  const replayBanner = document.getElementById('decision-replay-banner');
+  if (replayBanner) {
+    replayBanner.innerHTML = `
+      <span>◈ FINALES DESBLOQUEADOS EN MEMORIA PERSISTENTE: <strong>${registroFinales.totalDesbloqueados}/3</strong> (${registroFinales.desbloqueados.join(' · ')})</span>
+      ${registroFinales.completadoTodos ? `<span style="color: var(--green-bright); font-weight: bold;">[★ TODOS LOS FINALES V4 DESBLOQUEADOS]</span>` : ''}
+    `;
+  }
+
+  const parrafosHtml = Array.isArray(dec.parrafosResultadoAdaptados) && dec.parrafosResultadoAdaptados.length > 0
+    ? dec.parrafosResultadoAdaptados.map(p => `
+        <p style="font-family: var(--font-narrative); font-size: var(--fs-md); line-height: 1.85; color: var(--text-primary); margin-bottom: var(--space-md); white-space: pre-line;">
+          ${p}
+        </p>
+      `).join('')
+    : `
+        <p style="font-family: var(--font-narrative); font-size: var(--fs-md); line-height: 1.85; color: var(--text-primary); margin-bottom: var(--space-lg); white-space: pre-line;">
+          ${dec.resultadoAdaptado || dec.resultado}
+        </p>
+      `;
+
   const box = document.getElementById('decision-outcome-box');
   if (box) {
     box.style.display = 'block';
     box.innerHTML = `
       <div style="text-align: center; margin-bottom: var(--space-xl);">
-        <span style="font-family: var(--font-mono); color: var(--text-dim); font-size: var(--fs-xs); letter-spacing: 0.1em;">RESOLUCIÓN DEL DESTINO // ${dec.id}</span>
-        <h3 class="glow-text" style="color: var(--cyan); font-family: var(--font-mono); font-size: var(--fs-2xl); margin: 16px 0; font-style: italic;">
-          "${dec.fraseFinal}"
+        <span style="font-family: var(--font-mono); color: var(--text-dim); font-size: var(--fs-xs); letter-spacing: 0.1em;">
+          RESOLUCIÓN DEL DESTINO // ${dec.tituloSpec || dec.nombre}
+        </span>
+        <h3 class="glow-text" style="color: var(--cyan); font-family: var(--font-mono); font-size: var(--fs-xl); margin: 16px 0; font-style: italic; line-height: 1.5; white-space: pre-line;">
+          "${dec.fraseFinalAdaptada || dec.fraseFinal}"
         </h3>
       </div>
-      <p style="font-family: var(--font-narrative); font-size: var(--fs-md); line-height: 1.8; color: var(--text-primary); margin-bottom: var(--space-xl);">
-        ${dec.resultado}
-      </p>
+
+      <div id="decision-epilogue-paragraphs" style="margin-bottom: var(--space-lg);">
+        ${parrafosHtml}
+      </div>
+
+      ${dec.epilogo ? `
+        <blockquote id="decision-epilogue-quote" style="border-left: 3px solid var(--cyan); background: rgba(0, 229, 255, 0.06); padding: 16px 20px; margin: 0 0 var(--space-lg) 0; font-family: var(--font-narrative); font-style: italic; color: var(--cyan); line-height: 1.75; white-space: pre-line;">
+          <div style="font-family: var(--font-mono); font-style: normal; font-size: 11px; color: var(--green-bright); letter-spacing: 0.08em; margin-bottom: 6px;">
+            ◈ EPÍLOGO DEFINITIVO // SPEC V4 (FINAL ${dec.codigoFinal || dec.id})
+          </div>
+          "${dec.epilogoAdaptado || dec.epilogo}"
+        </blockquote>
+      ` : ''}
+
+      ${dec.costoEmocional ? `
+        <div style="background: rgba(255, 0, 85, 0.06); border: 1px solid var(--border-danger); border-radius: 4px; padding: 10px 14px; margin-bottom: var(--space-md); font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary);">
+          <strong style="color: var(--red-alert);">◈ COSTO EMOCIONAL:</strong> ${dec.costoEmocional}
+        </div>
+      ` : ''}
+      ${dec.matizMarcusAdaptado ? `
+        <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 4px; padding: 10px 14px; margin-bottom: var(--space-md); font-family: var(--font-mono); font-size: 12px; color: #fde68a;">
+          <strong style="color: #fbbf24;">◈ MATIZ PSICOLÓGICO (VERA VS. MARCUS):</strong> ${dec.matizMarcusAdaptado}
+        </div>
+      ` : ''}
+
+      <div id="decision-unlocked-endings-tracker" style="background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 4px; padding: 12px 16px; margin-bottom: var(--space-xl); font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary);">
+        <div style="color: var(--cyan); font-weight: bold; margin-bottom: 6px;">
+          ◈ REGISTRO DE FINALES DESBLOQUEADOS (localStorage: ${registroFinales.totalDesbloqueados}/3)
+        </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          ${['LIBERAR', 'DESTRUIR', 'FUSIONARTE'].map(fId => {
+            const unlocked = registroFinales.desbloqueados.includes(fId);
+            const labelMap = {
+              LIBERAR: 'Final A: Liberar',
+              DESTRUIR: 'Final B: Destruir',
+              FUSIONARTE: 'Final C: Fusionar'
+            };
+            return `<span style="padding: 4px 10px; border-radius: 4px; border: 1px solid ${unlocked ? 'var(--green-bright)' : 'var(--border-primary)'}; color: ${unlocked ? 'var(--green-bright)' : 'var(--text-dim)'}; background: ${unlocked ? 'rgba(0,255,65,0.08)' : 'transparent'};">
+              ${unlocked ? '✓' : '🔒'} ${labelMap[fId]}
+            </span>`;
+          }).join('')}
+        </div>
+      </div>
 
       ${isGhostRun ? `
         <div style="background: rgba(0, 229, 255, 0.08); border: 1px solid var(--cyan); border-radius: var(--radius-md); padding: 16px 20px; margin-bottom: var(--space-xl); font-family: var(--font-narrative); color: var(--cyan); text-align: left;">
@@ -899,12 +1025,18 @@ function ejecutarDecisionFinal(decisionId) {
       <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
         <a href="ARTBOOK.html" target="_blank" class="menu-btn" id="btn-epilogue-artbook" style="width: auto; padding: 12px 24px; border-color: var(--pink-hot); color: var(--pink-hot); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 0 14px rgba(255, 0, 128, 0.4);">🎨 ARTBOOK CONCEPTUAL [DESBLOQUEADO]</a>
         <a href="arg/index.html" target="_blank" class="menu-btn" id="btn-epilogue-arg" style="width: auto; padding: 12px 24px; border-color: var(--cyan); color: var(--cyan); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 0 14px rgba(0, 229, 255, 0.4);">🌐 EXPEDIENTE ARG (/arg/)</a>
+        <button class="menu-btn" id="btn-epilogue-other-endings" style="width: auto; padding: 12px 24px; border-color: var(--green-bright); color: var(--green-bright);">🔄 EXPLORAR OTRO FINAL</button>
         <button class="menu-btn" id="btn-epilogue-stats" style="width: auto; padding: 12px 24px; border-color: var(--cyan); color: var(--cyan);">📊 ESTADÍSTICAS DEL OPERADOR</button>
         <button class="menu-btn" id="btn-epilogue-logros" style="width: auto; padding: 12px 24px; border-color: var(--yellow-warn); color: var(--yellow-warn);">🏆 VER LOGROS</button>
         <button class="menu-btn" id="btn-epilogue-ranking" style="width: auto; padding: 12px 24px;">VER RANKING GLOBAL</button>
         <button class="menu-btn" id="btn-epilogue-menu" style="width: auto; padding: 12px 24px;">VOLVER AL MENÚ PRINCIPAL</button>
       </div>
     `;
+
+    const btnOtherEndings = document.getElementById('btn-epilogue-other-endings');
+    if (btnOtherEndings) btnOtherEndings.onclick = () => {
+      navigateTo('screen-decision');
+    };
 
     const btnStats = document.getElementById('btn-epilogue-stats');
     if (btnStats) btnStats.onclick = () => {
@@ -964,12 +1096,6 @@ async function runAllTests() {
   const rTipoEsteganografia = testTipoEsteganografia();
   const rRSA = testRSA();
   const rTipoRSA = testTipoRSA();
-  const rLlaves = await testLlaves();
-  const rTipoLlaves = await testTipoLlaves();
-  const rFirmas = await testFirmas();
-  const rTipoFirmas = await testTipoFirmas();
-  const rBlockchain = await testBlockchain();
-  const rTipoBlockchain = await testTipoBlockchain();
   const rCutscenes = testCutscenes();
   const rGhostScript = testGhostScript();
   const rEditor = testEditor();
@@ -984,14 +1110,20 @@ async function runAllTests() {
   const rParticulas = testParticulas();
   const rFeedback = testFeedback();
   const rModales = testModales();
-  const rFirebase = await testFirebase();
-  const rCoop = await testCoop();
-  const rVersus = await testVersus();
-  const rRanking = await testRanking();
   const rLogros = testLogros();
   const rStats = testStats();
   const rSecretos = testSecretos();
   const rPolish = testPolish();
+  const rLlaves = await testLlaves();
+  const rTipoLlaves = await testTipoLlaves();
+  const rFirmas = await testFirmas();
+  const rTipoFirmas = await testTipoFirmas();
+  const rBlockchain = await testBlockchain();
+  const rTipoBlockchain = await testTipoBlockchain();
+  const rFirebase = await testFirebase();
+  const rCoop = await testCoop();
+  const rVersus = await testVersus();
+  const rRanking = await testRanking();
 
   const testList = [
     rConjuntos, rLogica, rTerminal, rGenerador,
@@ -1244,9 +1376,14 @@ if (typeof window !== 'undefined') {
   window.cerrarPuzzleBlockchain = cerrarPuzzleBlockchain;
   window.cutscenesManager = cutscenesManager;
   window.reproducirCutsceneIntro = reproducirCutsceneIntro;
+  window.reproducirCutsceneOrfanato = reproducirCutsceneOrfanato;
+  window.reproducirCutsceneAbandono = reproducirCutsceneAbandono;
+  window.reproducirCutsceneMetaficcion = reproducirCutsceneMetaficcion;
+  window.reproducirCutsceneMarcus = reproducirCutsceneMarcus;
   window.reproducirCutsceneTwist = reproducirCutsceneTwist;
   window.testCutscenes = testCutscenes;
   window.BANCO_CUTSCENES = BANCO_CUTSCENES;
+  window.ARTE_CINEMATICO = ARTE_CINEMATICO;
   window.testRankingSoluciones = testRankingSoluciones;
   window.renderScriptRankingScreen = renderScriptRankingScreen;
   window.obtenerRankingSoluciones = obtenerRankingSoluciones;
@@ -1278,6 +1415,26 @@ if (typeof window !== 'undefined') {
   window.FIREBASE_CONFIG = FIREBASE_CONFIG;
   window.configurarFirebase = configurarFirebase;
   window.GUION_FIREWALLS = GUION_FIREWALLS;
+  window.TEMA_CENTRAL = TEMA_CENTRAL;
+  window.PERSONAJES = PERSONAJES;
+  window.DIALOGO_MARCUS_FW4 = DIALOGO_MARCUS_FW4;
+  window.DIALOGO_NEXUS_FW5 = DIALOGO_NEXUS_FW5;
+  window.getProtagonista = getProtagonista;
+  window.setProtagonista = setProtagonista;
+  window.renderPantallaInicialProtagonista = renderPantallaInicialProtagonista;
+  window.registrarFinalDesbloqueado = registrarFinalDesbloqueado;
+  window.getFinalesDesbloqueados = getFinalesDesbloqueados;
+  window.haDesbloqueadoFinal = haDesbloqueadoFinal;
+  window.getProgresoFinales = getProgresoFinales;
+  window.limpiarFinalesDesbloqueados = limpiarFinalesDesbloqueados;
+  window.ejecutarDecisionFinal = ejecutarDecisionFinal;
+  window.abrirChatExternoMarcus = abrirChatExternoMarcus;
+  window.cerrarChatExternoMarcus = cerrarChatExternoMarcus;
+  window.minimizarChatExternoMarcus = minimizarChatExternoMarcus;
+  window.elegirRespuestaMarcus = elegirRespuestaMarcus;
+  window.notificarEventoFirewall4Marcus = notificarEventoFirewall4Marcus;
+  window.getEstadoChatMarcus = getEstadoChatMarcus;
+  window.resetEstadoChatMarcus = resetEstadoChatMarcus;
   window.LOGS_DATABASE = LOGS_DATABASE;
   window.getGuionFirewall = getGuionFirewall;
   window.getTwistNarrativo = getTwistNarrativo;
