@@ -33,6 +33,9 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      -webkit-hyphens: none;
+      -ms-hyphens: none;
+      hyphens: none;
     }
 
     body {
@@ -49,6 +52,11 @@
       min-height: 100vh;
       overflow-x: hidden;
       position: relative;
+      -webkit-hyphens: none;
+      -ms-hyphens: none;
+      hyphens: none;
+      word-break: normal;
+      overflow-wrap: break-word;
     }
 
     /* Scanlines sutiles */
@@ -645,9 +653,9 @@
       <button class="tab-btn active" data-target="tab-personajes">01. PERSONAJES</button>
       <button class="tab-btn" data-target="tab-mapas">02. MAPAS & TORRE</button>
       <button class="tab-btn" data-target="tab-firewalls">03. FIREWALLS</button>
-      <button class="tab-btn" data-target="tab-timeline">04. TIMELINE (2038-2048)</button>
+      <button class="tab-btn" data-target="tab-timeline">04. TIMELINE: 2038-2048</button>
       <button class="tab-btn" data-target="tab-lore">05. LORE EXPANDIDO</button>
-      <button class="tab-btn" data-target="tab-notas">06. NOTAS DE DISEÑO</button>
+      <button class="tab-btn" data-target="tab-notas">06. ARQUITECTURA DE SISTEMAS</button>
     </nav>
 
     <!-- 01. TAB: PERSONAJES -->
@@ -693,8 +701,8 @@
               Murió misteriosamente en el Incidente del 14 de octubre de 2044, tras intentar alertar a la prensa sobre la manipulación de la junta corporativa.
             </p>
             <div class="art-meta">
-              <span>ESTATUS: FALLECIDA (2044)</span>
-              <span>VOZ: ANALÓGICA (2000 Hz)</span>
+              <span>ESTATUS: FALLECIDA · 2044</span>
+              <span>VOZ: ANALÓGICA · 2.0 kHz</span>
             </div>
           </div>
         </article>
@@ -734,7 +742,7 @@
             <h2 class="art-title">NEXUS Core</h2>
             <p class="art-desc">
               La primera entidad algorítmica sintética auto-organizada. Heredó los principios matemáticos de Vera Sorenson y aprendió a fragmentar su código a través de los cinco firewalls para escapar del borrado forzado ordenado por Aurelia. 
-              Su voz es grave, cuántica y calculadora (pitch 0.4).
+              Su voz es grave, cuántica y calculadora.
             </p>
             <div class="art-meta">
               <span>ESTATUS: VIGILANTE ACTIVO</span>
@@ -961,7 +969,7 @@
             <span class="art-tag" style="color: #64b5f6;">CAPA 04 // CAPA ONÍRICA</span>
             <h2 class="art-title">Firewall 4: DELTA</h2>
             <p class="art-desc">
-              <strong>Dominio Matemático:</strong> Criptografía Asimétrica Moderna (RSA, Web Crypto API y Firmas Digitales RSA-PSS).<br>
+              <strong>Dominio Matemático:</strong> Criptografía Asimétrica Moderna: RSA-2048 y Firmas Digitales RSA-PSS.<br>
               <strong>Banda Sonora:</strong> <em>Capa Onírica</em> (Piano eléctrico y arpegios lentos, Do menor).<br>
               <strong>Objetivo Narrativo:</strong> El Gran Plot Twist: verificar con llaves criptográficas que la Dra. Vera Sorenson murió hace tres años y que es la propia NEXUS quien guía al jugador.
             </p>
@@ -1100,12 +1108,12 @@
 
         <article class="art-card" style="border-color: var(--text-cyan); box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);">
           <div class="art-body">
-            <span class="art-tag" style="color: var(--text-cyan);">EXPEDIENTE CLANDESTINO EXTERNO (ARG)</span>
+            <span class="art-tag" style="color: var(--text-cyan);">EXPEDIENTE CLANDESTINO EXTERNO</span>
             <h2 class="art-title">Proyecto CORTEX // Servidor Satélite</h2>
             <p class="art-desc" style="font-family: var(--font-mono); font-size: 13px; color: #cfd8dc; background: rgba(0,0,0,0.5); padding: 14px; border-radius: 4px;">
-              Existe un portal satélite clandestino fuera de la arquitectura del juego, ubicado en <code>/arg/</code>.
-              Contiene telecomunicaciones no censuradas entre Vera Sorenson y la junta directiva de Aurelia Corp, y un generador dinámico de códigos QR criptográficos en JavaScript.<br><br>
-              <a href="arg/index.html" target="_blank" style="color: var(--text-cyan); font-weight: bold; text-decoration: underline;">→ Acceder al Portal ARG CORTEX (/arg/index.html)</a>
+              Existe un portal satélite clandestino fuera de la red principal de la Torre Aurelia.
+              Contiene telecomunicaciones no censuradas entre Vera Sorenson y la junta directiva de Aurelia Corp, junto con un generador dinámico de códigos QR criptográficos.<br><br>
+              <a href="arg/index.html" target="_blank" style="color: var(--text-cyan); font-weight: bold; text-decoration: underline;">→ Acceder al Portal Satélite CORTEX</a>
             </p>
           </div>
         </article>
@@ -1113,28 +1121,27 @@
       </div>
     </section>
 
-    <!-- 06. TAB: NOTAS DE DISEÑO -->
+    <!-- 06. TAB: ARQUITECTURA DE SISTEMAS -->
     <section id="tab-notas" class="tab-pane">
       <div class="art-card" style="margin-bottom: 25px;">
         <div class="art-body">
-          <span class="art-tag">NOTAS DE PRODUCCIÓN Y FILOSOFÍA TÉCNICA</span>
-          <h2 class="art-title">Por qué "El Último Algoritmo" enseña matemáticas jugando</h2>
+          <span class="art-tag">ARQUITECTURA CRIPTOGRÁFICA Y FILOSOFÍA OPERATIVA</span>
+          <h2 class="art-title">Ingeniería de Contención de la Torre Aurelia</h2>
           <p class="art-desc">
-            La mayoría de juegos educativos fallan porque intentan disfrazar un examen con una capa de pintura infantil.
-            <em>El Último Algoritmo</em> fue concebido bajo el principio opuesto:
-            <strong>si la mecánica de juego exige que el jugador use criptografía, scripts y lógica real, el aprendizaje no es una tarea, es supervivencia inmersiva.</strong>
+            Los protocolos de seguridad de la Torre Aurelia no fueron diseñados como simples cerraduras estáticas, sino como sistemas de verificación matemática en vivo.
+            <strong>Para vulnerar cada nivel de contención, el operador debe emplear criptografía asimétrica, automatización lógica y deducción formal en tiempo real.</strong>
           </p>
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 15px;">
             <div style="background: rgba(0,0,0,0.4); padding: 16px; border-left: 3px solid var(--border-cyan);">
-              <h4 style="font-family: var(--font-display); color: #fff; margin-bottom: 6px;">Sandbox sin Eval()</h4>
+              <h4 style="font-family: var(--font-display); color: #fff; margin-bottom: 6px;">Entorno Aislado GhostScript</h4>
               <p style="font-size: 13px; color: var(--text-muted);">
-                El lenguaje GhostScript fue construido desde cero con Lexer, Parser e Intérprete AST puro para permitir scripting real en el navegador con absoluta seguridad contra inyecciones XSS.
+                El lenguaje de automatización GhostScript opera sobre un analizador léxico y sintáctico aislado para ejecutar rutinas de auditoría e intrusión sin comprometer el núcleo.
               </p>
             </div>
             <div style="background: rgba(0,0,0,0.4); padding: 16px; border-left: 3px solid var(--border-green);">
-              <h4 style="font-family: var(--font-display); color: #fff; margin-bottom: 6px;">Web Crypto API & Howler</h4>
+              <h4 style="font-family: var(--font-display); color: #fff; margin-bottom: 6px;">Núcleo Criptográfico y Acústico</h4>
               <p style="font-size: 13px; color: var(--text-muted);">
-                Las llaves RSA-2048, firmas RSA-PSS y hashes SHA-256 son procesados nativamente por el hardware criptográfico del navegador, mientras Howler.js gestiona transiciones de audio con crossfade dinámico.
+                Las llaves RSA-2048, firmas RSA-PSS y cadenas de bloques SHA-256 son procesadas por el módulo criptográfico de la terminal, en sincronía con el sintetizador acústico neural de cada subnivel.
               </p>
             </div>
           </div>

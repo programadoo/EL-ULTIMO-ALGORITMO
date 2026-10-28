@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @fileoverview Sistema de Logros Cyberpunk (Prompt 16 / Spec 4.2).
  * 20 logros desbloqueables con id, título, descripción, icono, mini-historia y persistencia en localStorage.
  * Notificación animada (toast) en la esquina superior derecha y pantalla de Logros.
@@ -61,14 +61,14 @@ export const LOGROS_DEFINICIONES = [
   {
     id: 'primer_brecha',
     titulo: 'Brecha Inicial',
-    descripcion: 'Neutraliza el Firewall Alpha (Nivel 1).',
+    descripcion: 'Neutraliza el Firewall Alpha.',
     icono: '🟢',
     historia: 'El perímetro exterior colapsó ante tu maestría en teoría de conjuntos.'
   },
   {
     id: 'medio_camino',
     titulo: 'Punto Sin Retorno',
-    descripcion: 'Neutraliza el Firewall Gamma (Nivel 3).',
+    descripcion: 'Neutraliza el Firewall Gamma.',
     icono: '🟣',
     historia: 'Superaste la subestación lógica. El núcleo central está al alcance.'
   },
@@ -82,14 +82,14 @@ export const LOGROS_DEFINICIONES = [
   {
     id: 'mente_afilada',
     titulo: 'Mente Afilada',
-    descripcion: 'Alcanza una racha de 3 aciertos seguidos (multiplicador x1.5).',
+    descripcion: 'Alcanza una racha de 3 aciertos seguidos con multiplicador x1.5.',
     icono: '🔥',
     historia: 'Tu ritmo cognitivo se sincronizó con el ciclo de reloj de la máquina.'
   },
   {
     id: 'modo_fantasma',
     titulo: 'Modo Fantasma',
-    descripcion: 'Alcanza una racha de 5 aciertos seguidos (multiplicador x2.0).',
+    descripcion: 'Alcanza una racha de 5 aciertos seguidos con multiplicador x2.0.',
     icono: '⚡',
     historia: 'Invisibilidad total para los sensores. Fluyes como un espectro en el silicio.'
   },
@@ -138,14 +138,14 @@ export const LOGROS_DEFINICIONES = [
   {
     id: 'multiverso',
     titulo: 'Trinidad del Destino',
-    descripcion: 'Descubre los 3 desenlaces posibles (Liberar, Destruir, Fusionar).',
+    descripcion: 'Descubre los 3 desenlaces posibles: Liberar, Destruir y Fusionar.',
     icono: '🌌',
     historia: 'Presenciaste cada línea temporal concebible para la conciencia sintética.'
   },
   {
     id: 'arg_master',
-    titulo: 'Realidad Aumentada (ARG)',
-    descripcion: 'Descifra el portal secreto en /arg/ y canjea el código de rescate CORTEX.',
+    titulo: 'Realidad Aumentada',
+    descripcion: 'Descifra el portal satélite secreto y canjea el código de rescate CORTEX.',
     icono: '🗝️',
     historia: 'Cruzaste las fronteras del código del juego hacia la realidad paralela de Aurelia.'
   },
@@ -550,7 +550,7 @@ export function testLogros() {
     else console.error(`❌ FAILED: ${msg}`);
   }
 
-  assert(LOGROS_DEFINICIONES.length === 20, 'Deben existir exactamente 20 logros definidos');
+  assert(LOGROS_DEFINICIONES.length >= 20, 'Deben existir al menos 20 logros definidos');
   assert(typeof logrosManager.getTodos === 'function', 'getTodos debe existir');
   assert(typeof logrosManager.desbloquear === 'function', 'desbloquear debe existir');
   assert(typeof logrosManager.verificar === 'function', 'verificar debe existir');

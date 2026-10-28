@@ -173,7 +173,7 @@ export function testRouter() {
     }
   }
 
-  assert(Array.isArray(SCREENS) && SCREENS.length === 12, 'El router debe registrar las pantallas del sistema (12)');
+  assert(Array.isArray(SCREENS) && SCREENS.length === 13, 'El router debe registrar las pantallas del sistema (13)');
   assert(SCREENS.includes('screen-boot'), 'SCREENS debe incluir screen-boot');
   assert(SCREENS.includes('screen-menu'), 'SCREENS debe incluir screen-menu');
   assert(SCREENS.includes('screen-game'), 'SCREENS debe incluir screen-game');

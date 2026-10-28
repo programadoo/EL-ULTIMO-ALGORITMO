@@ -280,17 +280,17 @@ END
 RETURN log`
   },
 
-  // ── RETO 5: Algoritmo Zachtronics (Sort) ──
+  // ── RETO 5: Ordenamiento de Logs ──
   {
     id: 'bench_r5_vera',
     idReto: 5,
-    tituloReto: 'Reto 5 — Algoritmo Zachtronics',
+    tituloReto: 'Reto 5 — Ordenamiento de Logs',
     autor: 'DRA. VERA SORENSON',
     lineas: 16,
     ops: 78,
     memoriaKB: 256,
     elegancia: 965,
-    badge: '💎 ZACHTRONICS MASTER',
+    badge: '💎 MAESTRÍA ALGORÍTMICA',
     fecha: '2044-10-14',
     esJugador: false,
     codigo: `// Ordenamiento optimizado por Vera Sorenson
@@ -317,7 +317,7 @@ RETURN arr`
   {
     id: 'bench_r5_ghost',
     idReto: 5,
-    tituloReto: 'Reto 5 — Algoritmo Zachtronics',
+    tituloReto: 'Reto 5 — Ordenamiento de Logs',
     autor: 'GHOST',
     lineas: 19,
     ops: 92,
@@ -349,7 +349,7 @@ RETURN arr`
   {
     id: 'bench_r5_cipher',
     idReto: 5,
-    tituloReto: 'Reto 5 — Algoritmo Zachtronics',
+    tituloReto: 'Reto 5 — Ordenamiento de Logs',
     autor: 'CIPHER_09',
     lineas: 21,
     ops: 115,

@@ -258,7 +258,7 @@ RETURN pass`,
 
   {
     id: 5,
-    titulo: 'Reto 5 — Algoritmo Zachtronics',
+    titulo: 'Reto 5 — Ordenamiento de Logs',
     subtitulo: 'Ordenamiento burbuja de marcas de tiempo',
     enunciado: `Las transmisiones de la base de datos de Aurelia han llegado desordenadas cronológicamente: un array de 4 valores numéricos desordenados (ej. [40, 10, 30, 20]). Implementa en GhostScript un algoritmo de ordenamiento que compare pares adyacentes (IF arr[i] > arr[i+1]) e intercambie sus posiciones mediante una variable auxiliar ("LET tmp = arr[i]"), logrando que el array final quede ordenado ascendentemente: [10, 20, 30, 40].`,
     criterios: {
@@ -267,7 +267,7 @@ RETURN pass`,
       memoriaKB: 256,
       descripcion: 'Ordenamiento por comparaciones e intercambios sin desbordar memoria.'
     },
-    codigoInicial: `// Reto 5: Algoritmo de Ordenamiento Zachtronics
+    codigoInicial: `// Reto 5: Algoritmo de Ordenamiento de Logs
 // Objetivo: Ordenar el array arr ascendentemente usando intercambios
 
 LET arr = [40, 10, 30, 20]

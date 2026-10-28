@@ -158,14 +158,17 @@
         <button type="button" class="editor-header__close" id="editor-btn-close" aria-label="Cerrar editor">✕ CERRAR</button>
       </div>
 
-      <!-- Barra de herramientas (Ejecutar, Comprobar, Retos, Plantillas) -->
+      <!-- Barra de herramientas (Ejecutar, Hackear/Comprobar, Retos, Plantillas) -->
       <div class="editor-toolbar">
         <div class="editor-toolbar__group">
-          <button type="button" class="editor-btn editor-btn--run" id="editor-btn-run" title="Ejecutar script en el sandbox">
+          <button type="button" class="editor-btn editor-btn--run" id="editor-btn-run" title="Evaluar sintaxis y ejecutar script en el sandbox">
             ▶ EJECUTAR
           </button>
-          <button type="button" class="editor-btn editor-btn--verify" id="editor-btn-verify" title="Validar script contra las pruebas del reto">
-            ✔ COMPROBAR
+          <button type="button" class="editor-btn editor-btn--verify" id="editor-btn-verify" title="Hackear y validar objetivo lógico del nivel actual">
+            ⚡ HACKEAR / COMPROBAR
+          </button>
+          <button type="button" class="editor-btn editor-btn--advance" id="editor-btn-next-firewall" title="Avanzar al siguiente firewall tras superar el objetivo" style="display: none;">
+            🔓 AVANZAR FIREWALL ▸
           </button>
         </div>
 
@@ -177,16 +180,16 @@
             <option value="2">Reto 2: Búsqueda Eficiente 🔒</option>
             <option value="3">Reto 3: Descifrado en Lote 🔒</option>
             <option value="4">Reto 4: Optimización CPU 🔒</option>
-            <option value="5">Reto 5: Algoritmo Zachtronics 🔒</option>
+            <option value="5">Reto 5: Ordenamiento de Logs 🔒</option>
           </select>
         </div>
 
         <div class="editor-toolbar__group">
           <label for="editor-select-template" style="font-size: 10px; color: var(--text-dim); text-transform: uppercase;">Plantilla:</label>
           <select id="editor-select-template" class="editor-select">
-            <option value="hack">Hack Firewall Beta (Scan + Crack + Send)</option>
-            <option value="batch">Descifrado en lote (Loop + Decrypt)</option>
-            <option value="filter">Búsqueda condicional (Scan + If/Else)</option>
+            <option value="hack">Hack Firewall Beta</option>
+            <option value="batch">Descifrado en lote</option>
+            <option value="filter">Búsqueda condicional</option>
             <option value="empty">Script vacío</option>
           </select>
           <button type="button" class="editor-btn editor-btn--secondary" id="editor-btn-ranking" title="Ver Ranking de Soluciones Elegantes" style="border-color: rgba(0, 229, 255, 0.4); color: var(--cyan);">
@@ -210,6 +213,10 @@
         <div class="editor-pane-code">
           <div class="editor-container" id="editor-code-container">
             <!-- CodeMirror 6 / Fallback montado dinámicamente -->
+          </div>
+          <div class="editor-live-syntax-bar" id="editor-live-syntax-bar" role="status" aria-live="polite">
+            <span id="editor-live-syntax-msg">✔ Sintaxis válida — Listo para ejecutar o hackear</span>
+            <span id="editor-live-syntax-loc" style="opacity: 0.85;">SIN ERRORES</span>
           </div>
         </div>
 

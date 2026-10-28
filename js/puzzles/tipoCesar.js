@@ -184,7 +184,7 @@ export function abrirPuzzleCesar(nivel = 1, onCompletado = null) {
         <div style="font-size: 11px; color: var(--cyan); font-family: var(--font-display); letter-spacing: 0.1em; margin-bottom: 6px;">
           📡 TRANSMISIÓN CIFRADA CAPTURADA //
         </div>
-        <div id="cesar-display-cifrado" style="font-family: var(--font-mono); font-size: 15px; color: var(--text-white); font-weight: bold; letter-spacing: 0.08em; word-break: break-all;">
+        <div id="cesar-display-cifrado" style="font-family: var(--font-mono); font-size: 15px; color: var(--text-white); font-weight: bold; letter-spacing: 0.08em; word-break: normal; overflow-wrap: break-word; hyphens: none;">
           ${puzzleActual.mensajeCifrado}
         </div>
       </div>
@@ -209,7 +209,7 @@ export function abrirPuzzleCesar(nivel = 1, onCompletado = null) {
         <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 4px; font-family: var(--font-mono);">
           VISTA PREVIA CON SHIFT <span id="cesar-preview-shift">${shiftActual}</span>:
         </div>
-        <div id="cesar-preview-text" style="font-family: var(--font-mono); font-size: 13px; color: var(--green-bright); background: rgba(0, 255, 65, 0.05); padding: 8px 12px; border-radius: 3px; border: 1px dashed var(--green-dim); word-break: break-all;">
+        <div id="cesar-preview-text" style="font-family: var(--font-mono); font-size: 13px; color: var(--green-bright); background: rgba(0, 255, 65, 0.05); padding: 8px 12px; border-radius: 3px; border: 1px dashed var(--green-dim); word-break: normal; overflow-wrap: break-word; hyphens: none;">
           ${textoInicial}
         </div>
 
@@ -269,7 +269,7 @@ export function abrirPuzzleCesar(nivel = 1, onCompletado = null) {
       elBruteforceResults.innerHTML = todos.map(item => `
         <div style="padding: 3px 6px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; ${item.desplazamiento === mejorMatch.desplazamiento ? 'background: rgba(0,255,65,0.15); font-weight: bold;' : ''}">
           <span style="color: var(--cyan); min-width: 60px;">Shift ${item.desplazamiento}:</span>
-          <span style="color: var(--text-primary); flex: 1; margin: 0 8px; word-break: break-all;">${item.texto}</span>
+          <span style="color: var(--text-primary); flex: 1; margin: 0 8px; word-break: normal; overflow-wrap: break-word; hyphens: none;">${item.texto}</span>
           <button style="background: transparent; border: 1px solid var(--border-primary); color: var(--yellow-warn); cursor: pointer; padding: 2px 6px; font-size: 10px;" onclick="window.__aplicarShiftCesar(${item.desplazamiento})">Probar</button>
         </div>
       `).join('');

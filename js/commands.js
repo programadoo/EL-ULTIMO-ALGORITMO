@@ -28,6 +28,7 @@ import { cifrar as cifrarVigenere, descifrar as descifrarVigenere, analizarPasoA
 import { analizarFrecuencia, generarBarrasVisualesTexto, cifrarSustitucion, descifrarSustitucion } from './cripto/frecuencia.js';
 import { extraerMensajeLSB, descargarImagenCanvas, crearCanvasConMensaje } from './cripto/esteganografia.js';
 import { generarClavesRSA, cifrarTextoRSA, descifrarTextoRSA, analizarPasoAPasoRSA } from './cripto/rsa.js';
+import { Enigma, cifrarEnigma, descifrarEnigma } from './cripto/enigma.js';
 import { executeGhostScript, parseGhostScript } from './scripting/ghostscript.js';
 import { abrirEditor, cerrarEditor } from './scripting/editor.js';
 import { obtenerListaRetos, BANCO_RETOS, validarReto, esRetoDesbloqueado } from './scripting/retos.js';
@@ -45,6 +46,7 @@ import {
   recibirNuevoMensajeCifrado
 } from './cripto/llaves.js';
 import { abrirPuzzleLlaves } from './puzzles/tipoLlaves.js';
+import { envolverTextoPorPalabras } from './utils.js';
 import {
   obtenerIdentidadVeraSorenson,
   generarMuestrasTransmisionesVera,
@@ -672,6 +674,12 @@ export const COMMANDS = {
         } else {
           fwDefaultType = 'A';
         }
+      } else if (fwIdx === 2) {
+        if (subnodoCalculado === 2) {
+          fwDefaultType = 'ENIGMA';
+        } else {
+          fwDefaultType = 'B';
+        }
       } else if (fwIdx === 3) {
         if (subnodoCalculado === 1) {
           fwDefaultType = 'BLOCKCHAIN';
@@ -693,7 +701,7 @@ export const COMMANDS = {
       let tipo = fwDefaultType;
       let nivel = fw;
 
-      const tiposValidos = ['A', 'B', 'C', 'D', 'E', 'CESAR', 'CRIPTO', 'BINARIO', 'BIN', 'HEX', 'HEXADECIMAL', 'VIGENERE', 'FRECUENCIA', 'SUSTITUCION', 'ESTEGANOGRAFIA', 'LSB', 'RSA', 'LLAVES', 'KEYS', 'FIRMA', 'FIRMAS', 'BLOCKCHAIN', 'CADENA', 'SHA256'];
+      const tiposValidos = ['A', 'B', 'C', 'D', 'E', 'CESAR', 'CRIPTO', 'BINARIO', 'BIN', 'HEX', 'HEXADECIMAL', 'VIGENERE', 'ENIGMA', 'FRECUENCIA', 'SUSTITUCION', 'ESTEGANOGRAFIA', 'LSB', 'RSA', 'LLAVES', 'KEYS', 'FIRMA', 'FIRMAS', 'BLOCKCHAIN', 'CADENA', 'SHA256'];
       if (args.length > 0) {
         const first = args[0].toUpperCase();
         if (tiposValidos.includes(first)) {
@@ -1170,6 +1178,61 @@ export const COMMANDS = {
     }
   },
 
+  // ── Máquina Enigma (Firewall 3 / Spec 3 Capa 1.1) ─
+  enigma: {
+    name: 'enigma',
+    description: 'Simulador electromecánico de la Máquina Enigma M3 (cifrar, descifrar o puzzle)',
+    usage: 'enigma [puzzle|cifrar|descifrar] [texto] [r1,r2,r3] [p1,p2,p3]',
+    execute({ args, terminal }) {
+      if (!args || args.length === 0 || args[0].toLowerCase() === 'puzzle') {
+        terminal.print('> Desplegando emulador de la Máquina Enigma M3 en Firewall 3...', 'line--info');
+        return COMMANDS.hack.execute({ args: ['ENIGMA', '3'], terminal });
+      }
+
+      const accion = args[0].toLowerCase();
+
+      if (accion === 'cifrar' || accion === 'descifrar') {
+        if (args.length < 2) {
+          return { error: `Uso: enigma ${accion} <texto> [rotores ej: 1,2,3] [posiciones ej: A,B,C]` };
+        }
+        const texto = args[1];
+        let rotores = [1, 2, 3];
+        let posiciones = [0, 0, 0];
+
+        if (args[2]) {
+          rotores = args[2].split(',').map(n => parseInt(n, 10) || 1);
+        }
+        if (args[3]) {
+          posiciones = args[3].split(',').map(p => {
+            if (/^[A-Za-z]$/.test(p)) return p.toUpperCase().charCodeAt(0) - 65;
+            return parseInt(p, 10) || 0;
+          });
+        }
+
+        const resultado = cifrarEnigma(texto, rotores, posiciones);
+        return {
+          lines: [
+            `[+] Entrada           : "${texto}"`,
+            `[+] Rotores           : [${rotores.join(', ')}]`,
+            `[+] Posiciones inicial: [${posiciones.join(', ')}]`,
+            `[+] Reflector         : UKW-B`,
+            `[+] Salida Enigma     : "${resultado}"`,
+            `[i] Nota: En Enigma, el mismo procedimiento descifra si se usan los mismos rotores y posiciones iniciales.`
+          ]
+        };
+      }
+
+      return {
+        lines: [
+          'Uso de herramienta ENIGMA:',
+          '  enigma                            - Abre el puzzle interactivo en Firewall 3',
+          '  enigma cifrar <texto> [r1,r2,r3] [p1,p2,p3]   - Cifra texto con la Máquina Enigma',
+          '  enigma descifrar <cifrado> [r1,r2,r3] [p1,p2,p3] - Descifra texto con la Máquina Enigma'
+        ]
+      };
+    }
+  },
+
   frecuencia: {
     name: 'frecuencia',
     description: 'Analizador criptografico de frecuencia de letras y sustitucion simple',
@@ -1333,14 +1396,14 @@ export const COMMANDS = {
               '╔══════════════════════════════════════════════════════════════╗',
               '║ GENERADOR DE CLAVES RSA // ALGORITMO ASIMÉTRICO              ║',
               '╠══════════════════════════════════════════════════════════════╣',
-              `║ [1] Primos elegidos    : p = ${claves.p}, q = ${claves.q}`,
-              `║ [2] Módulo RSA (n)     : ${claves.n} (n = p * q)`,
-              `║ [3] Función Euler φ(n) : ${claves.phi} (φ = (p-1)*(q-1))`,
-              `║ [4] Exponente público e: ${claves.e} (coprimo con φ(n))`,
-              `║ [5] Exponente privado d: ${claves.d} (e * d ≡ 1 mod φ(n))`,
+              `║ ${(`[1] Primos elegidos    : p = ${claves.p}, q = ${claves.q}`).slice(0, 60).padEnd(60)} ║`,
+              `║ ${(`[2] Módulo RSA (n)     : ${claves.n} (n = p * q)`).slice(0, 60).padEnd(60)} ║`,
+              `║ ${(`[3] Función Euler φ(n) : ${claves.phi} (φ = (p-1)*(q-1))`).slice(0, 60).padEnd(60)} ║`,
+              `║ ${(`[4] Exponente público e: ${claves.e} (coprimo con φ(n))`).slice(0, 60).padEnd(60)} ║`,
+              `║ ${(`[5] Exponente privado d: ${claves.d} (e * d ≡ 1 mod φ(n))`).slice(0, 60).padEnd(60)} ║`,
               '╠══════════════════════════════════════════════════════════════╣',
-              `║ LLAVE PÚBLICA  (n, e)  : (${claves.n}, ${claves.e})`,
-              `║ LLAVE PRIVADA  (n, d)  : (${claves.n}, ${claves.d})`,
+              `║ ${(`LLAVE PÚBLICA  (n, e)  : (${claves.n}, ${claves.e})`).slice(0, 60).padEnd(60)} ║`,
+              `║ ${(`LLAVE PRIVADA  (n, d)  : (${claves.n}, ${claves.d})`).slice(0, 60).padEnd(60)} ║`,
               '╚══════════════════════════════════════════════════════════════╝'
             ]
           };
@@ -1408,17 +1471,17 @@ export const COMMANDS = {
             '╔══════════════════════════════════════════════════════════════╗',
             '║ ANÁLISIS PASO A PASO // CIFRADO Y DESCIFRADO RSA             ║',
             '╠══════════════════════════════════════════════════════════════╣',
-            `║ Mensaje de prueba : "${msg}"`,
-            `║ Parámetros        : p=${analisis.parametros.p}, q=${analisis.parametros.q}, n=${analisis.parametros.n}`,
-            `║ Función Euler φ(n): ${analisis.parametros.phi}`,
-            `║ Llave Pública (e) : ${analisis.parametros.e} | Llave Privada (d): ${analisis.parametros.d}`,
+            `║ ${(`Mensaje de prueba : "${msg}"`).slice(0, 60).padEnd(60)} ║`,
+            `║ ${(`Parámetros        : p=${analisis.parametros.p}, q=${analisis.parametros.q}, n=${analisis.parametros.n}`).slice(0, 60).padEnd(60)} ║`,
+            `║ ${(`Función Euler φ(n): ${analisis.parametros.phi}`).slice(0, 60).padEnd(60)} ║`,
+            `║ ${(`Llave Pública (e) : ${analisis.parametros.e} | Llave Privada (d): ${analisis.parametros.d}`).slice(0, 60).padEnd(60)} ║`,
             '╠══════════════════════════════════════════════════════════════╣',
-            '║ DESGLOSE POR CARÁCTER:'
+            '║ DESGLOSE POR CARÁCTER:                                       ║'
           ];
 
           const det = analisis.pasos[3].detalle;
           det.forEach(d => {
-            lines.push(`║ '${d.char}' (ASCII ${d.ascii}) -> ${d.ascii}^${analisis.parametros.e} mod ${analisis.parametros.n} = ${d.cifrado} -> descifrado: '${d.descifradoChar}'`);
+            lines.push(`║ ${(`'${d.char}' (ASCII ${d.ascii}) -> ${d.ascii}^${analisis.parametros.e} mod ${analisis.parametros.n} = ${d.cifrado} -> '${d.descifradoChar}'`).slice(0, 60).padEnd(60)} ║`);
           });
 
           lines.push('╚══════════════════════════════════════════════════════════════╝');
@@ -1444,7 +1507,7 @@ export const COMMANDS = {
 
   ghostscript: {
     name: 'ghostscript',
-    description: 'Ejecuta scripts en el mini-lenguaje de automatización GhostScript (sandbox seguro)',
+    description: 'Ejecuta scripts en el lenguaje de automatización GhostScript',
     usage: 'ghostscript [run <code>|demo|info]',
     execute({ args, terminal }) {
       if (!args || args.length === 0 || args[0].toLowerCase() === 'info') {
@@ -1453,7 +1516,7 @@ export const COMMANDS = {
             '╔══════════════════════════════════════════════════════════════╗',
             '║ GHOSTSCRIPT // MOTOR DE SCRIPTS Y AUTOMATIZACIÓN DE NEXUS    ║',
             '╠══════════════════════════════════════════════════════════════╣',
-            '║ Mini-lenguaje Zachtronics seguro (sin eval ni new Function). ║',
+            '║ Lenguaje de automatización táctica en entorno aislado.       ║',
             '║ Comandos admitidos:                                          ║',
             '║   LET var = expr           - Declaración de variables        ║',
             '║   SCAN host                - Escaneo de objetivos/puertos    ║',
@@ -1541,11 +1604,11 @@ export const COMMANDS = {
 
       if (accion === 'edit' || accion === 'editor' || accion === 'ide' || accion === 'open') {
         const arch = args[1] || 'hack_firewall_beta.gs';
-        terminal.print(`> Abriendo editor integrado CodeMirror 6 para "${arch}"...`, 'line--info');
+        terminal.print(`> Abriendo entorno integrado GhostScript para "${arch}"...`, 'line--info');
         abrirEditor({ archivo: arch });
         return {
           lines: [
-            `[+] Editor CodeMirror 6 de GhostScript iniciado para "${arch}".`,
+            `[+] Entorno de desarrollo GhostScript iniciado para "${arch}".`,
             '[+] Usa los botones [▶ EJECUTAR] y [✔ COMPROBAR] en la interfaz.'
           ]
         };
@@ -1565,15 +1628,15 @@ export const COMMANDS = {
 
   editor: {
     name: 'editor',
-    description: 'Abre el editor integrado CodeMirror 6 para scripts GhostScript',
+    description: 'Abre el entorno integrado de desarrollo para scripts GhostScript',
     usage: 'editor [archivo.gs]',
     execute({ args, terminal }) {
       const arch = (args && args[0]) ? args[0] : 'hack_firewall_beta.gs';
-      terminal.print(`> Abriendo editor integrado CodeMirror 6 para "${arch}"...`, 'line--info');
+      terminal.print(`> Abriendo entorno integrado GhostScript para "${arch}"...`, 'line--info');
       abrirEditor({ archivo: arch });
       return {
         lines: [
-          `[+] Editor de código GhostScript (CodeMirror 6) abierto.`,
+          `[+] Entorno de código GhostScript abierto.`,
           `[+] Archivo activo: ${arch}`
         ]
       };
@@ -1624,11 +1687,11 @@ export const COMMANDS = {
         if (!esRetoDesbloqueado(id)) {
           return { error: `El Reto #${id} está bloqueado. Supera el Reto #${id - 1} para desbloquearlo.` };
         }
-        terminal.print(`> Abriendo IDE CodeMirror 6 con el Reto #${id}...`, 'line--info');
+        terminal.print(`> Abriendo IDE GhostScript con el Reto #${id}...`, 'line--info');
         abrirEditor({ reto: id });
         return {
           lines: [
-            `[+] Reto #${id} cargado en el editor CodeMirror 6.`,
+            `[+] Reto #${id} cargado en el entorno GhostScript.`,
             `[+] Lee el enunciado y pulsa [✔ COMPROBAR] para validar los tests.`
           ]
         };
@@ -1642,12 +1705,12 @@ export const COMMANDS = {
       ];
 
       lista.forEach(r => {
-        let st = '[BLOQUEADO 🔒]';
-        if (r.completado) st = '✔ [SUPERADO]';
-        else if (r.desbloqueado) st = '○ [DESBLOQUEADO 🔓]';
-        lines.push(`║ #${r.id} ${r.titulo.padEnd(35)} ${st.padStart(20)} ║`);
-        lines.push(`║    Misión: ${r.subtitulo.padEnd(52)} ║`);
-        lines.push(`║    Límites: Max ${String(r.criterios.maxLines).padEnd(2)} líneas | Max ${String(r.criterios.maxOps).padEnd(3)} ops CPU                   ║`);
+        let st = '[BLOQUEADO]';
+        if (r.completado) st = '[SUPERADO]';
+        else if (r.desbloqueado) st = '[DESBLOQUEADO]';
+        lines.push(`║ ${(`#${r.id} ${r.titulo.slice(0, 38).padEnd(38)} ${st.padStart(18)}`).slice(0, 60).padEnd(60)} ║`);
+        lines.push(`║ ${(`   Misión: ${r.subtitulo}`).slice(0, 60).padEnd(60)} ║`);
+        lines.push(`║ ${(`   Límites: Max ${String(r.criterios.maxLines).padEnd(2)} líneas | Max ${String(r.criterios.maxOps).padEnd(3)} ops CPU`).slice(0, 60).padEnd(60)} ║`);
         lines.push('╟──────────────────────────────────────────────────────────────╢');
       });
 
@@ -1809,17 +1872,18 @@ export const COMMANDS = {
         }
 
         const msg = res.mensaje;
+        const lineasContenido = envolverTextoPorPalabras(msg.contenidoDescifrado, 68);
         return {
           lines: [
             '╔═══════════════════════════════════════════════════════════════════════════╗',
             '║ 🔓 MENSAJE DESCIFRADO EXITOSAMENTE // CANAL ASIMÉTRICO                    ║',
             '╠═══════════════════════════════════════════════════════════════════════════╣',
-            `║ DE:      ${(msg.remitente || '').padEnd(64).slice(0, 64)}║`,
-            `║ ASUNTO:  ${(msg.asunto || '').padEnd(64).slice(0, 64)}║`,
-            `║ FECHA:   ${(msg.fecha || '').padEnd(64).slice(0, 64)}║`,
+            `║ DE:      ${(msg.remitente || '').padEnd(65).slice(0, 65)}║`,
+            `║ ASUNTO:  ${(msg.asunto || '').padEnd(65).slice(0, 65)}║`,
+            `║ FECHA:   ${(msg.fecha || '').padEnd(65).slice(0, 65)}║`,
             '╠═══════════════════════════════════════════════════════════════════════════╣',
             '║ CONTENIDO DESCIFRADO:                                                     ║',
-            ...msg.contenidoDescifrado.match(/.{1,70}/g).map(chunk => `║   ${chunk.padEnd(72)}║`),
+            ...lineasContenido.map(chunk => `║   ${chunk.padEnd(70, ' ')}  ║`),
             '╚═══════════════════════════════════════════════════════════════════════════╝',
             "[✔] El mensaje ha quedado descifrado y almacenado en tu registro de sesión."
           ]
@@ -1879,7 +1943,7 @@ export const COMMANDS = {
 
       // ── SUBCOMANDO: llaves gen / regenerar ──
       if (sub === 'gen' || sub === 'regenerar' || sub === 'nuevo') {
-        terminal.print('> Generando nuevo par cuántico RSA-2048 con Web Crypto API...', 'line--info');
+        terminal.print('> Generando nuevo par cuántico RSA-2048 en el nodo local...', 'line--info');
         const nuevo = await regenerarIdentidadJugador('GHOST');
         return {
           lines: [
@@ -2149,7 +2213,7 @@ export const COMMANDS = {
           '╔══════════════════════════════════════════════════════════════╗',
           '║ ⛓ LIBRO MAYOR Y AUDITORÍA FORENSE // SHA-256 BLOCKCHAIN      ║',
           '╠══════════════════════════════════════════════════════════════╣',
-          '║ Estándar Criptográfico : FIPS PUB 180-4 / SHA-256 (WebCrypto) ║',
+          '║ Estándar Criptográfico : FIPS PUB 180-4 / SHA-256 (256-bit)  ║',
           '║ Estructura de bloque  : [indice, timestamp, datos, prev, hash]║',
           '║ Objetivo              : Auditar la cadena y hallar el bloque  ║',
           '║                         corrupto que inculpa a Vera Sorenson. ║',
@@ -2176,7 +2240,7 @@ export const COMMANDS = {
 
   cutscene: {
     name: 'cutscene',
-    description: 'Reproduce las 5 cinemáticas narrativas clave V4 (Canvas + CSS)',
+    description: 'Reproduce las secuencias cinemáticas y memorias reconstruidas del sistema',
     usage: 'cutscene [intro|orfanato|metaficcion|marcus|twist|lista]',
     async execute({ args = [], terminal }) {
       const sub = (args[0] || 'intro').toLowerCase();
@@ -2185,7 +2249,7 @@ export const COMMANDS = {
         return {
           lines: [
             '╔══════════════════════════════════════════════════════════════╗',
-            '║ 🎬 ARCHIVO DE LAS 5 CINEMÁTICAS V4 // CANVAS + CSS           ║',
+            '║ 🎬 ARCHIVO DE MEMORIAS VISUALES // REGISTROS DEL NÚCLEO      ║',
             '╠══════════════════════════════════════════════════════════════╣',
             '║  1. cutscene intro       : El mensaje de las 3:47 AM         ║',
             '║  2. cutscene orfanato    : El abandono a los 8 años (B/N)    ║',
@@ -2280,13 +2344,13 @@ export const COMMANDS = {
       return {
         lines: [
           '╔══════════════════════════════════════════════════════════════╗',
-          `║ ESTADO DE NODO // ${fwName.padEnd(41)} ║`,
+          `║ ${(`ESTADO DE NODO // ${fwName}`).slice(0, 60).padEnd(60)} ║`,
           '╠══════════════════════════════════════════════════════════════╣',
-          `║ Sub-nodos descifrados : ${solved} de ${req} ${solved >= req ? '✔ [LISTO PARA AVANZAR]' : '○ [EN CURSO]'}`,
-          `║ Integridad de sesión  : ${state.integrity || 100}%`,
-          `║ Puntuación actual     : ${(state.score || 0).toLocaleString()} PTS (Racha: x${state.multiplier || 1})`,
-          `║ Logs recuperados      : ${(state.logsFound || []).length} / 5`,
-          `║ Música cyberpunk      : ${audio.isMusicActive() ? 'ACTIVADA 🎵' : 'PAUSADA 🔇'}`,
+          `║ ${(`Sub-nodos descifrados : ${solved} de ${req} ${solved >= req ? '[LISTO PARA AVANZAR]' : '[EN CURSO]'}`).slice(0, 60).padEnd(60)} ║`,
+          `║ ${(`Integridad de sesión  : ${state.integrity || 100}%`).slice(0, 60).padEnd(60)} ║`,
+          `║ ${(`Puntuación actual     : ${(state.score || 0).toLocaleString()} PTS (Racha: x${state.multiplier || 1})`).slice(0, 60).padEnd(60)} ║`,
+          `║ ${(`Logs recuperados      : ${(state.logsFound || []).length} / 5`).slice(0, 60).padEnd(60)} ║`,
+          `║ ${(`Música cyberpunk      : ${audio.isMusicActive() ? 'ACTIVADA [ON]' : 'PAUSADA [OFF]'}`).slice(0, 60).padEnd(60)} ║`,
           '╚══════════════════════════════════════════════════════════════╝',
           rem > 0 
             ? `> Te faltan ${rem} subnodo(s) para derribar este firewall. Escribe 'hack' para continuar.`
@@ -2322,7 +2386,7 @@ export const COMMANDS = {
 
   music: {
     name: 'music',
-    description: 'Controla el sistema musical Howler.js (on, off, mute, track 1-5, status)',
+    description: 'Controla el sintetizador acústico del sistema (on, off, mute, track 1-5, status)',
     usage: 'music [on|off|mute|track 1-5|status]',
     execute({ args }) {
       const action = (args[0] || 'status').toLowerCase();
@@ -2332,7 +2396,7 @@ export const COMMANDS = {
         const curMeta = FIREWALL_MUSIC_TRACKS[audio.currentFirewall] || FIREWALL_MUSIC_TRACKS[0];
         return {
           lines: [
-            '[🎵] Sistema Musical Howler.js: ACTIVADO (Fade in)',
+            '[🎵] Sintetizador Acústico Neural: ACTIVADO',
             `> Pista Actual: ${curMeta.nombre} (${curMeta.estilo})`
           ]
         };
@@ -2340,7 +2404,7 @@ export const COMMANDS = {
 
       if (action === 'off' || action === 'stop') {
         audio.stopMusic();
-        return { lines: ['[🎵] Sistema Musical Howler.js: PAUSADO (Fade out)'] };
+        return { lines: ['[🎵] Sintetizador Acústico Neural: PAUSADO'] };
       }
 
       if (action === 'mute' || action === 'silencio') {
@@ -2358,7 +2422,7 @@ export const COMMANDS = {
           const meta = audio.cambiarFirewallMusica(fwNum - 1, 1200);
           return {
             lines: [
-              `[🎵] Crossfading hacia Pista ${fwNum}/5: ${meta.nombre}`,
+              `[🎵] Transición hacia Pista ${fwNum}/5: ${meta.nombre}`,
               `> Estilo: ${meta.estilo}`
             ]
           };
@@ -2387,20 +2451,20 @@ export const COMMANDS = {
       return {
         lines: [
           '╔══════════════════════════════════════════════════════════════╗',
-          '║ 🎵 MOTOR MUSICAL // HOWLER.JS MULTI-FIREWALL                  ║',
+          '║ [~] SISTEMA DE AUDIO NEURAL // MULTI-FIREWALL                ║',
           '╠══════════════════════════════════════════════════════════════╣',
-          `║ Estado de Reproducción : ${audio.isMusicActive() ? 'REPRODUCIENDO ▶ ' : 'PAUSADO ⏸         '} ║`,
-          `║ Estado de Silencio     : ${audio.isMuted() ? 'SILENCIADO 🔇    ' : 'HABILITADO 🔊    '} ║`,
-          `║ Volumen General        : ${Math.round(audio.volume * 100)}% (Música: ${Math.round(audio.musicVolume * 100)}%)`.padEnd(63) + '║',
-          `║ Pista Actual           : Pista ${curMeta.firewall}/5`.padEnd(63) + '║',
-          `║ Título                 : ${curMeta.nombre.padEnd(43).substring(0, 43)} ║`,
-          `║ Estilo                 : ${curMeta.estilo.padEnd(43).substring(0, 43)} ║`,
+          `║ ${(`Estado de Reproducción : ${audio.isMusicActive() ? 'REPRODUCIENDO [>]' : 'PAUSADO [=]'}`).slice(0, 60).padEnd(60)} ║`,
+          `║ ${(`Estado de Silencio     : ${audio.isMuted() ? 'SILENCIADO [-]' : 'HABILITADO [+]'}`).slice(0, 60).padEnd(60)} ║`,
+          `║ ${(`Volumen General        : ${Math.round(audio.volume * 100)}% (Música: ${Math.round(audio.musicVolume * 100)}%)`).slice(0, 60).padEnd(60)} ║`,
+          `║ ${(`Pista Actual           : Pista ${curMeta.firewall}/5`).slice(0, 60).padEnd(60)} ║`,
+          `║ ${(`Título                 : ${curMeta.nombre}`).slice(0, 60).padEnd(60)} ║`,
+          `║ ${(`Estilo                 : ${curMeta.estilo}`).slice(0, 60).padEnd(60)} ║`,
           '╠══════════════════════════════════════════════════════════════╣',
           '║ COMANDOS DISPONIBLES:                                        ║',
-          '║  • music on / off       : Inicia o detiene con fade in/out   ║',
-          '║  • music mute           : Alterna silenciar / desmutear      ║',
-          '║  • music track [1-5]    : Cambia a la pista de un firewall   ║',
-          '║  • music next           : Avanza a la siguiente pista        ║',
+          '║  * music on / off       : Inicia o detiene la reproducción   ║',
+          '║  * music mute           : Alterna silenciar / desmutear      ║',
+          '║  * music track [1-5]    : Cambia a la pista de un firewall   ║',
+          '║  * music next           : Avanza a la siguiente pista        ║',
           '╚══════════════════════════════════════════════════════════════╝'
         ]
       };
@@ -2409,7 +2473,7 @@ export const COMMANDS = {
 
   musica: {
     name: 'musica',
-    description: 'Alias de music para control de Howler.js',
+    description: 'Alias de music para control del sintetizador acústico',
     usage: 'musica [on|off|mute|track 1-5|status]',
     execute(ctx) {
       return COMMANDS.music.execute(ctx);
@@ -2447,7 +2511,7 @@ export const COMMANDS = {
 
   logros: {
     name: 'logros',
-    description: 'Abre la pantalla de logros del sistema (20 logros)',
+    description: 'Abre la pantalla de logros del sistema',
     usage: 'logros',
     execute() {
       if (typeof window !== 'undefined' && window.navigateTo) {
@@ -2505,7 +2569,7 @@ export const COMMANDS = {
 
   sudo: {
     name: 'sudo',
-    description: 'Ejecuta una instrucción con privilegios elevados (Prompt 18)',
+    description: 'Ejecuta una instrucción con privilegios elevados en el nodo',
     usage: 'sudo [su|comando]',
     execute({ args }) {
       return secretosManager.ejecutarSudo(args);
@@ -2514,7 +2578,7 @@ export const COMMANDS = {
 
   42: {
     name: '42',
-    description: 'La respuesta a la Vida, el Universo y Todo lo Demás (Prompt 18)',
+    description: 'La respuesta a la Vida, el Universo y Todo lo Demás',
     usage: '42',
     execute() {
       return secretosManager.ejecutar42();
@@ -2532,7 +2596,7 @@ export const COMMANDS = {
 
   'ghost-protocol': {
     name: 'ghost-protocol',
-    description: 'Accede al protocolo de infiltración clasificado Ghost Protocol (Prompt 19)',
+    description: 'Accede al protocolo de infiltración clasificado Ghost Protocol',
     usage: 'ghost-protocol',
     execute() {
       const unlocked = isGhostProtocolUnlocked();
@@ -2568,7 +2632,7 @@ export const COMMANDS = {
 
   logs: {
     name: 'logs',
-    description: 'Gestor y reproductor de audio de los registros desclasificados (Prompt D3)',
+    description: 'Gestor y reproductor de audio de los registros desclasificados',
     usage: 'logs [listar | cat <id> | escuchar <id> | detener]',
     execute({ args }) {
       const action = (args[0] || 'listar').toLowerCase();
@@ -2656,7 +2720,7 @@ export const COMMANDS = {
 
       lines.push('');
       lines.push('Comandos:');
-      lines.push('  logs escuchar <archivo>  -> Reproduce la voz del personaje (Web Speech)');
+      lines.push('  logs escuchar <archivo>  -> Reproduce la grabación de voz del registro');
       lines.push('  logs cat <archivo>       -> Abre el visor interactivo con audio');
       lines.push('  logs detener             -> Detiene la reproducción');
 
@@ -2675,7 +2739,7 @@ export const COMMANDS = {
 
   artbook: {
     name: 'artbook',
-    description: 'Abre o consulta el estado de desclasificación del Artbook Conceptual Oficial (Prompt D4)',
+    description: 'Abre o consulta el estado de desclasificación del Artbook Conceptual Oficial',
     usage: 'artbook',
     execute() {
       const isUnlocked = (() => {
@@ -2700,7 +2764,7 @@ export const COMMANDS = {
             '  - Mapa arquitectónico vertical de la Torre Aurelia',
             '  - Diagramas y topología de los 5 Firewalls',
             '  - Cronología completa no censurada (2038 - 2048)',
-            '  - Notas del diseñador y memorandos secretos de Gerhard Kroll',
+            '  - Archivos de arquitectura y memorandos secretos de Gerhard Kroll',
             '  - Reproductor con las 5 pistas musicales de la banda sonora'
           ]
         };
@@ -2714,7 +2778,7 @@ export const COMMANDS = {
             'Para desbloquear el Artbook Oficial:',
             '  1. Cruza los 5 Firewalls del sistema de seguridad Aurelia.',
             '  2. Toma una decisión en el Núcleo de Singularidad.',
-            'También puedes abrir ARTBOOK.html directamente e ingresar la clave de desclasificación de emergencia (VERA_SORENSON_2044) o usar el bypass de evaluador.'
+            'También puedes abrir ARTBOOK.html directamente e ingresar la clave de desclasificación de emergencia (VERA_SORENSON_2044) o usar el acceso de evaluador.'
           ]
         };
       }
@@ -2723,7 +2787,7 @@ export const COMMANDS = {
 
   arg: {
     name: 'arg',
-    description: 'Enlaza con el servidor satélite clandestino del ARG (Prompt D5)',
+    description: 'Enlaza con el servidor satélite clandestino del Proyecto CORTEX',
     usage: 'arg',
     execute() {
       const isUnlocked = (() => {
@@ -2744,19 +2808,19 @@ export const COMMANDS = {
       return {
         lines: [
           '╔════════════════════════════════════════════════════════════════╗',
-          '║ 🌐 ENLACE AL SERVIDOR SATÉLITE // PROYECTO CORTEX (ARG)       ║',
+          '║ 🌐 ENLACE AL SERVIDOR SATÉLITE // PROYECTO CORTEX              ║',
           '╚════════════════════════════════════════════════════════════════╝',
           '[+] Estableciendo conexión con subred externa: ./arg/index.html',
-          '> Abriendo portal ARG en nueva pestaña...',
+          '> Abriendo portal satélite CORTEX en nueva pestaña...',
           '',
           `Estado de desclasificación: ${isUnlocked ? 'DESCLASIFICADO (NIVEL OMEGA)' : 'BLOQUEADO // Requiere Token'}`,
           `Estado de canje de recompensa: ${isClaimed ? 'CANJEADO (+500 PTS Otorgados)' : 'PENDIENTE DE CANJE'}`,
           '',
           'INSTRUCCIONES DE ACCESO:',
           '  1. Revisa el archivo secreto en /home/vera/secreto.txt (Firewall 3).',
-          '  2. Ingresa el token en el portal web de /arg/ para acceder al expediente CORTEX.',
-          '  3. Escanea o copia el código QR generado por JavaScript.',
-          '  4. Para canjear tu recompensa in-game, escribe en esta terminal:',
+          '  2. Ingresa el token en el portal satélite para acceder al expediente CORTEX.',
+          '  3. Escanea o copia el sello QR criptográfico generado en el nodo.',
+          '  4. Para canjear tu recompensa en esta terminal, ejecuta:',
           '     claim-arg <CODIGO_RESCATE>'
         ]
       };
@@ -2765,7 +2829,7 @@ export const COMMANDS = {
 
   'claim-arg': {
     name: 'claim-arg',
-    description: 'Canjea un código de rescate criptográfico obtenido en el portal ARG (Prompt D5)',
+    description: 'Canjea un código de rescate criptográfico obtenido en el portal CORTEX',
     usage: 'claim-arg <CODIGO_RESCATE>',
     execute(ctx) {
       const code = ((ctx && ctx.args && ctx.args[0]) || '').trim().toUpperCase();
@@ -2790,7 +2854,7 @@ export const COMMANDS = {
         return {
           lines: [
             '[!] AVISO: El código de rescate CORTEX ya ha sido canjeado anteriormente en este terminal.',
-            'El logro [Realidad Aumentada (ARG)] ya está desbloqueado en tu registro.'
+            'El logro [Realidad Aumentada] ya está desbloqueado en tu registro.'
           ]
         };
       }
@@ -2809,11 +2873,11 @@ export const COMMANDS = {
         return {
           lines: [
             '╔════════════════════════════════════════════════════════════════╗',
-            '║ 🗝️ AUTENTICACIÓN ARG VALIDADA // TRANSMISIÓN CORTEX VINCULADA ║',
+            '║ 🗝️ AUTENTICACIÓN VALIDADA // TRANSMISIÓN CORTEX VINCULADA     ║',
             '╚════════════════════════════════════════════════════════════════╝',
             '[✔] CÓDIGO DE RESCATE VÁLIDO: ' + code,
             '[★] +500 PUNTOS AÑADIDOS A TU PERFIL DE INFILTRACIÓN',
-            '[🏆] LOGRO DESBLOQUEADO: Realidad Aumentada (ARG)',
+            '[🏆] LOGRO DESBLOQUEADO: Realidad Aumentada',
             '',
             '> Mensaje interceptado de Dra. Vera Sorenson:',
             '"Has conectado el mundo exterior con el núcleo de silicio.',

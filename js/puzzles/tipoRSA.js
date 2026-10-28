@@ -264,7 +264,7 @@ function renderizarHerramientasRSA(contenedor) {
           <span>📦 TRANSMISIÓN CIFRADA INTERCEPTADA (C = M^e mod n):</span>
           <span>${numerosCifrados.length} BLOQUES</span>
         </div>
-        <div style="font-family: var(--font-mono); font-size: 12px; color: #ff5252; word-break: break-all; background: rgba(0,0,0,0.4); padding: 6px; border-radius: 4px;">
+        <div style="font-family: var(--font-mono); font-size: 12px; color: #ff5252; word-break: normal; overflow-wrap: break-word; hyphens: none; background: rgba(0,0,0,0.4); padding: 6px; border-radius: 4px;">
           [ ${muestraCifrados} ]
         </div>
       </div>
@@ -303,7 +303,7 @@ function renderizarHerramientasRSA(contenedor) {
             <button type="button" id="rsa-btn-aplicar-d" class="button button--small" style="font-size: 11px; padding: 4px 8px;">Descifrar</button>
           </div>
         </div>
-        <div id="rsa-live-preview" style="font-family: var(--font-mono); font-size: 13px; font-weight: bold; min-height: 28px; padding: 8px; background: rgba(0,0,0,0.6); border: 1px dashed var(--border-primary); border-radius: 4px; color: #888; letter-spacing: 0.05em; display: flex; align-items: center;">
+        <div id="rsa-live-preview" style="font-family: var(--font-mono); font-size: 13px; font-weight: bold; min-height: 28px; padding: 8px; background: rgba(0,0,0,0.6); border: 1px dashed var(--border-primary); border-radius: 4px; color: #888; letter-spacing: 0.05em; display: flex; align-items: center; word-break: normal; overflow-wrap: break-word; hyphens: none;">
           [ Introduce el valor de d para descifrar la transmisión de Vera ]
         </div>
       </div>

@@ -200,7 +200,7 @@ export async function renderRankingScreen(target = 'ranking-content') {
       <h2 class="glitch glow-text" style="color: var(--green-bright); font-family: var(--font-display); font-size: var(--fs-3xl); margin-bottom: var(--space-xs);">
         HALL OF FAME // TOP 3 RANKING
       </h2>
-      <p class="menu-subtitle">// Conectando a la red neuronal de Firestore...</p>
+      <p class="menu-subtitle">// Conectando a la red neuronal global de NEXUS...</p>
       <div style="font-family: var(--font-mono); color: var(--cyan); margin: var(--space-2xl) 0;">
         [ SINCRONIZANDO NODOS CUÁNTICOS ██████████ 100% ]
       </div>
@@ -252,7 +252,7 @@ export async function renderRankingScreen(target = 'ranking-content') {
         <h2 class="glitch glow-text" style="color: var(--green-bright); font-family: var(--font-display); font-size: var(--fs-3xl); margin-bottom: var(--space-xs); letter-spacing: 0.1em;">
           HALL OF FAME // TOP 3 RANKING
         </h2>
-        <p class="menu-subtitle">// Los breachers de élite que vulneraron la Torre Aurelia en Firestore</p>
+        <p class="menu-subtitle">// Los breachers de élite que vulneraron la Torre Aurelia</p>
       </div>
 
       <!-- PODIO VISUAL ANIMADO TOP 3 -->
@@ -344,13 +344,13 @@ export async function renderRankingScreen(target = 'ranking-content') {
   document.getElementById('btn-publicar-score')?.addEventListener('click', async () => {
     const alias = prompt('Introduce tu alias para el Hall of Fame:', 'GHOST') || 'GHOST';
     const btn = document.getElementById('btn-publicar-score');
-    if (btn) btn.textContent = 'TRANSMITIENDO A FIRESTORE...';
+    if (btn) btn.textContent = 'TRANSMITIENDO A LA RED...';
     await guardarScoreEnRanking({
       nombre: alias,
       puntaje: miHighScore || 1000,
       firewallsCompletados: 5
     });
-    alert(`¡Puntuación de ${alias} registrada con éxito en Firestore!`);
+    alert(`¡Puntuación de ${alias} registrada con éxito en el Hall of Fame!`);
     renderRankingScreen(target);
   });
 

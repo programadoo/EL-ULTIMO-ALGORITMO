@@ -26,6 +26,9 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      -webkit-hyphens: none;
+      -ms-hyphens: none;
+      hyphens: none;
     }
 
     body {
@@ -38,6 +41,11 @@
       position: relative;
       overflow-x: hidden;
       line-height: 1.6;
+      -webkit-hyphens: none;
+      -ms-hyphens: none;
+      hyphens: none;
+      word-break: normal;
+      overflow-wrap: break-word;
     }
 
     /* CRT scanlines effect */
@@ -467,7 +475,9 @@
       color: var(--accent-green);
       font-weight: bold;
       letter-spacing: 2px;
-      word-break: break-all;
+      word-break: normal;
+      overflow-wrap: break-word;
+      hyphens: none;
       margin: 0.5rem 0;
       text-shadow: 0 0 10px rgba(0, 255, 102, 0.4);
     }
@@ -582,7 +592,7 @@
       <div class="security-badge" id="security-badge">
         <span>●</span> CLASIFICADO NIVEL OMEGA
       </div>
-      <button class="audio-toggle active" id="btn-audio-toggle" title="Conmutar sintetizador Web Audio">AUDIO: ON</button>
+      <button class="audio-toggle active" id="btn-audio-toggle" title="Conmutar sintetizador acústico">AUDIO: ON</button>
     </div>
   </header>
 
@@ -613,7 +623,7 @@
       <div id="decrypt-error" style="color: var(--accent-magenta); font-size: 0.9rem; margin-top: 0.5rem; display: none;"></div>
 
       <div class="lock-hint">
-        💡 <strong>PISTA DEL JUEGO:</strong> Explora el <code>Firewall 3 (Gamma)</code> en la terminal y lee el archivo clandestino <code>/home/vera/secreto.txt</code>.
+        💡 <strong>PISTA:</strong> Explora la Subestación Gamma en la terminal y lee el archivo clandestino <code>/home/vera/secreto.txt</code>.
       </div>
     </section>
 
@@ -672,11 +682,11 @@
         </div>
       </article>
 
-      <!-- TARJETA 3: GENERADOR DINÁMICO DE CÓDIGO QR EN JAVASCRIPT -->
+      <!-- TARJETA 3: GENERADOR DINÁMICO DE CÓDIGO QR -->
       <article class="card">
         <div class="card-header">
           <h3><span>🔲</span> GENERADOR DE CÓDIGO QR // CANJE DE RECOMPENSA</h3>
-          <span class="meta-tag">MOTOR JS OFFLINE</span>
+          <span class="meta-tag">MÓDULO CRIPTOGRÁFICO LOCAL</span>
         </div>
         
         <div class="qr-section">
@@ -689,8 +699,8 @@
             <div class="qr-selector-group">
               <label for="qr-data-preset">Selecciona el Payload para el Código QR:</label>
               <select id="qr-data-preset" class="qr-select" onchange="updateQRPayload()">
-                <option value="REDEEM_CODE">🎟️ Código de Canje In-Game (Recompensa +500 PTS)</option>
-                <option value="ARG_URL">🌐 URL Directa al Expediente ARG Secreto</option>
+                <option value="REDEEM_CODE">🎟️ Código de Canje de Terminal · +500 PTS</option>
+                <option value="ARG_URL">🌐 Enlace Directo al Expediente CORTEX</option>
                 <option value="VERA_EMERGENCY">📡 Frecuencia de Emergencia de Vera Sorenson</option>
               </select>
             </div>
@@ -698,10 +708,10 @@
             <div class="qr-selector-group">
               <label for="qr-color-theme">Esquema Cromático del QR:</label>
               <select id="qr-color-theme" class="qr-select" onchange="updateQRColor()">
-                <option value="#00ffff">Cian Neón Cyberpunk (#00ffff)</option>
-                <option value="#00ff66">Verde Terminal Fósforo (#00ff66)</option>
-                <option value="#ff0055">Rojo Alarma Aurelia (#ff0055)</option>
-                <option value="#ffb700">Ámbar Núcleo Sintético (#ffb700)</option>
+                <option value="#00ffff">Cian Neón Cyberpunk</option>
+                <option value="#00ff66">Verde Terminal Fósforo</option>
+                <option value="#ff0055">Rojo Alarma Aurelia</option>
+                <option value="#ffb700">Ámbar Núcleo Sintético</option>
               </select>
             </div>
 
@@ -709,15 +719,15 @@
               <div style="font-size: 0.75rem; color: var(--accent-amber); font-weight: bold;">CÓDIGO DE CANJE PARA LA TERMINAL:</div>
               <div class="redeem-code" id="active-redeem-code">NEXUS_ARG_CORTEX_REDEEM_77</div>
               <p class="redeem-instructions">
-                Regresa a la terminal del juego principal y ejecuta:<br>
+                Regresa a la terminal principal y ejecuta:<br>
                 <code>claim-arg NEXUS_ARG_CORTEX_REDEEM_77</code><br>
-                Obtendrás <strong>+500 Puntos</strong> y el Logro Oculto <strong>Realidad Aumentada (ARG)</strong>.
+                Obtendrás <strong>+500 Puntos</strong> y el Logro Oculto <strong>Realidad Aumentada</strong>.
               </p>
             </div>
 
             <div class="btn-action-row">
               <button class="btn-secondary btn-copy" onclick="copyRedeemCode()">📋 COPIAR CÓDIGO</button>
-              <button class="btn-secondary" onclick="downloadQRCode()">💾 DESCARGAR QR (PNG)</button>
+              <button class="btn-secondary" onclick="downloadQRCode()">💾 DESCARGAR QR</button>
               <a href="../index.html" class="btn-secondary" style="text-decoration: none; text-align: center;">💻 VOLVER A LA TERMINAL</a>
             </div>
           </div>
@@ -727,7 +737,7 @@
   </main>
 
   <footer>
-    <p>AURELIA SYSTEMS CORPORATION // PROYECTO CORTEX // TRANSMISIÓN ARG DESCLASIFICADA</p>
+    <p>AURELIA SYSTEMS CORPORATION // PROYECTO CORTEX // TRANSMISIÓN DESCLASIFICADA</p>
     <a href="../index.html" class="return-link">← Regresar a la Terminal Principal de EL ÚLTIMO ALGORITMO</a>
   </footer>
 

@@ -188,8 +188,8 @@ export function abrirPuzzleVigenere(nivel = 2, onCompletado = null) {
         </div>
 
         <!-- Vista previa de descifrado con la clave ingresada -->
-        <div id="vig-preview-box" style="background: rgba(0,0,0,0.4); border-left: 3px solid var(--cyan); padding: 8px 12px; font-family: var(--font-mono); font-size: 12px; color: var(--text-primary); border-radius: 2px;">
-          <span style="color: var(--yellow-warn);">Resultado:</span> <span id="vig-preview-text" style="color: var(--text-dim); font-style: italic;">Ingresa una clave para previsualizar el texto en claro...</span>
+        <div id="vig-preview-box" style="background: rgba(0,0,0,0.4); border-left: 3px solid var(--cyan); padding: 8px 12px; font-family: var(--font-mono); font-size: 12px; color: var(--text-primary); border-radius: 2px; word-break: normal; overflow-wrap: break-word; hyphens: none;">
+          <span style="color: var(--yellow-warn);">Resultado:</span> <span id="vig-preview-text" style="color: var(--text-dim); font-style: italic; word-break: normal; overflow-wrap: break-word; hyphens: none;">Ingresa una clave para previsualizar el texto en claro...</span>
         </div>
       </div>
 

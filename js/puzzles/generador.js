@@ -19,6 +19,7 @@ import { generarPuzzleVigenere } from './tipoVigenere.js';
 import { generarPuzzleFrecuencia } from './tipoFrecuencia.js';
 import { generarPuzzleEsteganografia } from './tipoEsteganografia.js';
 import { generarPuzzleRSA } from './tipoRSA.js';
+import { generarPuzzleEnigma } from './tipoEnigma.js';
 import { generarPuzzleLlaves } from './tipoLlaves.js';
 import { generarPuzzleFirmas } from './tipoFirmas.js';
 import { generarPuzzleBlockchain } from './tipoBlockchain.js';
@@ -420,6 +421,8 @@ export function generarPuzzle(tipo = 'A', nivel = 1) {
       return generarPuzzleEsteganografia(nivel);
     case 'RSA':
       return generarPuzzleRSA(nivel);
+    case 'ENIGMA':
+      return generarPuzzleEnigma(nivel);
     case 'LLAVES':
     case 'KEYS':
     case 'ASIMETRICO':
@@ -505,6 +508,10 @@ export async function abrirCualquierPuzzle(tipo = 'A', nivel = 1, onCompletado =
     case 'RSA': {
       const { abrirPuzzleRSA } = await import('./tipoRSA.js');
       return abrirPuzzleRSA(nivelEfectivo, onCompletado);
+    }
+    case 'ENIGMA': {
+      const { abrirPuzzleEnigma } = await import('./tipoEnigma.js');
+      return abrirPuzzleEnigma(nivelEfectivo, onCompletado);
     }
     case 'LLAVES':
     case 'KEYS':

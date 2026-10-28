@@ -10,8 +10,15 @@
  * selector de plantillas y emulador reactivo de alta fidelidad.
  */
 
-import { executeGhostScript, parseGhostScript, tokenizeGhostScript } from './ghostscript.js';
+import {
+  executeGhostScript,
+  parseGhostScript,
+  tokenizeGhostScript,
+  validarSintaxisGhostScript,
+  extraerLineaColumnaError
+} from './ghostscript.js';
 import { BANCO_RETOS, obtenerListaRetos, validarReto, esRetoDesbloqueado } from './retos.js';
+import { getState, registerPuzzleSolvedInFirewall } from '../state.js';
 import { audio } from '../audio.js';
 import { feedbackSuccess, feedbackError } from '../ui/feedback.js';
 import { registrarSolucionEnRanking } from './rankingSoluciones.js';
@@ -20,6 +27,7 @@ let editorInstancia = null;
 let callbackComprobacion = null;
 let archivoActual = 'hack_firewall_beta.gs';
 let retoActivoId = null;
+let nivelObjetivoSuperado = false;
 
 // ─────────────────────────────────────────────────
 // 1. PLANTILLAS DE CÓDIGO GHOSTSCRIPT
@@ -92,29 +100,27 @@ const KEYWORDS_SET = new Set([
 const COMMANDS_SET = new Set(['SCAN', 'CRACK', 'DECRYPT', 'SEND']);
 
 /**
- * Genera HTML con etiquetas de sintaxis para GhostScript.
- * @param {string} code
- * @returns {string} HTML coloreado
+ * Genera HTML con etiquetas de sintaxis para una sola línea de GhostScript.
+ * @param {string} lineCode
+ * @returns {string}
  */
-export function resaltarSintaxisGhostScript(code) {
-  if (!code) return '';
+function resaltarLineaGhostScript(lineCode) {
+  if (!lineCode) return '';
 
   const escapeHtml = (str) =>
     str.replace(/&/g, '&amp;')
        .replace(/</g, '&lt;')
        .replace(/>/g, '&gt;');
 
-  // Expresión regular que clasifica tokens léxicos
   const regex = /(\/\/[^\n]*|\/\*[\s\S]*?\*\/)|("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|(\b\d+(?:\.\d+)?\b)|(\b[a-zA-Z_][a-zA-Z0-9_]*\b)|([=!<>]=?|[+\-*\/%&|!]+)|(\S)/g;
 
   let html = '';
   let lastIndex = 0;
   let match;
 
-  while ((match = regex.exec(code)) !== null) {
-    // Añadir espacios o saltos de línea intermedios
+  while ((match = regex.exec(lineCode)) !== null) {
     if (match.index > lastIndex) {
-      html += escapeHtml(code.slice(lastIndex, match.index));
+      html += escapeHtml(lineCode.slice(lastIndex, match.index));
     }
     lastIndex = regex.lastIndex;
 
@@ -142,16 +148,49 @@ export function resaltarSintaxisGhostScript(code) {
     }
   }
 
-  if (lastIndex < code.length) {
-    html += escapeHtml(code.slice(lastIndex));
-  }
-
-  // Si termina con salto de línea, añadir un espacio no rompible para sincronizar altura
-  if (code.endsWith('\n')) {
-    html += '\n';
+  if (lastIndex < lineCode.length) {
+    html += escapeHtml(lineCode.slice(lastIndex));
   }
 
   return html;
+}
+
+/**
+ * Genera HTML con etiquetas de sintaxis para GhostScript y resaltado de líneas con error.
+ * @param {string} code
+ * @param {Map<number, { message: string }>|Record<number, string>|null} [erroresPorLinea=null]
+ * @returns {string} HTML coloreado línea por línea
+ */
+export function resaltarSintaxisGhostScript(code, erroresPorLinea = null) {
+  if (code === undefined || code === null || code === '') return '';
+
+  const escapeHtml = (str) =>
+    String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+
+  const lines = String(code).split('\n');
+  return lines.map((lineText, idx) => {
+    const lineNum = idx + 1;
+    let errMsg = null;
+    if (erroresPorLinea instanceof Map && erroresPorLinea.has(lineNum)) {
+      const item = erroresPorLinea.get(lineNum);
+      errMsg = typeof item === 'string' ? item : item?.message;
+    } else if (erroresPorLinea && typeof erroresPorLinea === 'object' && erroresPorLinea[lineNum]) {
+      const item = erroresPorLinea[lineNum];
+      errMsg = typeof item === 'string' ? item : item?.message;
+    }
+
+    const innerHtml = resaltarLineaGhostScript(lineText) || ' ';
+    const errorBadge = errMsg
+      ? `<span class="ghost-error-inline-hint">⚠ ${escapeHtml(errMsg.replace(/^\[GhostScript [^\]]+\]\s*/i, ''))}</span>`
+      : '';
+    const cls = errMsg ? 'ghost-code-line ghost-code-line--error' : 'ghost-code-line';
+
+    return `<div class="${cls}" data-line="${lineNum}">${innerHtml}${errorBadge}</div>`;
+  }).join('');
 }
 
 // ─────────────────────────────────────────────────
@@ -164,6 +203,8 @@ export class GhostScriptEditor {
     this.code = initialCode || PLANTILLAS_GHOSTSCRIPT.hack;
     this.cmView = null;
     this.fallbackElements = null;
+    this.erroresPorLinea = new Map();
+    this.ultimoDiagnostico = { valido: true, errores: [] };
     this.init();
   }
 
@@ -192,6 +233,7 @@ export class GhostScriptEditor {
 
     const gutter = document.createElement('div');
     gutter.className = 'ghost-gutter';
+    gutter.setAttribute('aria-hidden', 'true');
 
     const codeWrapper = document.createElement('div');
     codeWrapper.className = 'ghost-code-area-wrapper';
@@ -204,6 +246,7 @@ export class GhostScriptEditor {
     textarea.spellcheck = false;
     textarea.autocomplete = 'off';
     textarea.autocapitalize = 'off';
+    textarea.setAttribute('wrap', 'off');
     textarea.value = this.code;
 
     codeWrapper.appendChild(highlightLayer);
@@ -222,16 +265,7 @@ export class GhostScriptEditor {
 
     const update = () => {
       this.code = textarea.value;
-      highlightLayer.innerHTML = resaltarSintaxisGhostScript(this.code);
-
-      // Actualizar números de línea en el gutter
-      const lines = this.code.split('\n').length;
-      let gutterText = '';
-      for (let i = 1; i <= lines; i++) {
-        gutterText += i + '\n';
-      }
-      gutter.textContent = gutterText;
-
+      this.validateAndRender();
       this.updateMetrics();
     };
 
@@ -260,6 +294,101 @@ export class GhostScriptEditor {
     update();
   }
 
+  /**
+   * Valida la sintaxis en tiempo real mientras el usuario escribe y actualiza
+   * el gutter, el resaltado de línea en el editor y la barra de diagnóstico en vivo.
+   */
+  validateAndRender(customRuntimeError = null) {
+    const diag = validarSintaxisGhostScript(this.code);
+    this.ultimoDiagnostico = diag;
+    this.erroresPorLinea = new Map();
+
+    if (Array.isArray(diag.errores)) {
+      diag.errores.forEach(err => {
+        if (err && err.line) {
+          this.erroresPorLinea.set(err.line, err);
+        }
+      });
+    }
+
+    if (customRuntimeError && customRuntimeError.line) {
+      this.erroresPorLinea.set(customRuntimeError.line, customRuntimeError);
+    }
+
+    if (this.fallbackElements) {
+      const lines = this.code.split('\n').length;
+      this.fallbackElements.highlightLayer.innerHTML = resaltarSintaxisGhostScript(this.code, this.erroresPorLinea);
+      this.renderGutterLines(lines, this.erroresPorLinea);
+    }
+
+    this.updateLiveSyntaxBar(customRuntimeError || (diag.errores && diag.errores[0]) || null);
+    return diag;
+  }
+
+  /**
+   * Resalta explícitamente una línea con error (sintáctico o de tiempo de ejecución)
+   * y desplaza suavemente el editor hacia dicha línea.
+   * @param {number} lineNum
+   * @param {string} message
+   * @param {string} [tipo='RUNTIME']
+   */
+  highlightErrorLine(lineNum, message, tipo = 'RUNTIME') {
+    const totalLines = Math.max(1, this.code.split('\n').length);
+    const safeLine = Math.min(Math.max(1, Number(lineNum) || 1), totalLines);
+    const errObj = { line: safeLine, column: 1, message: String(message || 'Error en línea ' + safeLine), tipo };
+    this.validateAndRender(errObj);
+
+    if (this.fallbackElements && this.fallbackElements.textarea) {
+      const targetScrollTop = Math.max(0, (safeLine - 3) * 21);
+      this.fallbackElements.textarea.scrollTop = targetScrollTop;
+      this.fallbackElements.highlightLayer.scrollTop = targetScrollTop;
+      this.fallbackElements.gutter.scrollTop = targetScrollTop;
+    }
+  }
+
+  updateLiveSyntaxBar(primaryError = null) {
+    const bar = document.getElementById('editor-live-syntax-bar');
+    const msgEl = document.getElementById('editor-live-syntax-msg');
+    const locEl = document.getElementById('editor-live-syntax-loc');
+    if (!bar || !msgEl || !locEl) return;
+
+    if (primaryError) {
+      const cleanMsg = String(primaryError.message || '').replace(/^\[GhostScript [^\]]+\]\s*/i, '');
+      bar.classList.add('editor-live-syntax-bar--error');
+      msgEl.textContent = `⚠️ ${cleanMsg}`;
+      locEl.textContent = `LÍNEA ${primaryError.line || 1}${primaryError.column ? ', COL ' + primaryError.column : ''} ✖`;
+      bar.onclick = () => {
+        if (this.fallbackElements && this.fallbackElements.textarea) {
+          const targetScrollTop = Math.max(0, ((primaryError.line || 1) - 3) * 21);
+          this.fallbackElements.textarea.scrollTop = targetScrollTop;
+          this.fallbackElements.textarea.focus();
+        }
+      };
+    } else {
+      bar.classList.remove('editor-live-syntax-bar--error');
+      msgEl.textContent = '✔ Sintaxis válida — Listo para ejecutar o hackear';
+      locEl.textContent = 'SIN ERRORES';
+      bar.onclick = null;
+    }
+  }
+
+  renderGutterLines(lineCount, erroresMap = this.erroresPorLinea) {
+    if (!this.fallbackElements || !this.fallbackElements.gutter) return;
+    const total = Math.max(1, Number(lineCount) || 1);
+    const escapeAttr = (s) => String(s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    let html = '';
+    for (let i = 1; i <= total; i++) {
+      const err = erroresMap instanceof Map ? erroresMap.get(i) : null;
+      if (err) {
+        const tip = escapeAttr(err.message || `Error en línea ${i}`);
+        html += `<div class="ghost-gutter__line ghost-gutter__line--error" data-line="${i}" title="${tip}"><span class="ghost-gutter__warn-icon">⚠</span>${i}</div>`;
+      } else {
+        html += `<div class="ghost-gutter__line" data-line="${i}">${i}</div>`;
+      }
+    }
+    this.fallbackElements.gutter.innerHTML = html;
+  }
+
   initCodeMirror6(cm) {
     if (!cm || typeof cm.EditorView !== 'function') return false;
 
@@ -274,6 +403,7 @@ export class GhostScriptEditor {
           EditorView.updateListener.of((update) => {
             if (update.docChanged) {
               this.code = update.state.doc.toString();
+              this.validateAndRender();
               this.updateMetrics();
             }
           })
@@ -282,6 +412,7 @@ export class GhostScriptEditor {
       parent: this.container
     });
 
+    this.validateAndRender();
     this.updateMetrics();
     return true;
   }
@@ -302,13 +433,10 @@ export class GhostScriptEditor {
       this.cmView.dispatch({
         changes: { from: 0, to: this.cmView.state.doc.length, insert: this.code }
       });
+      this.validateAndRender();
     } else if (this.fallbackElements) {
       this.fallbackElements.textarea.value = this.code;
-      this.fallbackElements.highlightLayer.innerHTML = resaltarSintaxisGhostScript(this.code);
-      const lines = this.code.split('\n').length;
-      let gutterText = '';
-      for (let i = 1; i <= lines; i++) gutterText += i + '\n';
-      this.fallbackElements.gutter.textContent = gutterText;
+      this.validateAndRender();
     }
     this.updateMetrics();
   }
@@ -326,7 +454,10 @@ export class GhostScriptEditor {
     if (!elMetrics) return;
     const lines = this.code.split('\n').length;
     const chars = this.code.length;
-    elMetrics.textContent = `${lines} líneas | ${chars} caracteres | Sandbox: Activo`;
+    const estadoSintaxis = this.ultimoDiagnostico && !this.ultimoDiagnostico.valido
+      ? `⚠ Error L${this.ultimoDiagnostico.errorLine || 1}`
+      : 'Sintaxis OK ✔';
+    elMetrics.textContent = `${lines} líneas | ${chars} caracteres | ${estadoSintaxis} | Sandbox: Activo`;
   }
 }
 
@@ -381,6 +512,7 @@ export function abrirEditor(opciones = {}) {
     const banner = document.getElementById('editor-challenge-banner');
     if (banner) banner.style.display = 'none';
     retoActivoId = null;
+    actualizarBotonAvanzarFirewall(false);
     limpiarConsola();
     imprimirEnConsola(`[+] Sesión de desarrollo iniciada: "${archivoActual}"`, 'info');
     imprimirEnConsola('[+] Escribe tus comandos o pulsa ▶ EJECUTAR para probar en el sandbox.', 'dim');
@@ -436,7 +568,261 @@ export function limpiarConsola() {
 }
 
 /**
- * Ejecuta el código actual en el sandbox de GhostScript.
+ * Emite un eco sincronizado en la terminal principal del juego si está disponible.
+ * @param {string} texto
+ * @param {string} [clase='line--info']
+ */
+function emitirEcoTerminalJuego(texto, clase = 'line--info') {
+  try {
+    if (typeof window !== 'undefined' && window.terminal && typeof window.terminal.print === 'function') {
+      window.terminal.print(texto, clase);
+    }
+  } catch (_) {}
+}
+
+/**
+ * Muestra u oculta el botón para avanzar al siguiente firewall tras superar el objetivo lógico.
+ * @param {boolean} visible
+ */
+function actualizarBotonAvanzarFirewall(visible) {
+  nivelObjetivoSuperado = Boolean(visible);
+  const btnNextFw = document.getElementById('editor-btn-next-firewall');
+  if (btnNextFw) {
+    btnNextFw.style.display = visible ? 'inline-flex' : 'none';
+  }
+}
+
+/**
+ * Avanza al siguiente firewall tras haber validado el objetivo lógico del nivel actual.
+ */
+export function avanzarSiguienteFirewallDesdeEditor() {
+  if (!nivelObjetivoSuperado) {
+    imprimirEnConsola('[!] Primero debes ejecutar un script sin errores que cumpla el objetivo lógico del nivel actual.', 'error');
+    audio.playError();
+    return false;
+  }
+
+  cerrarEditor();
+  emitirEcoTerminalJuego('[+] Objetivo lógico de scripting verificado. Avanzando al siguiente firewall...', 'line--success');
+
+  if (typeof window !== 'undefined' && typeof window.__completarFirewall === 'function') {
+    window.__completarFirewall();
+    return true;
+  }
+  return false;
+}
+
+/**
+ *Evalúa de forma segura con try...catch si el código es sintácticamente correcto
+ * y libre de excepciones en tiempo de ejecución. Si hay errores, resalta la línea
+ * exacta en el editor y muestra el mensaje devuelto por el intérprete en la consola.
+ *
+ * @param {string} code
+ * @returns {{
+ *   ok: boolean,
+ *   res: object | null,
+ *   errorLine: number | null,
+ *   errorMsg: string | null,
+ *   duracion: string
+ * }}
+ */
+export function evaluarCodigoSeguroEnEditor(code) {
+  const source = String(code ?? '');
+  const rawLines = source.split('\n');
+  const inicio = performance.now();
+
+  // 1. Validar sintaxis dentro de un bloque try...catch estricto
+  try {
+    const diag = validarSintaxisGhostScript(source);
+    if (!diag.valido) {
+      const errInfo = diag.errores[0] || {
+        line: diag.errorLine || 1,
+        column: diag.errorColumn || 1,
+        message: diag.error || 'Error de sintaxis en el código'
+      };
+      const errObj = new Error(errInfo.message);
+      errObj.line = errInfo.line;
+      errObj.column = errInfo.column;
+      throw errObj;
+    }
+    // Confirmar parseo formal del AST
+    parseGhostScript(source);
+  } catch (syntaxErr) {
+    const { line, column } = extraerLineaColumnaError(syntaxErr, rawLines.length);
+    const lineaTexto = (rawLines[line - 1] || '').trim();
+    const msgExacto = syntaxErr.message || 'Error de sintaxis desconocido';
+
+    if (editorInstancia) {
+      editorInstancia.highlightErrorLine(line, msgExacto, 'SYNTAX');
+    }
+
+    imprimirEnConsola(`[✖] ERROR DE SINTAXIS DETECTADO (Línea ${line}, Col ${column}):`, 'error');
+    imprimirEnConsola(`    ${msgExacto}`, 'error');
+    if (lineaTexto) {
+      imprimirEnConsola(`    Línea ${line} ▸ ${lineaTexto}`, 'dim');
+    }
+    emitirEcoTerminalJuego(`[✖] [GhostScript IDE] Error en línea ${line}: ${msgExacto}`, 'line--error');
+    actualizarBotonAvanzarFirewall(false);
+
+    return {
+      ok: false,
+      res: null,
+      errorLine: line,
+      errorMsg: msgExacto,
+      duracion: (performance.now() - inicio).toFixed(2)
+    };
+  }
+
+  // 2. Ejecutar en el entorno aislado (sandbox) dentro de try...catch para capturar excepciones en tiempo de ejecución
+  try {
+    const res = executeGhostScript(source);
+    const duracion = (performance.now() - inicio).toFixed(2);
+
+    if (!res || !res.success) {
+      const errMsg = (res && res.error) ? res.error : 'Excepción en tiempo de ejecución';
+      const { line } = extraerLineaColumnaError({ line: res?.errorLine, message: errMsg }, rawLines.length);
+      const runErr = new Error(errMsg);
+      runErr.line = line;
+      throw runErr;
+    }
+
+    // Limpiar cualquier error de tiempo de ejecución previo
+    if (editorInstancia) {
+      editorInstancia.validateAndRender(null);
+    }
+
+    return {
+      ok: true,
+      res,
+      errorLine: null,
+      errorMsg: null,
+      duracion
+    };
+  } catch (runtimeErr) {
+    const { line } = extraerLineaColumnaError(runtimeErr, rawLines.length);
+    const lineaTexto = (rawLines[line - 1] || '').trim();
+    const msgExacto = runtimeErr.message || 'Excepción en tiempo de ejecución';
+
+    if (editorInstancia) {
+      editorInstancia.highlightErrorLine(line, msgExacto, 'RUNTIME');
+    }
+
+    imprimirEnConsola(`[✖] EXCEPCIÓN EN TIEMPO DE EJECUCIÓN (Línea ${line}):`, 'error');
+    imprimirEnConsola(`    ${msgExacto}`, 'error');
+    if (lineaTexto) {
+      imprimirEnConsola(`    Línea ${line} ▸ ${lineaTexto}`, 'dim');
+    }
+    emitirEcoTerminalJuego(`[✖] [GhostScript Runtime] Excepción en línea ${line}: ${msgExacto}`, 'line--error');
+    actualizarBotonAvanzarFirewall(false);
+
+    return {
+      ok: false,
+      res: { success: false, error: msgExacto, errorLine: line, output: [], sentMessages: [], env: {}, operationsCount: 0 },
+      errorLine: line,
+      errorMsg: msgExacto,
+      duracion: (performance.now() - inicio).toFixed(2)
+    };
+  }
+}
+
+/**
+ * Evalúa si un script sintácticamente válido cumple con el objetivo lógico del nivel actual
+ * y registra el progreso para avanzar al siguiente firewall.
+ *
+ * @param {string} code
+ * @param {object} resEjecucion
+ * @returns {{ cumplido: boolean, detalle: string, firewallBreached: boolean }}
+ */
+export function evaluarObjetivoLogicoNivel(code, resEjecucion) {
+  // Caso 1: Reto específico activo (Retos 1 a 5)
+  if (retoActivoId) {
+    const retoInfo = BANCO_RETOS.find(r => r.id === retoActivoId);
+    const resReto = validarReto(retoActivoId, code);
+
+    if (resReto.errores.length > 0) {
+      resReto.errores.forEach(err => imprimirEnConsola(`  ${err}`, 'error'));
+    }
+    imprimirEnConsola(`  [Tests del Nivel] Casos superados: ${resReto.pasados} de ${resReto.totalTests}`, resReto.pasados === resReto.totalTests ? 'success' : 'error');
+    if (retoInfo) {
+      imprimirEnConsola(`  [Eficiencia] Líneas: ${resReto.metricas.lines}/${retoInfo.criterios.maxLines} | Ciclos CPU: ${resReto.metricas.ops}/${retoInfo.criterios.maxOps} ops`, resReto.criteriosCumplidos ? 'success' : 'error');
+    }
+
+    if (resReto.exito) {
+      const breach = registerPuzzleSolvedInFirewall();
+      actualizarBotonAvanzarFirewall(true);
+      return {
+        cumplido: true,
+        detalle: `¡${retoInfo ? retoInfo.titulo : 'Reto #' + retoActivoId} superado! Sub-nodo de firewall vulnerado (${breach.solved}/${breach.required}).`,
+        firewallBreached: breach.firewallBreached,
+        resReto,
+        retoInfo
+      };
+    }
+
+    actualizarBotonAvanzarFirewall(false);
+    return {
+      cumplido: false,
+      detalle: 'El código es sintácticamente válido pero aún no supera todos los casos de prueba o límites del reto actual.',
+      firewallBreached: false,
+      resReto,
+      retoInfo
+    };
+  }
+
+  // Caso 2: Callback personalizado del nivel actual
+  if (typeof callbackComprobacion === 'function') {
+    let aprobado = false;
+    try {
+      aprobado = Boolean(callbackComprobacion(resEjecucion, code));
+    } catch (cbErr) {
+      imprimirEnConsola(`  [!] Error al verificar objetivo del nivel: ${cbErr.message}`, 'error');
+      aprobado = false;
+    }
+
+    if (aprobado) {
+      const breach = registerPuzzleSolvedInFirewall();
+      actualizarBotonAvanzarFirewall(true);
+      return {
+        cumplido: true,
+        detalle: `Objetivo lógico del nivel verificado (${breach.solved}/${breach.required} sub-nodos).`,
+        firewallBreached: breach.firewallBreached
+      };
+    }
+
+    actualizarBotonAvanzarFirewall(false);
+    return {
+      cumplido: false,
+      detalle: 'El script se ejecutó sin errores de sintaxis, pero no satisfizo la condición lógica del nivel.',
+      firewallBreached: false
+    };
+  }
+
+  // Caso 3: Modo de Hackeo de Firewall Activo (verifica que el script realice operaciones de infiltración: SCAN/CRACK/DECRYPT/SEND o cálculo lógico válido)
+  const tieneTransmision = Array.isArray(resEjecucion?.sentMessages) && resEjecucion.sentMessages.length > 0;
+  const tieneSalida = Array.isArray(resEjecucion?.output) && resEjecucion.output.length > 0;
+  const varsCreadas = Object.keys(resEjecucion?.env || {}).filter(k => !['NULL', 'TRUE', 'FALSE'].includes(k) && !k.startsWith('__'));
+  const usaComandosInfiltracion = /\b(SCAN|CRACK|DECRYPT|SEND|LOOP|IF|RETURN)\b/i.test(code);
+
+  if ((tieneTransmision || tieneSalida || resEjecucion?.result !== undefined) && (varsCreadas.length >= 1 || usaComandosInfiltracion)) {
+    const breach = registerPuzzleSolvedInFirewall();
+    actualizarBotonAvanzarFirewall(true);
+    return {
+      cumplido: true,
+      detalle: `Objetivo lógico de infiltración completado (${breach.solved}/${breach.required} sub-nodos del firewall actual).`,
+      firewallBreached: breach.firewallBreached
+    };
+  }
+
+  actualizarBotonAvanzarFirewall(false);
+  return {
+    cumplido: false,
+    detalle: 'El script no tiene errores de sintaxis, pero debe ejecutar comandos lógicos de infiltración (SCAN, CRACK, DECRYPT, SEND o PRINT/RETURN) para vulnerar el nivel.',
+    firewallBreached: false
+  };
+}
+
+/**
+ *Ejecuta el código actual en el sandbox de GhostScript con validación de sintaxis y objetivo lógico.
  * @returns {object} Resultado de la ejecución
  */
 export function ejecutarScriptActual() {
@@ -444,18 +830,26 @@ export function ejecutarScriptActual() {
   const code = editorInstancia.getCode();
 
   imprimirEnConsola('────────────────────────────────────────────────────────────', 'dim');
-  imprimirEnConsola(`[▶] Ejecutando script (${Date.now()})...`, 'info');
+  imprimirEnConsola(`[▶] Validando sintaxis y ejecutando script en sandbox seguro...`, 'info');
 
-  const inicio = performance.now();
-  const res = executeGhostScript(code);
-  const duracion = (performance.now() - inicio).toFixed(2);
-
-  if (!res.success) {
-    imprimirEnConsola(`[✖] ERROR DE EJECUCIÓN: ${res.error}`, 'error');
+  const evalRes = evaluarCodigoSeguroEnEditor(code);
+  if (!evalRes.ok || !evalRes.res) {
     audio.playError();
-    actualizarEstadoConsola('ERROR', '#ff5252');
-    return res;
+    feedbackError(10, `Error en línea ${evalRes.errorLine || 1}`);
+    actualizarEstadoConsola(`ERROR LÍNEA ${evalRes.errorLine || 1} ✖`, '#ff5252');
+    return evalRes.res || {
+      success: false,
+      error: evalRes.errorMsg,
+      errorLine: evalRes.errorLine,
+      output: [],
+      sentMessages: [],
+      env: {},
+      operationsCount: 0
+    };
   }
+
+  const { res, duracion } = evalRes;
+  imprimirEnConsola('  [1/2] Validación sintáctica: CORRECTA ✔', 'success');
 
   // Imprimir salidas generadas por PRINT
   if (res.output && res.output.length > 0) {
@@ -475,10 +869,21 @@ export function ejecutarScriptActual() {
     imprimirEnConsola(`[+] Variables finales: ${vars.map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(', ')}`, 'dim');
   }
 
-  imprimirEnConsola(`[✔] Ejecución completada en ${duracion}ms (${res.operationsCount} ops).`, 'success');
-  audio.playSuccess();
-  actualizarEstadoConsola('EJECUTADO ✔', 'var(--green-bright)');
+  imprimirEnConsola(`[✔] Ejecución en sandbox completada en ${duracion}ms (${res.operationsCount} ops).`, 'success');
 
+  // Evaluar también si cumple el objetivo lógico del nivel actual
+  const objNivel = evaluarObjetivoLogicoNivel(code, res);
+  if (objNivel.cumplido) {
+    imprimirEnConsola(`  [2/2] Objetivo lógico del nivel: CUMPLIDO ✔ — ${objNivel.detalle}`, 'success');
+    imprimirEnConsola('🔓 [SISTEMA] Puedes pulsar [🔓 AVANZAR FIREWALL ▸] en la barra superior para pasar al siguiente firewall.', 'info');
+    emitirEcoTerminalJuego(`[+] [GhostScript IDE] ${objNivel.detalle}`, 'line--success');
+    actualizarEstadoConsola('OBJETIVO CUMPLIDO ✔', 'var(--green-bright)');
+  } else {
+    imprimirEnConsola(`  [2/2] Estado del objetivo del nivel: ${objNivel.detalle}`, 'dim');
+    actualizarEstadoConsola('EJECUTADO ✔', 'var(--green-bright)');
+  }
+
+  audio.playSuccess();
   return res;
 }
 
@@ -522,6 +927,8 @@ export function seleccionarRetoEnEditor(idReto) {
   const critEl = document.getElementById('editor-challenge-criterios');
   const selectReto = document.getElementById('editor-select-reto');
 
+  actualizarBotonAvanzarFirewall(false);
+
   if (!idReto || idReto === 'none') {
     retoActivoId = null;
     if (banner) banner.style.display = 'none';
@@ -558,12 +965,13 @@ export function seleccionarRetoEnEditor(idReto) {
   imprimirEnConsola(`[⚡] ${reto.titulo} // ${reto.subtitulo}`, 'info');
   imprimirEnConsola(`[?] Misión: ${reto.enunciado}`, 'stdout');
   imprimirEnConsola(`[i] Criterios: ${reto.criterios.descripcion}`, 'dim');
-  imprimirEnConsola('[+] Escribe tu solución y pulsa ✔ COMPROBAR para verificar los tests.', 'success');
+  imprimirEnConsola('[+] Escribe tu solución y pulsa ⚡ HACKEAR / COMPROBAR para verificar el objetivo del nivel.', 'success');
   audio.playKeystroke();
 }
 
 /**
- * Valida el script actual contra los criterios de comprobación del reto.
+ * Valida la sintaxis y ejecución del script actual mediante try...catch y comprueba
+ * si cumple el objetivo lógico del nivel actual antes de avanzar al siguiente firewall.
  * @returns {boolean}
  */
 export function comprobarScriptActual() {
@@ -571,31 +979,32 @@ export function comprobarScriptActual() {
   const code = editorInstancia.getCode();
 
   imprimirEnConsola('────────────────────────────────────────────────────────────', 'dim');
-  imprimirEnConsola('[✔] Comprobando script en el entorno de validación...', 'info');
+  imprimirEnConsola('[⚡] Iniciando validación sintáctica y evaluación del objetivo del nivel...', 'info');
 
-  // Modo Reto Específico (Retos 1 a 5)
-  if (retoActivoId) {
-    const retoInfo = BANCO_RETOS.find(r => r.id === retoActivoId);
-    imprimirEnConsola(`[⚡] Evaluando batería de tests para ${retoInfo ? retoInfo.titulo : 'Reto #' + retoActivoId}...`, 'info');
+  // Paso 1 y 2: Evaluar sintaxis y ejecución con try...catch estricto y resaltado de línea de error
+  const evalRes = evaluarCodigoSeguroEnEditor(code);
+  if (!evalRes.ok || !evalRes.res) {
+    feedbackError(10, `Error en línea ${evalRes.errorLine || 1}`);
+    audio.playError();
+    actualizarEstadoConsola(`ERROR LÍNEA ${evalRes.errorLine || 1} ✖`, '#ff5252');
+    return false;
+  }
 
-    const resReto = validarReto(retoActivoId, code);
+  imprimirEnConsola('  [1/3] Sintaxis GhostScript: CORRECTA ✔', 'success');
+  imprimirEnConsola(`  [2/3] Ejecución en Sandbox: CORRECTA (${evalRes.res.operationsCount} ops) ✔`, 'success');
 
-    // Reportar errores individuales
-    if (resReto.errores.length > 0) {
-      resReto.errores.forEach(err => imprimirEnConsola(`  ${err}`, 'error'));
-    }
+  // Paso 3: Evaluar si cumple con el objetivo lógico del nivel actual
+  const objRes = evaluarObjetivoLogicoNivel(code, evalRes.res);
 
-    imprimirEnConsola(`  [Tests] Casos superados: ${resReto.pasados} de ${resReto.totalTests}`, resReto.pasados === resReto.totalTests ? 'success' : 'error');
-    imprimirEnConsola(`  [Eficiencia] Líneas de código: ${resReto.metricas.lines} (máx: ${retoInfo.criterios.maxLines}) | Ciclos CPU: ${resReto.metricas.ops} ops (máx: ${retoInfo.criterios.maxOps})`, resReto.criteriosCumplidos ? 'success' : 'error');
-
-    if (resReto.exito) {
+  if (retoActivoId && objRes.resReto) {
+    const { resReto, retoInfo } = objRes;
+    if (objRes.cumplido) {
       imprimirEnConsola('════════════════════════════════════════════════════════════', 'success');
       imprimirEnConsola(`★ ¡RETO #${retoActivoId} SUPERADO CON ÉXITO! (+150 PTS)`, 'success');
       if (resReto.desbloqueadoNuevo) {
         imprimirEnConsola(`🔓 ¡Acceso concedido al Reto #${resReto.siguienteReto}!`, 'info');
       }
 
-      // Registrar solución en el Ranking de Elegancia (Prompt B4)
       try {
         const regRank = registrarSolucionEnRanking({
           idReto: retoActivoId,
@@ -612,13 +1021,15 @@ export function comprobarScriptActual() {
         console.warn('[Editor] Error al registrar en ranking:', errRank);
       }
 
+      imprimirEnConsola(`🔓 [FIREWALL] ${objRes.detalle}`, 'info');
+      imprimirEnConsola('🔓 Pulsa [🔓 AVANZAR FIREWALL ▸] en la barra superior para continuar al siguiente firewall.', 'success');
       imprimirEnConsola('════════════════════════════════════════════════════════════', 'success');
 
-      feedbackSuccess(150, `¡${retoInfo.titulo} superado!`);
+      emitirEcoTerminalJuego(`[★] [GhostScript IDE] ${objRes.detalle}`, 'line--success');
+      feedbackSuccess(150, `¡${retoInfo ? retoInfo.titulo : 'Reto'} superado!`);
       audio.playSuccess();
       actualizarEstadoConsola('RETO SUPERADO ✔', 'var(--green-bright)');
 
-      // Refrescar selector de retos con nuevos desbloqueos
       const selectReto = document.getElementById('editor-select-reto');
       if (selectReto) {
         actualizarSelectorRetos(selectReto, retoActivoId);
@@ -632,52 +1043,22 @@ export function comprobarScriptActual() {
     }
   }
 
-  // Modo Libre (Verificación general)
-  try {
-    parseGhostScript(code);
-    imprimirEnConsola('  [1/3] Sintaxis GhostScript: CORRECTA ✔', 'success');
-  } catch (err) {
-    imprimirEnConsola(`  [1/3] Error de sintaxis: ${err.message}`, 'error');
-    feedbackError(10, 'Error de sintaxis en script');
-    actualizarEstadoConsola('FALLO EN TESTS ✖', '#ff5252');
-    return false;
-  }
-
-  const res = executeGhostScript(code);
-  if (!res.success) {
-    imprimirEnConsola(`  [2/3] Fallo en tiempo de ejecución: ${res.error}`, 'error');
-    feedbackError(10, 'Fallo de ejecución en script');
-    actualizarEstadoConsola('FALLO EN TESTS ✖', '#ff5252');
-    return false;
-  }
-  imprimirEnConsola(`  [2/3] Ejecución en Sandbox: CORRECTA (${res.operationsCount} ops) ✔`, 'success');
-
-  let validacionEspecifica = true;
-  if (typeof callbackComprobacion === 'function') {
-    try {
-      validacionEspecifica = callbackComprobacion(res, code);
-    } catch (e) {
-      imprimirEnConsola(`  [3/3] Error evaluando tests personalizados: ${e.message}`, 'error');
-      validacionEspecifica = false;
-    }
-  } else {
-    if (res.sentMessages.length > 0 || res.output.length > 0 || Object.keys(res.env).length > 3) {
-      imprimirEnConsola('  [3/3] Verificación de automatización: APROBADA ✔', 'success');
-    } else {
-      imprimirEnConsola('  [3/3] Advertencia: El script no produjo salidas ni transmisiones.', 'dim');
-    }
-  }
-
-  if (validacionEspecifica) {
+  if (objRes.cumplido) {
+    imprimirEnConsola(`  [3/3] Verificación de objetivo del nivel: APROBADA ✔ (${objRes.detalle})`, 'success');
     imprimirEnConsola('════════════════════════════════════════════════════════════', 'success');
-    imprimirEnConsola('★ [ÉXITO TOTAL] ¡Todos los tests de validación han pasado!', 'success');
+    imprimirEnConsola('★ [ÉXITO TOTAL] ¡Objetivo lógico del nivel superado! Listo para avanzar al siguiente firewall.', 'success');
+    imprimirEnConsola('🔓 Pulsa [🔓 AVANZAR FIREWALL ▸] en la barra de herramientas para avanzar de nivel.', 'info');
     imprimirEnConsola('════════════════════════════════════════════════════════════', 'success');
-    feedbackSuccess(100, 'Script validado con éxito');
+    emitirEcoTerminalJuego(`[★] [GhostScript IDE] ${objRes.detalle}`, 'line--success');
+    feedbackSuccess(100, 'Objetivo lógico del nivel validado con éxito');
+    audio.playSuccess();
     actualizarEstadoConsola('VALIDADO ✔', 'var(--green-bright)');
     return true;
   } else {
-    imprimirEnConsola('[✖] Los resultados no satisfacen todos los criterios del desafío.', 'error');
-    feedbackError(10, 'El script no cumple todos los criterios');
+    imprimirEnConsola(`  [3/3] Objetivo del nivel pendiente: ${objRes.detalle}`, 'error');
+    imprimirEnConsola('[✖] Los resultados aún no satisfacen el objetivo lógico del nivel actual.', 'error');
+    feedbackError(10, 'El script no cumple el objetivo lógico del nivel');
+    audio.playError();
     actualizarEstadoConsola('CRITERIOS NO CUMPLIDOS ✖', '#ff5252');
     return false;
   }
@@ -694,12 +1075,16 @@ function actualizarEstadoConsola(texto, color) {
 function vincularEventosUI() {
   const btnRun = document.getElementById('editor-btn-run');
   const btnVerify = document.getElementById('editor-btn-verify');
+  const btnNextFirewall = document.getElementById('editor-btn-next-firewall');
   const btnClose = document.getElementById('editor-btn-close');
   const btnClear = document.getElementById('editor-btn-clear');
   const selectTemplate = document.getElementById('editor-select-template');
   const selectReto = document.getElementById('editor-select-reto');
-
   const btnRanking = document.getElementById('editor-btn-ranking');
+
+  if (btnNextFirewall) {
+    btnNextFirewall.onclick = () => avanzarSiguienteFirewallDesdeEditor();
+  }
 
   if (btnRanking) {
     btnRanking.onclick = () => {
@@ -740,6 +1125,7 @@ function vincularEventosUI() {
       const val = selectTemplate.value;
       if (PLANTILLAS_GHOSTSCRIPT[val]) {
         if (editorInstancia) {
+          actualizarBotonAvanzarFirewall(false);
           editorInstancia.setCode(PLANTILLAS_GHOSTSCRIPT[val]);
           imprimirEnConsola(`[+] Plantilla cargada: "${val}"`, 'info');
           audio.playKeystroke();
@@ -789,6 +1175,22 @@ export function testEditor() {
   const resBatch = executeGhostScript(PLANTILLAS_GHOSTSCRIPT.batch);
   assert(resBatch.success, 'Plantilla batch debe ser ejecutable');
   assert(resBatch.env.total === 3, 'Plantilla batch debe procesar 3 archivos');
+
+  // 5. Verificación de numeración de líneas vertical (gutter) y detector de errores en tiempo real
+  if (typeof document !== 'undefined') {
+    const tempDiv = document.createElement('div');
+    const inst = new GhostScriptEditor(tempDiv, 'LET a = 1\nLET b = 2\nPRINT a + b');
+    const gutterLines = tempDiv.querySelectorAll('.ghost-gutter__line');
+    assert(gutterLines.length === 3, 'El gutter debe renderizar exactamente 3 bloques verticales .ghost-gutter__line para 3 líneas de código');
+    assert(gutterLines[0]?.textContent === '1' && gutterLines[2]?.textContent === '3', 'Los números de línea del gutter deben ser secuenciales (1, 2, 3)');
+
+    // Probar detección de error de sintaxis en tiempo real en la línea 2
+    inst.setCode('LET a = 1\nPRNT "error de escritura"\nPRINT a');
+    const errorGutterLine = tempDiv.querySelector('.ghost-gutter__line--error');
+    const errorCodeLine = tempDiv.querySelector('.ghost-code-line--error');
+    assert(errorGutterLine !== null && errorGutterLine.getAttribute('data-line') === '2', 'El validador en tiempo real debe marcar la línea 2 en rojo en el gutter ante un comando inválido');
+    assert(errorCodeLine !== null && errorCodeLine.getAttribute('data-line') === '2', 'El validador en tiempo real debe resaltar la línea 2 en rojo en el área de código');
+  }
 
   const fallados = total - pasados;
   if (fallados === 0) {

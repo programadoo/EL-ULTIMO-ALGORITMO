@@ -411,7 +411,7 @@ function renderLobbyInicial(container) {
         </div>
 
         <div style="font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); text-align: center; margin-top: 6px;">
-          ◈ Sincronización en tiempo real vía Firebase Realtime Database
+          ◈ Sincronización cuántica en tiempo real entre terminales
         </div>
       </div>
 
@@ -639,7 +639,7 @@ function renderPartidaEnVivo(container, data) {
               const isMe = msg.autor === coopSession.miNombre;
               const color = isSys ? 'var(--yellow-warn)' : (isMe ? 'var(--green-bright)' : 'var(--cyan)');
               return `
-                <div style="word-break: break-word;">
+                <div style="word-break: normal; overflow-wrap: break-word; hyphens: none;">
                   <span style="color: ${color}; font-weight: bold;">[${msg.autor}]:</span>
                   <span style="color: var(--text-primary); margin-left: 4px;">${msg.texto}</span>
                 </div>

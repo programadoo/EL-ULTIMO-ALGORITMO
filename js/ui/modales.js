@@ -68,14 +68,17 @@ export function mostrarModal({ titulo, cuerpoHTML, botones = [], onCerrar = null
     background: var(--bg-secondary);
     border: 1px solid var(--border-primary);
     border-radius: var(--radius-lg);
-    padding: var(--space-2xl);
-    max-width: 620px;
-    width: 90%;
+    padding: clamp(14px, 2.2vmin, var(--space-2xl));
+    max-width: min(640px, 94vw);
+    width: 100%;
+    margin: auto;
     box-shadow: 0 0 25px rgba(0, 255, 65, 0.2);
     position: relative;
-    max-height: 85vh;
+    max-height: min(88vh, 88dvh);
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    box-sizing: border-box;
   `;
 
   // Encabezado
@@ -109,6 +112,11 @@ export function mostrarModal({ titulo, cuerpoHTML, botones = [], onCerrar = null
     margin-bottom: 20px;
     padding-right: 6px;
     flex: 1;
+    -webkit-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+    word-break: normal;
+    overflow-wrap: break-word;
   `;
   body.innerHTML = cuerpoHTML;
 
@@ -303,12 +311,12 @@ export function abrirVisorLog(nombreArchivo, contenido) {
   const isNexus = autor.toLowerCase().includes('nexus');
   const speakerName = isVera ? 'Dra. Vera Sorenson' : (isNexus ? 'NEXUS Core' : autor);
   const voiceDesc = isVera
-    ? 'Filtro de Grabación Antigua (Bandpass 2000Hz, Q 0.5) // Pitch 1.1'
-    : 'Voz Sintetizada Cuántica (Pitch: 0.4 / Rate: 0.75)';
+    ? 'Grabación Analógica Recuperada // Frecuencia 2.0 kHz'
+    : 'Síntesis Acústica del Núcleo // Canal Cuántico';
 
   const cuerpoHTML = `
     <div style="display: flex; flex-direction: column; gap: 12px;">
-      <!-- Barra superior interactiva de audio (Prompt D3) -->
+      <!-- Barra superior interactiva de audio -->
       <div id="log-audio-bar" style="background: rgba(0, 255, 65, 0.04); border: 1px solid var(--border-primary); border-radius: 4px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
         <div style="display: flex; align-items: center; gap: 10px;">
           <div id="log-audio-indicator" style="width: 10px; height: 10px; border-radius: 50%; background: ${isVera ? '#ffb000' : 'var(--cyan)'}; box-shadow: 0 0 8px ${isVera ? '#ffb000' : 'var(--cyan)'}; transition: all 0.3s ease;"></div>
@@ -333,7 +341,7 @@ export function abrirVisorLog(nombreArchivo, contenido) {
       </div>
 
       <!-- Contenido textual del log -->
-      <div style="background: rgba(0,0,0,0.6); padding: 16px; border: 1px solid var(--border-primary); border-radius: 4px; font-family: var(--font-mono); font-size: 13px; white-space: pre-wrap; color: var(--text-primary); line-height: 1.6; max-height: 52vh; overflow-y: auto;">
+      <div style="background: rgba(0,0,0,0.6); padding: 16px; border: 1px solid var(--border-primary); border-radius: 4px; font-family: 'Courier New', Courier, monospace; font-size: 13px; white-space: pre; -webkit-hyphens: none; -ms-hyphens: none; hyphens: none; word-break: normal; overflow-x: auto; color: var(--text-primary); line-height: 1.3; max-height: 52vh; overflow-y: auto;">
 ${contenido}
       </div>
     </div>
