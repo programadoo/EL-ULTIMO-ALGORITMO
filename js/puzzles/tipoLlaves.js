@@ -220,7 +220,7 @@ function renderCuerpoPuzzleLlaves(container) {
         <div style="font-size: 11px; color: var(--green-bright); font-weight: bold; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
           <span>✔ TEXTO PLANO RECUPERADO CON ÉXITO:</span>
         </div>
-        <div id="crypto-decrypted-text" style="font-size: 12px; color: var(--text-primary); line-height: 1.45; font-style: italic; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 4px;"></div>
+        <div id="crypto-decrypted-text" style="font-size: 12px; color: var(--text-primary); line-height: 1.45; font-style: italic; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 4px; word-break: normal; overflow-wrap: break-word; hyphens: none; white-space: pre-wrap;"></div>
       </div>
 
       <!-- HERRAMIENTA VISUAL PASO A PASO (DESPLEGABLE) -->

@@ -313,12 +313,12 @@ export function testCesar() {
   assert(descifrar('ABC', 3) === 'XYZ', 'descifrar("ABC", 3) debe regresar a "XYZ"');
 
   // 3. Minúsculas y preservación de mayúsculas/minúsculas
-  assert(cifrar('Nexus Terminal', 1) === 'Ofyvt Ufsmjobm', 'Debe respetar mayúsculas y minúsculas');
-  assert(descifrar('Ofyvt Ufsmjobm', 1) === 'Nexus Terminal', 'Debe descifrar respetando casing');
+  assert(cifrar('Nexus Terminal', 1) === 'Ofyvt Ufsnjobm', 'Debe respetar mayúsculas y minúsculas');
+  assert(descifrar('Ofyvt Ufsnjobm', 1) === 'Nexus Terminal', 'Debe descifrar respetando casing');
 
   // 4. Preservación de caracteres especiales, números y espacios
-  assert(cifrar('NEXUS-01: ACTIVO!', 5) === 'SJCYX-01: HHYNAT!', 'Debe preservar números y signos');
-  assert(descifrar('SJCYX-01: HHYNAT!', 5) === 'NEXUS-01: ACTIVO!', 'Debe descifrar preservando números y signos');
+  assert(cifrar('NEXUS-01: ACTIVO!', 5) === 'SJCZX-01: FHYNAT!', 'Debe preservar números y signos');
+  assert(descifrar('SJCZX-01: FHYNAT!', 5) === 'NEXUS-01: ACTIVO!', 'Debe descifrar preservando números y signos');
 
   // 5. Desplazamientos nulos, negativos y mayores a 26
   assert(cifrar('PRUEBA', 0) === 'PRUEBA', 'Desplazamiento 0 no debe alterar el texto');

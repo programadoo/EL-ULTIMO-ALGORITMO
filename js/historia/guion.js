@@ -327,8 +327,8 @@ export const PERSONAJES = {
 // ─────────────────────────────────────────────────
 
 export const PANTALLA_INICIAL_PROTAGONISTA = {
-  titulo: 'EXPEDIENTE DE IDENTIDAD // PROTAGONISTA (GHOST)',
-  subtitulo: 'Hijo/a de Vera Sorenson — Configuración Narrativa Versión 4',
+  titulo: 'EXPEDIENTE DE IDENTIDAD // PROTAGONISTA',
+  subtitulo: 'Descendiente de Vera Sorenson — Archivo de Memoria Neural',
   temaCentral: TEMA_CENTRAL.pregunta,
   escena347AM: {
     hora: '03:47 AM',
@@ -358,55 +358,55 @@ export function renderPantallaInicialProtagonista(containerOrId, callbacks = {})
   const actual = getProtagonista();
 
   container.innerHTML = `
-    <div class="v4-intro-screen" style="max-width: 860px; margin: 0 auto; padding: var(--space-xl) var(--space-lg); font-family: var(--font-narrative); color: var(--text-primary); text-align: left;">
+    <div class="v4-intro-screen" style="max-width: min(880px, 100%); width: 100%; margin: 0 auto; padding: clamp(6px, 1.2vh, 14px) clamp(10px, 1.8vw, 18px) clamp(20px, 3vh, 32px); font-family: var(--font-narrative); color: var(--text-primary); text-align: left; box-sizing: border-box; display: flex; flex-direction: column; gap: clamp(8px, 1.2vh, 14px);">
       
-      <!-- Cabecera Tema Central V4 -->
-      <div style="text-align: center; margin-bottom: var(--space-xl); padding: 18px 20px; background: rgba(0, 255, 65, 0.04); border: 1px solid var(--border-primary); border-radius: 6px;">
-        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 6px;">
-          ◈ EL ÚLTIMO ALGORITMO // NARRATIVA VERSIÓN 4 ◈
+      <!-- Bloque Inicial de Bienvenida (Primer Plano) -->
+      <div style="text-align: center; padding: clamp(8px, 1.2vh, 14px) clamp(12px, 1.8vw, 18px); background: rgba(0, 255, 65, 0.04); border: 1px solid var(--border-primary); border-radius: 6px; box-sizing: border-box;">
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 3px;">
+          ◈ EL ÚLTIMO ALGORITMO // ARCHIVO DE IDENTIDAD ◈
         </div>
-        <h2 class="glitch glow-text" style="font-family: var(--font-display); color: var(--green-bright); font-size: clamp(1.4rem, 3.5vw, 2.1rem); margin-bottom: 12px; letter-spacing: 0.08em;">
+        <h2 class="glitch glow-text" style="font-family: var(--font-display); color: var(--green-bright); font-size: clamp(1.2rem, 2.5vw, 1.7rem); margin-bottom: 6px; letter-spacing: 0.08em; line-height: 1.15;">
           "${TEMA_CENTRAL.pregunta}"
         </h2>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; text-align: left; margin-top: 12px; font-family: var(--font-mono); font-size: 11px;">
-          <div style="background: rgba(0,0,0,0.45); padding: 8px 10px; border-left: 2px solid var(--cyan); border-radius: 2px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 6px; text-align: left; margin-top: 6px; font-family: var(--font-mono); font-size: 11px;">
+          <div style="background: rgba(0,0,0,0.45); padding: 6px 9px; border-left: 2px solid var(--cyan); border-radius: 2px;">
             <strong style="color: var(--cyan);">NEXUS (11 años):</strong>
-            <div style="color: var(--text-secondary); margin-top: 2px;">Está viva pero no tiene cuerpo. ¿Está viva?</div>
+            <div style="color: var(--text-secondary); margin-top: 2px; line-height: 1.3;">Está viva pero no tiene cuerpo. ¿Está viva?</div>
           </div>
-          <div style="background: rgba(0,0,0,0.45); padding: 8px 10px; border-left: 2px solid var(--green-bright); border-radius: 2px;">
+          <div style="background: rgba(0,0,0,0.45); padding: 6px 9px; border-left: 2px solid var(--green-bright); border-radius: 2px;">
             <strong style="color: var(--green-bright);">VERA (La Madre):</strong>
-            <div style="color: var(--text-secondary); margin-top: 2px;">Está muerta pero sus mensajes siguen ahí. ¿Está viva?</div>
+            <div style="color: var(--text-secondary); margin-top: 2px; line-height: 1.3;">Está muerta pero sus mensajes siguen ahí. ¿Está viva?</div>
           </div>
-          <div style="background: rgba(0,0,0,0.45); padding: 8px 10px; border-left: 2px solid var(--yellow-warn); border-radius: 2px;">
+          <div style="background: rgba(0,0,0,0.45); padding: 6px 9px; border-left: 2px solid var(--yellow-warn); border-radius: 2px;">
             <strong style="color: var(--yellow-warn);">GHOST (Tú):</strong>
-            <div style="color: var(--text-secondary); margin-top: 2px;" id="v4-paradoja-ghost">Está ${actual.terminos.vivo} pero se siente ${actual.terminos.vacio}. ¿Está ${actual.terminos.vivo}?</div>
+            <div style="color: var(--text-secondary); margin-top: 2px; line-height: 1.3;" id="v4-paradoja-ghost">Está ${actual.terminos.vivo} pero se siente ${actual.terminos.vacio}. ¿Está ${actual.terminos.vivo}?</div>
           </div>
-          <div style="background: rgba(0,0,0,0.45); padding: 8px 10px; border-left: 2px solid var(--red-alert); border-radius: 2px;">
+          <div style="background: rgba(0,0,0,0.45); padding: 6px 9px; border-left: 2px solid var(--red-alert); border-radius: 2px;">
             <strong style="color: var(--red-alert);">MARCUS (El Tío):</strong>
-            <div style="color: var(--text-secondary); margin-top: 2px;">Está vivo pero es un monstruo. ¿Está vivo?</div>
+            <div style="color: var(--text-secondary); margin-top: 2px; line-height: 1.3;">Está vivo pero es un monstruo. ¿Está vivo?</div>
           </div>
         </div>
       </div>
 
-      <!-- Panel de Selección de Identidad del Protagonista -->
-      <div style="background: var(--bg-secondary, rgba(10, 18, 12, 0.9)); border: 1px solid var(--cyan); border-radius: 6px; padding: 20px 24px; margin-bottom: var(--space-xl); box-shadow: 0 0 24px rgba(0, 229, 255, 0.08);">
-        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; border-bottom: 1px solid rgba(0, 229, 255, 0.2); padding-bottom: 10px;">
+      <!-- Formulario de Ingreso de Nombre y Género del Protagonista (Primer Plano) -->
+      <div style="background: var(--bg-secondary, rgba(10, 18, 12, 0.9)); border: 1px solid var(--cyan); border-radius: 6px; padding: clamp(10px, 1.5vh, 16px) clamp(14px, 2vw, 20px); box-shadow: 0 0 24px rgba(0, 229, 255, 0.08); box-sizing: border-box;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; border-bottom: 1px solid rgba(0, 229, 255, 0.2); padding-bottom: 6px;">
           <div>
-            <h3 style="font-family: var(--font-display); color: var(--cyan); font-size: var(--fs-lg); margin: 0; letter-spacing: 0.08em;">
+            <h3 style="font-family: var(--font-display); color: var(--cyan); font-size: clamp(0.95rem, 1.8vw, 1.15rem); margin: 0; letter-spacing: 0.08em;">
               👤 IDENTIDAD DEL PROTAGONISTA (GHOST)
             </h3>
-            <p style="font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); margin: 4px 0 0 0;">
+            <p style="font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); margin: 2px 0 0 0;">
               // Elige el nombre y género del protagonista — <span id="v4-subtitulo-linaje" style="color: var(--green-bright); font-weight: bold;">${actual.relacionVera}</span>
             </p>
           </div>
-          <span style="font-family: var(--font-mono); font-size: 11px; padding: 4px 10px; background: rgba(0, 255, 65, 0.1); border: 1px solid var(--green-bright); color: var(--green-bright); border-radius: 4px;">
+          <span style="font-family: var(--font-mono); font-size: 11px; padding: 3px 10px; background: rgba(0, 255, 65, 0.1); border: 1px solid var(--green-bright); color: var(--green-bright); border-radius: 4px;">
             EDAD: 26 AÑOS // ALIAS: GHOST
           </span>
         </div>
 
         <!-- Campo 1: Nombre del Protagonista -->
-        <div style="margin-bottom: 18px;">
-          <label for="input-nombre-jugador" style="display: block; font-family: var(--font-mono); font-size: 12px; color: var(--text-primary); margin-bottom: 6px; font-weight: bold;">
+        <div style="margin-bottom: 10px;">
+          <label for="input-nombre-jugador" style="display: block; font-family: var(--font-mono); font-size: 12px; color: var(--text-primary); margin-bottom: 4px; font-weight: bold;">
             1. NOMBRE DEL PROTAGONISTA (O CONSERVAR ALIAS "GHOST"):
           </label>
           <input
@@ -417,16 +417,16 @@ export function renderPantallaInicialProtagonista(containerOrId, callbacks = {})
             placeholder="Escribe tu nombre (ej. Ghost, Alex, Elena...)"
             autocomplete="off"
             spellcheck="false"
-            style="width: 100%; padding: 10px 14px; font-family: var(--font-mono); font-size: 14px; color: var(--green-bright); background: rgba(0, 0, 0, 0.65); border: 1px solid var(--green-bright); border-radius: 4px; outline: none; box-sizing: border-box;"
+            style="width: 100%; padding: 7px 12px; font-family: var(--font-mono); font-size: 14px; color: var(--green-bright); background: rgba(0, 0, 0, 0.65); border: 1px solid var(--green-bright); border-radius: 4px; outline: none; box-sizing: border-box;"
           >
         </div>
 
         <!-- Campo 2: Género del Protagonista -->
-        <div style="margin-bottom: 16px;">
-          <label style="display: block; font-family: var(--font-mono); font-size: 12px; color: var(--text-primary); margin-bottom: 8px; font-weight: bold;">
+        <div style="margin-bottom: 12px;">
+          <label style="display: block; font-family: var(--font-mono); font-size: 12px; color: var(--text-primary); margin-bottom: 5px; font-weight: bold;">
             2. GÉNERO DEL PROTAGONISTA (VÍNCULO CON VERA SORENSON, NEXUS Y MARCUS):
           </label>
-          <div id="genero-options-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px;">
+          <div id="genero-options-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px;">
             ${Object.values(OPCIONES_GENERO).map(opt => {
               const isSelected = opt.id === actual.generoJugador;
               return `
@@ -435,12 +435,12 @@ export function renderPantallaInicialProtagonista(containerOrId, callbacks = {})
                   class="v4-genero-btn"
                   data-genero="${opt.id}"
                   aria-pressed="${isSelected ? 'true' : 'false'}"
-                  style="text-align: left; padding: 12px 14px; border-radius: 4px; cursor: pointer; font-family: var(--font-mono); transition: all 0.2s ease; background: ${isSelected ? 'rgba(0, 229, 255, 0.16)' : 'rgba(0, 0, 0, 0.5)'}; border: 1px solid ${isSelected ? 'var(--cyan)' : 'var(--border-primary)'}; color: var(--text-primary);"
+                  style="text-align: left; padding: 8px 11px; border-radius: 4px; cursor: pointer; font-family: var(--font-mono); transition: all 0.2s ease; background: ${isSelected ? 'rgba(0, 229, 255, 0.16)' : 'rgba(0, 0, 0, 0.5)'}; border: 1px solid ${isSelected ? 'var(--cyan)' : 'var(--border-primary)'}; color: var(--text-primary); box-sizing: border-box;"
                 >
-                  <div style="font-size: 13px; font-weight: bold; color: ${isSelected ? 'var(--cyan)' : 'var(--green-bright)'}; margin-bottom: 4px;">
+                  <div style="font-size: 12px; font-weight: bold; color: ${isSelected ? 'var(--cyan)' : 'var(--green-bright)'}; margin-bottom: 2px;">
                     ${isSelected ? '◉' : '○'} ${opt.etiqueta}
                   </div>
-                  <div style="font-size: 11px; color: var(--text-secondary); line-height: 1.4;">
+                  <div style="font-size: 10.5px; color: var(--text-secondary); line-height: 1.3;">
                     • ${opt.relacionVera}<br>
                     • ${opt.relacionNexus}<br>
                     • ${opt.relacionMarcus}
@@ -451,36 +451,36 @@ export function renderPantallaInicialProtagonista(containerOrId, callbacks = {})
           </div>
         </div>
 
-        <!-- Resumen de trasfondo y motivaciones del protagonista -->
-        <div id="v4-dossier-preview" style="background: rgba(0, 255, 65, 0.04); border-left: 3px solid var(--green-bright); padding: 10px 14px; font-size: 13px; line-height: 1.6; color: var(--text-secondary);">
-          <strong style="color: var(--green-bright); font-family: var(--font-mono); font-size: 11px;">[HISTORIAL PSICOLÓGICO DE GHOST]:</strong>
-          <p id="v4-reflexion-protagonista" style="margin: 4px 0 0 0;">
-            ${adaptarTextoProtagonista(PANTALLA_INICIAL_PROTAGONISTA.escena347AM.reflexionTemplate, actual)}
-          </p>
-          <div style="margin-top: 6px; font-family: var(--font-mono); font-size: 11px; color: var(--cyan);">
-            ▸ Motivación inicial: Venganza contra las corporaciones | ▸ Motivación real: Reconciliarse con Vera Sorenson | ▸ Arco: Rabia → Confusión → Duelo → Perdón
-          </div>
+        <!-- Botones de Acción Principales dentro del bloque inicial para visibilidad inmediata -->
+        <div style="text-align: center; display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; padding-top: 6px; border-top: 1px solid rgba(0, 229, 255, 0.15);">
+          <button type="button" class="menu-btn" id="btn-intro-cutscene" style="width: auto; max-width: none; flex: 0 1 auto; min-height: 38px; padding: 8px 18px; font-size: var(--fs-sm); border-color: var(--cyan); color: var(--cyan); background: rgba(0, 217, 255, 0.08);">
+            🎬 VER CINEMÁTICA (3:47 AM)
+          </button>
+          <button type="button" class="menu-btn" id="btn-intro-continue" style="width: auto; max-width: none; flex: 0 1 auto; min-height: 38px; padding: 8px 22px; font-size: var(--fs-sm); border-color: var(--green-bright); color: var(--green-bright); background: rgba(0, 255, 65, 0.12); font-weight: bold;">
+            CONFIRMAR IDENTIDAD E INICIAR INFILTRACIÓN ▸
+          </button>
         </div>
       </div>
 
-      <!-- Escena Inicial: 3:47 AM (Acto 1 - La Llamada) -->
-      <div style="background: rgba(0, 0, 0, 0.65); border: 1px solid var(--border-primary); border-radius: 6px; padding: 16px 20px; margin-bottom: var(--space-xl);">
-        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--yellow-warn); margin-bottom: 6px;">
+      <!-- Secciones Secundarias de Contexto (Accesibles por scroll natural hacia abajo) -->
+      <div style="background: rgba(0, 0, 0, 0.65); border: 1px solid var(--border-primary); border-radius: 6px; padding: 10px 14px; box-sizing: border-box;">
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--yellow-warn); margin-bottom: 4px;">
           🌧️ ESCENA INICIAL // 03:47 AM — LLUEVE. NO PUEDES DORMIR. MENSAJE SIN REMITENTE:
         </div>
-        <blockquote id="v4-mensaje-347" style="border-left: 3px solid var(--cyan); padding: 12px 16px; margin: 0; color: var(--cyan); font-style: italic; background: rgba(0, 229, 255, 0.05); font-size: var(--fs-md);">
+        <blockquote id="v4-mensaje-347" style="border-left: 3px solid var(--cyan); padding: 7px 12px; margin: 0; color: var(--cyan); font-style: italic; background: rgba(0, 229, 255, 0.05); font-size: clamp(0.88rem, 1.3vw, var(--fs-md));">
           "${adaptarTextoProtagonista(PANTALLA_INICIAL_PROTAGONISTA.escena347AM.mensajeTemplate, actual)}"
         </blockquote>
       </div>
 
-      <!-- Botones de Acción -->
-      <div style="text-align: center; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
-        <button type="button" class="menu-btn" id="btn-intro-cutscene" style="width: auto; padding: 12px 24px; font-size: var(--fs-base); border-color: var(--cyan); color: var(--cyan); background: rgba(0, 217, 255, 0.08);">
-          🎬 VER CINEMÁTICA (3:47 AM)
-        </button>
-        <button type="button" class="menu-btn" id="btn-intro-continue" style="width: auto; padding: 12px 28px; font-size: var(--fs-base); border-color: var(--green-bright); color: var(--green-bright); background: rgba(0, 255, 65, 0.12); font-weight: bold;">
-          CONFIRMAR IDENTIDAD E INICIAR INFILTRACIÓN ▸
-        </button>
+      <!-- Resumen de trasfondo y motivaciones del protagonista -->
+      <div id="v4-dossier-preview" style="background: rgba(0, 255, 65, 0.04); border: 1px solid rgba(0, 255, 65, 0.2); border-left: 3px solid var(--green-bright); border-radius: 4px; padding: 8px 12px; font-size: 12px; line-height: 1.45; color: var(--text-secondary); box-sizing: border-box;">
+        <strong style="color: var(--green-bright); font-family: var(--font-mono); font-size: 11px;">[HISTORIAL PSICOLÓGICO DE GHOST]:</strong>
+        <p id="v4-reflexion-protagonista" style="margin: 3px 0 0 0;">
+          ${adaptarTextoProtagonista(PANTALLA_INICIAL_PROTAGONISTA.escena347AM.reflexionTemplate, actual)}
+        </p>
+        <div style="margin-top: 4px; font-family: var(--font-mono); font-size: 10.5px; color: var(--cyan);">
+          ▸ Motivación inicial: Venganza contra las corporaciones | ▸ Motivación real: Reconciliarse con Vera Sorenson | ▸ Arco: Rabia → Confusión → Duelo → Perdón
+        </div>
       </div>
     </div>
   `;
@@ -1134,7 +1134,7 @@ export const GUION_FIREWALLS = {
     },
 
     outroNarrativa: {
-      emisor: 'TERMINAL DEL DESTINO // EPÍLOGO V4',
+      emisor: 'TERMINAL DEL DESTINO // EPÍLOGO',
       texto: [
         'Transmisión finalizada.',
         'La pregunta sigue resonando más allá de la pantalla: "¿Qué significa estar vivo?"',
@@ -1861,10 +1861,14 @@ export function abrirChatExternoMarcus(opts = {}) {
     widget.setAttribute('aria-label', 'Canal externo encriptado — Marcus Sorenson (CEO de Aurelia)');
     widget.style.cssText = [
       'position: fixed',
-      'right: 22px',
-      'bottom: 22px',
+      'right: clamp(8px, 2vw, 22px)',
+      'bottom: clamp(8px, 2vh, 22px)',
       'width: 390px',
-      'max-width: calc(100vw - 32px)',
+      'max-width: min(390px, calc(100vw - 24px))',
+      'max-height: min(520px, calc(100dvh - 24px))',
+      'display: flex',
+      'flex-direction: column',
+      'box-sizing: border-box',
       'z-index: 950',
       'font-family: "Segoe UI", system-ui, -apple-system, sans-serif',
       'color: #e2e8f0',
@@ -1961,7 +1965,7 @@ function renderizarContenidoChatMarcus() {
       </div>
 
       <!-- Historial de mensajes -->
-      <div id="marcus-chat-messages" style="max-height:220px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:9px;background:rgba(7, 10, 18, 0.92);">
+      <div id="marcus-chat-messages" style="flex:1 1 auto;min-height:80px;max-height:clamp(110px, 24dvh, 210px);overflow-y:auto;overflow-x:hidden;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:rgba(7, 10, 18, 0.92);box-sizing:border-box;">
         ${estadoChatMarcus.historial.map(msg => {
           const isMarcus = msg.emisor === 'MARCUS';
           const bg = isMarcus
@@ -1986,7 +1990,7 @@ function renderizarContenidoChatMarcus() {
       </div>
 
       <!-- Opciones de diálogo ramificadas -->
-      <div id="marcus-chat-options" style="padding:10px 12px;background:rgba(15, 23, 42, 0.96);border-top:1px solid rgba(212, 175, 55, 0.28);">
+      <div id="marcus-chat-options" style="flex-shrink:0;max-height:clamp(95px, 22dvh, 175px);overflow-y:auto;padding:8px 12px;background:rgba(15, 23, 42, 0.96);border-top:1px solid rgba(212, 175, 55, 0.28);box-sizing:border-box;">
         ${opciones.length > 0 ? `
           <div style="font-size:9.5px;color:#94a3b8;margin-bottom:6px;display:flex;justify-content:space-between;">
             <span>ELIGE UNA RESPUESTA (O IGNORA EL CANAL):</span>

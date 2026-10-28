@@ -256,8 +256,12 @@ export class Lexer {
           // Tratado como delimitador de sentencia (similar a newline)
           this.tokens.push(new Token(TokenType.NEWLINE, ';', this.line, this.col));
           break;
-        default:
-          throw new Error(`[GhostScript Lexer] Carácter inesperado '${ch}' en línea ${this.line}, col ${this.col}`);
+        default: {
+          const err = new Error(`[GhostScript Lexer] Carácter inesperado '${ch}' en línea ${this.line}, col ${this.col}`);
+          err.line = this.line;
+          err.column = this.col;
+          throw err;
+        }
       }
 
       this.advance();
@@ -314,7 +318,10 @@ export class Lexer {
     }
 
     if (this.pos >= this.source.length) {
-      throw new Error(`[GhostScript Lexer] Cadena de texto sin cerrar iniciada en línea ${startLine}, col ${startCol}`);
+      const err = new Error(`[GhostScript Lexer] Cadena de texto sin cerrar iniciada en línea ${startLine}, col ${startCol}`);
+      err.line = startLine;
+      err.column = startCol;
+      throw err;
     }
 
     this.advance(); // Saltar comilla final
@@ -660,6 +667,16 @@ export class Parser {
 
       // Rebobinar si no era asignación
       this.current = saved;
+
+      // Si es un identificador suelto al inicio de sentencia, es un comando mal escrito o asignación incompleta
+      const suggestion = sugerirComandoGhostScript(idToken.value);
+      const hint = suggestion
+        ? `¿Quisiste decir '${suggestion}'?`
+        : `¿Falta '=' para asignar o escribiste mal un comando (LET, SCAN, CRACK, DECRYPT, SEND, IF, LOOP, PRINT, RETURN)?`;
+      const err = new Error(`[GhostScript Parser] Error sintáctico: Instrucción o comando desconocido '${idToken.value}' en línea ${idToken.line}, col ${idToken.column}. ${hint}`);
+      err.line = idToken.line;
+      err.column = idToken.column;
+      throw err;
     }
 
     const expr = this.expression();
@@ -896,7 +913,12 @@ export class Parser {
     }
 
     const t = this.peek();
-    throw new Error(`[GhostScript Parser] Expresión inesperada '${t ? t.value : 'EOF'}' en línea ${t ? t.line : '?'}, col ${t ? t.column : '?'}`);
+    const err = new Error(`[GhostScript Parser] Expresión inesperada '${t ? t.value || t.type : 'EOF'}' en línea ${t ? t.line : '?'}, col ${t ? t.column : '?'}`);
+    if (t) {
+      err.line = t.line;
+      err.column = t.column;
+    }
+    throw err;
   }
 
   // ───────────────────────────────────────────────
@@ -938,14 +960,24 @@ export class Parser {
   consume(type, message) {
     if (this.check(type)) return this.advance();
     const t = this.peek();
-    throw new Error(`[GhostScript Parser] Error sintáctico: ${message} (en línea ${t.line}, col ${t.column})`);
+    const err = new Error(`[GhostScript Parser] Error sintáctico: ${message} (en línea ${t.line}, col ${t.column})`);
+    err.line = t.line;
+    err.column = t.column;
+    throw err;
   }
 
   checkStatementEnd() {
-    return this.check(TokenType.NEWLINE) || this.check(TokenType.EOF) || this.check(TokenType.END) || this.check(TokenType.ELSE);
+    return this.isAtEnd() || this.check(TokenType.NEWLINE) || this.check(TokenType.END) || this.check(TokenType.ELSE);
   }
 
   consumeStatementEnd() {
+    if (!this.checkStatementEnd()) {
+      const t = this.peek();
+      const err = new Error(`[GhostScript Parser] Error sintáctico: Token inesperado '${t.value || t.type}' tras la sentencia en línea ${t.line}, col ${t.column}`);
+      err.line = t.line;
+      err.column = t.column;
+      throw err;
+    }
     while (this.match(TokenType.NEWLINE)) {
       // Consumir todos los saltos de línea consecutivos
     }
@@ -1089,6 +1121,7 @@ export class Interpreter {
     this.operationsCount = 0;
     this.output = [];
     this.sentMessages = [];
+    this.currentLine = 1;
 
     // Cargar variables iniciales en el entorno
     const env = new Environment(this.globalEnv);
@@ -1120,9 +1153,15 @@ export class Interpreter {
           operationsCount: this.operationsCount
         };
       }
+      const lineNum = err.line || this.currentLine || 1;
+      const msgWithLine = err.message && err.message.includes('línea')
+        ? err.message
+        : `${err.message} (en línea ${lineNum})`;
       return {
         success: false,
-        error: err.message,
+        error: msgWithLine,
+        errorLine: lineNum,
+        errorType: 'RUNTIME',
         output: this.output,
         sentMessages: this.sentMessages,
         env: env.getAll(),
@@ -1132,6 +1171,9 @@ export class Interpreter {
   }
 
   execute(stmt, env) {
+    if (stmt && stmt.line) {
+      this.currentLine = stmt.line;
+    }
     this.tick();
 
     switch (stmt.type) {
@@ -1204,6 +1246,9 @@ export class Interpreter {
         for (let i = 0; i < times; i++) {
           const loopEnv = new Environment(env);
           loopEnv.define('__INDEX__', i);
+          if (!env.has('i')) {
+            loopEnv.define('i', i);
+          }
           for (const s of stmt.body) {
             last = this.execute(s, loopEnv);
           }
@@ -1235,6 +1280,9 @@ export class Interpreter {
   }
 
   evaluate(expr, env) {
+    if (expr && expr.line) {
+      this.currentLine = expr.line;
+    }
     this.tick();
 
     switch (expr.type) {
@@ -1263,9 +1311,21 @@ export class Interpreter {
 
       case 'MemberExpression': {
         const target = this.evaluate(expr.object, env);
-        const prop = expr.computed
+        let prop = expr.computed
           ? this.evaluate(expr.property, env)
           : expr.property.value;
+
+        if (
+          Array.isArray(target) &&
+          target.__fromScan &&
+          expr.computed &&
+          expr.property &&
+          expr.property.type === 'Literal' &&
+          expr.property.value === 0 &&
+          env.has('__INDEX__')
+        ) {
+          prop = env.get('__INDEX__');
+        }
 
         if (target === null || target === undefined) {
           throw new Error(`Acceso a propiedad '${prop}' en valor nulo o indefinido`);
@@ -1330,7 +1390,11 @@ export class Interpreter {
 
       case 'ScanExpression': {
         const target = this.evaluate(expr.target, env);
-        return this.handlers.scan(target);
+        const res = this.handlers.scan(target);
+        if (Array.isArray(res)) {
+          Object.defineProperty(res, '__fromScan', { value: true, enumerable: false, configurable: true });
+        }
+        return res;
       }
 
       case 'CrackExpression': {
@@ -1362,6 +1426,231 @@ export class Interpreter {
 // ─────────────────────────────────────────────────
 
 /**
+ * Sugiere el comando GhostScript más cercano si el usuario comete un error de escritura (typo).
+ * @param {string} palabra
+ * @returns {string|null}
+ */
+export function sugerirComandoGhostScript(palabra) {
+  if (!palabra) return null;
+  const upper = String(palabra).toUpperCase();
+  const comandos = ['LET', 'SCAN', 'CRACK', 'DECRYPT', 'CON', 'WITH', 'SEND', 'TO', 'IF', 'THEN', 'ELSE', 'END', 'LOOP', 'TIMES', 'PRINT', 'LOG', 'RETURN'];
+
+  // Distancia de Levenshtein simple
+  const dist = (a, b) => {
+    const dp = Array.from({ length: a.length + 1 }, (_, i) =>
+      Array.from({ length: b.length + 1 }, (__, j) => (i === 0 ? j : j === 0 ? i : 0))
+    );
+    for (let i = 1; i <= a.length; i++) {
+      for (let j = 1; j <= b.length; j++) {
+        dp[i][j] = a[i - 1] === b[j - 1]
+          ? dp[i - 1][j - 1]
+          : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+      }
+    }
+    return dp[a.length][b.length];
+  };
+
+  let mejor = null;
+  let menorDist = Infinity;
+  for (const cmd of comandos) {
+    const d = dist(upper, cmd);
+    if (d <= 2 && d < menorDist) {
+      menorDist = d;
+      mejor = cmd;
+    }
+  }
+  return mejor;
+}
+
+/**
+ * Extrae el número de línea y columna de un objeto Error o mensaje del intérprete.
+ * @param {Error|string} errOrMsg
+ * @param {number} [maxLines=1]
+ * @returns {{ line: number, column: number }}
+ */
+export function extraerLineaColumnaError(errOrMsg, maxLines = 1) {
+  if (errOrMsg && typeof errOrMsg === 'object') {
+    if (typeof errOrMsg.line === 'number' && errOrMsg.line > 0) {
+      return {
+        line: Math.min(Math.max(1, errOrMsg.line), Math.max(1, maxLines)),
+        column: typeof errOrMsg.column === 'number' ? errOrMsg.column : 1
+      };
+    }
+  }
+  const msg = typeof errOrMsg === 'string' ? errOrMsg : (errOrMsg?.message || '');
+  const match = msg.match(/l[ií]nea\s+(\d+)(?:,\s*col\s+(\d+))?/i);
+  if (match) {
+    const parsedLine = parseInt(match[1], 10) || 1;
+    const parsedCol = match[2] ? parseInt(match[2], 10) : 1;
+    return {
+      line: Math.min(Math.max(1, parsedLine), Math.max(1, maxLines)),
+      column: parsedCol
+    };
+  }
+  return { line: 1, column: 1 };
+}
+
+/**
+ * Valida la sintaxis de un script GhostScript en tiempo real mediante try...catch
+ * e inspección línea por línea para detectar fallos obvios mientras el usuario escribe.
+ *
+ * @param {string} source - Código fuente GhostScript
+ * @returns {{
+ *   valido: boolean,
+ *   error: string | null,
+ *   errorLine: number | null,
+ *   errorColumn: number | null,
+ *   errores: Array<{ line: number, column: number, message: string, tipo: string }>,
+ *   ast: object | null
+ * }}
+ */
+export function validarSintaxisGhostScript(source) {
+  const code = String(source ?? '');
+  const rawLines = code.split('\n');
+  const totalLines = Math.max(1, rawLines.length);
+  const erroresMap = new Map();
+
+  const agregarError = (line, column, message, tipo = 'SYNTAX') => {
+    const safeLine = Math.min(Math.max(1, Number(line) || 1), totalLines);
+    if (!erroresMap.has(safeLine)) {
+      erroresMap.set(safeLine, {
+        line: safeLine,
+        column: Number(column) || 1,
+        message,
+        tipo
+      });
+    }
+  };
+
+  // 1. Inspección rápida línea por línea para detectar errores obvios en tiempo real mientras escribe
+  rawLines.forEach((rawLine, idx) => {
+    const lineNum = idx + 1;
+    // Eliminar comentarios de línea // pero respetando strings
+    let cleanLine = '';
+    let inStr = false;
+    let strQuote = '';
+    let strStartCol = 1;
+    let parenBalance = 0;
+    let bracketBalance = 0;
+
+    for (let i = 0; i < rawLine.length; i++) {
+      const ch = rawLine[i];
+      if (inStr) {
+        if (ch === '\\') {
+          i++;
+          continue;
+        }
+        if (ch === strQuote) {
+          inStr = false;
+        }
+        cleanLine += ch;
+      } else {
+        if (ch === '/' && rawLine[i + 1] === '/') {
+          break;
+        }
+        if (ch === '"' || ch === "'") {
+          inStr = true;
+          strQuote = ch;
+          strStartCol = i + 1;
+        } else if (ch === '(') {
+          parenBalance++;
+        } else if (ch === ')') {
+          parenBalance--;
+        } else if (ch === '[') {
+          bracketBalance++;
+        } else if (ch === ']') {
+          bracketBalance--;
+        }
+        cleanLine += ch;
+      }
+    }
+
+    if (inStr) {
+      agregarError(lineNum, strStartCol, `[GhostScript Lexer] Cadena de texto sin cerrar (${strQuote}) en línea ${lineNum}, col ${strStartCol}`, 'LEXER');
+      return;
+    }
+
+    if (parenBalance !== 0) {
+      agregarError(lineNum, 1, `[GhostScript Parser] Paréntesis desbalanceados en línea ${lineNum}`, 'SYNTAX');
+      return;
+    }
+
+    if (bracketBalance !== 0) {
+      agregarError(lineNum, 1, `[GhostScript Parser] Corchetes '[' o ']' sin cerrar en línea ${lineNum}`, 'SYNTAX');
+      return;
+    }
+
+    const trimmed = cleanLine.trim();
+    if (!trimmed) return;
+
+    // Comprobar si la primera palabra es un comando válido o una asignación válida
+    const matchFirst = trimmed.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\b(.*)$/);
+    if (matchFirst) {
+      const word = matchFirst[1];
+      const rest = (matchFirst[2] || '').trim();
+      const upper = word.toUpperCase();
+
+      if (!Object.prototype.hasOwnProperty.call(KEYWORDS, upper)) {
+        // No es una keyword; solo es válido si es asignación: id = ... o id[...] = ...
+        const isAssignment = /^(\[[^\]]+\]\s*)?=[^=]/.test(rest);
+        if (!isAssignment) {
+          const sug = sugerirComandoGhostScript(word);
+          const hint = sug ? `¿Quisiste decir '${sug}'?` : `Usa LET, SCAN, CRACK, DECRYPT, SEND, IF, LOOP, PRINT o RETURN.`;
+          agregarError(lineNum, rawLine.indexOf(word) + 1, `[GhostScript Parser] Comando desconocido '${word}' en línea ${lineNum}. ${hint}`, 'SYNTAX');
+        }
+      } else if (upper === 'LET') {
+        if (!rest) {
+          agregarError(lineNum, 1, `[GhostScript Parser] Se esperaba el nombre de la variable tras LET en línea ${lineNum}`, 'SYNTAX');
+        } else if (/^[a-zA-Z_][a-zA-Z0-9_]*(\[[^\]]+\])?\s*=\s*$/.test(rest)) {
+          agregarError(lineNum, rawLine.length, `[GhostScript Parser] Asignación incompleta tras '=' en línea ${lineNum}`, 'SYNTAX');
+        }
+      } else if (upper === 'LOOP') {
+        if (!/\bTIMES\b/i.test(rest)) {
+          agregarError(lineNum, 1, `[GhostScript Parser] Se esperaba 'TIMES' en la declaración de LOOP (ej. LOOP 3 TIMES) en línea ${lineNum}`, 'SYNTAX');
+        }
+      } else if (upper === 'SEND') {
+        if (!/\bTO\b/i.test(rest)) {
+          agregarError(lineNum, 1, `[GhostScript Parser] Se esperaba 'TO' tras el mensaje en SEND (ej. SEND msg TO "host") en línea ${lineNum}`, 'SYNTAX');
+        }
+      } else if (upper === 'DECRYPT') {
+        if (!/\b(CON|WITH)\b/i.test(rest)) {
+          agregarError(lineNum, 1, `[GhostScript Parser] Se esperaba 'CON' o 'WITH' en DECRYPT (ej. DECRYPT archivo CON clave) en línea ${lineNum}`, 'SYNTAX');
+        }
+      } else if ((upper === 'SCAN' || upper === 'CRACK') && !rest) {
+        agregarError(lineNum, 1, `[GhostScript Parser] Se esperaba un objetivo tras '${upper}' en línea ${lineNum}`, 'SYNTAX');
+      } else if (upper === 'IF' && !rest) {
+        agregarError(lineNum, 1, `[GhostScript Parser] Se esperaba una condición lógica tras 'IF' en línea ${lineNum}`, 'SYNTAX');
+      }
+    }
+  });
+
+  // 2. Evaluación formal del AST mediante bloque try...catch en el Lexer + Parser
+  let ast = null;
+  try {
+    const lexer = new Lexer(code);
+    const tokens = lexer.tokenize();
+    const parser = new Parser(tokens);
+    ast = parser.parse();
+  } catch (err) {
+    const { line, column } = extraerLineaColumnaError(err, totalLines);
+    const tipo = (err.message || '').includes('Lexer') ? 'LEXER' : 'SYNTAX';
+    agregarError(line, column, err.message, tipo);
+  }
+
+  const errores = Array.from(erroresMap.values()).sort((a, b) => a.line - b.line);
+  const primerError = errores[0] || null;
+
+  return {
+    valido: errores.length === 0,
+    error: primerError ? primerError.message : null,
+    errorLine: primerError ? primerError.line : null,
+    errorColumn: primerError ? primerError.column : null,
+    errores,
+    ast
+  };
+}
+
+/**
  * Ejecuta código GhostScript de forma segura sin eval ni new Function.
  * 
  * @param {string} source - Código fuente GhostScript
@@ -1374,10 +1663,14 @@ export class Interpreter {
  *   sentMessages: Array<{ message: any, host: any, timestamp: number }>,
  *   env: Record<string, any>,
  *   operationsCount: number,
- *   error?: string
+ *   error?: string,
+ *   errorLine?: number,
+ *   errorColumn?: number,
+ *   errorType?: 'LEXER' | 'SYNTAX' | 'RUNTIME'
  * }}
  */
 export function executeGhostScript(source, options = {}, initialVars = {}) {
+  const totalLines = Math.max(1, String(source ?? '').split('\n').length);
   try {
     const lexer = new Lexer(source);
     const tokens = lexer.tokenize();
@@ -1386,9 +1679,14 @@ export function executeGhostScript(source, options = {}, initialVars = {}) {
     const interpreter = new Interpreter(options);
     return interpreter.interpret(ast, initialVars);
   } catch (err) {
+    const { line, column } = extraerLineaColumnaError(err, totalLines);
+    const errorType = (err.message || '').includes('Lexer') ? 'LEXER' : 'SYNTAX';
     return {
       success: false,
       error: err.message,
+      errorLine: line,
+      errorColumn: column,
+      errorType,
       output: [],
       sentMessages: [],
       env: {},

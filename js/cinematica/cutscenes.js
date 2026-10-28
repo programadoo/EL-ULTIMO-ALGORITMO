@@ -594,7 +594,7 @@ export class CutsceneEngine {
         </div>
       </div>
       <div class="cutscene-letterbox cutscene-letterbox--bottom">
-        <span style="font-size: 10px; color: var(--text-dim); letter-spacing: 0.1em;">EL ÚLTIMO ALGORITMO // CINEMÁTICA V4</span>
+        <span style="font-size: 10px; color: var(--text-dim); letter-spacing: 0.1em;">EL ÚLTIMO ALGORITMO // REGISTRO DE MEMORIA</span>
         <div class="cutscene-audio-indicator">
           <div class="cutscene-audio-bar"></div>
           <div class="cutscene-audio-bar"></div>

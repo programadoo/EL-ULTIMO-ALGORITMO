@@ -155,7 +155,7 @@ export function abrirPuzzleBinario(nivel = 1, onCompletado = null) {
         <div style="font-size: 11px; color: var(--cyan); font-family: var(--font-display); letter-spacing: 0.1em; margin-bottom: 4px;">
           PAQUETE BINARIO INTERCEPTADO //
         </div>
-        <div style="font-family: var(--font-mono); font-size: 14px; color: var(--text-white); font-weight: bold; letter-spacing: 0.08em; word-break: break-all;">
+        <div style="font-family: var(--font-mono); font-size: 14px; color: var(--text-white); font-weight: bold; letter-spacing: 0.08em; word-break: normal; overflow-wrap: break-word; hyphens: none;">
           ${puzzleActual.codigoBinario}
         </div>
       </div>

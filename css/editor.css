@@ -6,6 +6,12 @@
 .editor-overlay {
   position: fixed;
   inset: 0;
+  width: 100%;
+  max-width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
+  padding: clamp(6px, 1.5vmin, 20px);
   background: var(--bg-overlay, rgba(3, 7, 5, 0.88));
   display: flex;
   align-items: center;
@@ -15,6 +21,8 @@
   -webkit-backdrop-filter: blur(8px);
   opacity: 0;
   pointer-events: none;
+  box-sizing: border-box;
+  overflow: hidden;
   transition: opacity var(--transition-base, 0.25s ease);
 }
 
@@ -28,13 +36,20 @@
   border: 1px solid var(--cyan, #00e5ff);
   border-radius: var(--radius-md, 8px);
   box-shadow: 0 0 30px rgba(0, 229, 255, 0.25), 0 10px 40px rgba(0, 0, 0, 0.8);
-  width: 92%;
-  max-width: 980px;
-  height: 88vh;
+  width: 100%;
+  max-width: min(980px, 96vw);
+  height: min(88vh, 88dvh);
+  max-height: calc(100dvh - 16px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
+  box-sizing: border-box;
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 /* ── Cabecera de la ventana ───────────────────────────────── */
@@ -207,10 +222,10 @@
 .editor-container {
   flex: 1;
   position: relative;
-  overflow: auto;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  overflow: hidden;
+  font-family: var(--font-mono, 'JetBrains Mono', 'Courier New', Courier, monospace);
   font-size: 13px;
-  line-height: 1.5;
+  line-height: 21px;
 }
 
 /* ── CodeMirror 6 Custom Styling & Fallback Engine ─────────── */
@@ -218,21 +233,46 @@
   height: 100%;
   background: transparent !important;
   color: #c8e6c9 !important;
-  font-family: var(--font-mono, 'JetBrains Mono', monospace) !important;
+  font-family: var(--font-mono, 'JetBrains Mono', 'Courier New', Courier, monospace) !important;
   font-size: 13px !important;
+  line-height: 21px !important;
 }
 
 .cm-scroller {
   font-family: inherit !important;
-  line-height: 1.55 !important;
-  padding: 8px 0;
+  font-size: 13px !important;
+  line-height: 21px !important;
+  padding: 10px 0 !important;
 }
 
 .cm-gutters {
   background: #050806 !important;
   border-right: 1px solid rgba(0, 255, 65, 0.2) !important;
   color: #44664a !important;
+  font-family: var(--font-mono, 'JetBrains Mono', 'Courier New', Courier, monospace) !important;
+  font-size: 13px !important;
+  line-height: 21px !important;
   user-select: none;
+  display: flex !important;
+  flex-direction: row !important;
+}
+
+.cm-gutter {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+}
+
+.cm-gutterElement {
+  display: block !important;
+  height: 21px !important;
+  line-height: 21px !important;
+  font-size: 13px !important;
+  padding: 0 8px 0 4px !important;
+  margin: 0 !important;
+  text-align: right !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
 }
 
 .cm-activeLineGutter {
@@ -261,46 +301,178 @@
 /* ── Editor nativo fallback de alta fidelidad ──────────────── */
 .ghost-fallback-editor {
   display: flex;
+  flex-direction: row;
+  align-items: stretch;
   width: 100%;
   height: 100%;
   position: relative;
   overflow: hidden;
   background: #080c09;
+  box-sizing: border-box;
 }
 
 .ghost-gutter {
-  width: 48px;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  justify-content: flex-start;
+  flex-shrink: 0;
+  width: 52px;
+  min-width: 52px;
   background: #050806;
   border-right: 1px solid rgba(0, 255, 65, 0.2);
   color: #44664a;
-  font-family: var(--font-mono, monospace);
-  font-size: 12px;
-  line-height: 1.55;
+  font-family: var(--font-mono, 'JetBrains Mono', 'Courier New', Courier, monospace);
+  font-size: 13px;
+  line-height: 21px;
   text-align: right;
-  padding: 10px 8px 10px 0;
+  margin: 0;
+  padding: 10px 10px 10px 4px;
+  white-space: pre;
   user-select: none;
   overflow: hidden;
+  box-sizing: border-box;
+}
+
+.ghost-gutter__line {
+  display: block;
+  width: 100%;
+  height: 21px;
+  min-height: 21px;
+  line-height: 21px;
+  font-family: var(--font-mono, 'JetBrains Mono', 'Courier New', Courier, monospace);
+  font-size: 13px;
+  margin: 0;
+  padding: 0;
+  text-align: right;
+  white-space: nowrap;
+  flex-shrink: 0;
+  float: none;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.ghost-gutter__line--error {
+  color: #ff5252 !important;
+  font-weight: bold;
+  background: rgba(255, 51, 51, 0.22);
+  border-left: 2px solid #ff3333;
+  padding-left: 2px;
+  text-shadow: 0 0 6px rgba(255, 51, 51, 0.55);
+  cursor: help;
+}
+
+.ghost-gutter__warn-icon {
+  color: #ff5252;
+  font-size: 11px;
+  margin-right: 3px;
+  display: inline-block;
+  vertical-align: baseline;
+}
+
+.ghost-code-line {
+  display: block;
+  min-width: 100%;
+  height: 21px;
+  min-height: 21px;
+  line-height: 21px;
+  margin: 0;
+  padding: 0;
+  white-space: pre;
+  box-sizing: border-box;
+}
+
+.ghost-code-line--error {
+  background: rgba(255, 51, 51, 0.18);
+  box-shadow: inset 3px 0 0 #ff3333;
+  text-decoration: underline wavy #ff5252;
+}
+
+.ghost-error-inline-hint {
+  display: inline-block;
+  margin-left: 16px;
+  padding: 0 6px;
+  font-size: 11px;
+  line-height: 18px;
+  color: #ff8a80;
+  background: rgba(80, 10, 10, 0.75);
+  border: 1px solid rgba(255, 82, 82, 0.5);
+  border-radius: 3px;
+  font-style: italic;
+  text-decoration: none !important;
+}
+
+.editor-live-syntax-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 4px 14px;
+  font-family: var(--font-mono, 'JetBrains Mono', 'Courier New', Courier, monospace);
+  font-size: 11px;
+  line-height: 1.4;
+  border-top: 1px solid rgba(0, 255, 65, 0.2);
+  background: rgba(5, 12, 7, 0.96);
+  color: var(--green-bright, #00ff41);
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.editor-live-syntax-bar--error {
+  background: rgba(45, 8, 12, 0.96);
+  border-top-color: rgba(255, 82, 82, 0.65);
+  color: #ff6b6b;
+  cursor: pointer;
+}
+
+.editor-btn--advance {
+  background: rgba(255, 187, 0, 0.18);
+  border-color: #ffbb00;
+  color: #ffeb3b;
+  font-weight: bold;
+  box-shadow: 0 0 12px rgba(255, 187, 0, 0.35);
+}
+
+.editor-btn--advance:hover {
+  background: rgba(255, 187, 0, 0.32);
+  box-shadow: 0 0 18px rgba(255, 187, 0, 0.65);
+  transform: translateY(-1px);
 }
 
 .ghost-code-area-wrapper {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
   position: relative;
-  overflow: auto;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .ghost-highlight-layer {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
   padding: 10px 14px;
-  font-family: var(--font-mono, monospace);
+  border: none;
+  font-family: var(--font-mono, 'JetBrains Mono', 'Courier New', Courier, monospace);
   font-size: 13px;
-  line-height: 1.55;
-  white-space: pre-wrap;
-  word-break: break-all;
+  line-height: 21px;
+  white-space: pre;
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+  overflow-wrap: normal;
+  word-break: normal;
+  overflow: hidden;
   pointer-events: none;
   color: #c8e6c9;
+  tab-size: 2;
+  box-sizing: border-box;
 }
 
 .ghost-textarea {
@@ -309,12 +481,18 @@
   left: 0;
   width: 100%;
   height: 100%;
+  margin: 0;
   padding: 10px 14px;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono, 'JetBrains Mono', 'Courier New', Courier, monospace);
   font-size: 13px;
-  line-height: 1.55;
-  white-space: pre-wrap;
-  word-break: break-all;
+  line-height: 21px;
+  white-space: pre;
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+  overflow-wrap: normal;
+  word-break: normal;
+  overflow: auto;
   background: transparent;
   color: transparent;
   caret-color: var(--green-bright, #00ff41);
@@ -362,7 +540,11 @@
 
 .console-line {
   margin-bottom: 2px;
-  word-break: break-all;
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 .console-line--info { color: var(--cyan, #00e5ff); }

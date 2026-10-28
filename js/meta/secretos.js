@@ -565,7 +565,7 @@ class SecretosManager {
     return {
       lines: [
         '╔══════════════════════════════════════════════════════════════╗',
-        '║ [DEEP THOUGHT // COMPUTADORA DE PENSAMIENTO PROFUNDO]        ║',
+        '║ [DEEP THOUGHT // COMPUTADORA DE PENSAMIENTO PROFUNDO]       ║',
         '╠══════════════════════════════════════════════════════════════╣',
         '║ "La respuesta a la Pregunta Definitiva sobre la Vida,        ║',
         '║  el Universo y Todo lo Demás es: 42."                        ║',

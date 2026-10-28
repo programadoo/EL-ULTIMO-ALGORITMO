@@ -52,7 +52,8 @@
   --border-error:     rgba(255, 0, 64, 0.4);
 
   /* ── Tipografías ────────────────────────────────── */
-  --font-mono:        'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-mono:        'Courier New', Courier, 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-ascii:       'Courier New', Courier, monospace;
   --font-display:     'Orbitron', 'Rajdhani', sans-serif;
   --font-narrative:   'Share Tech Mono', 'JetBrains Mono', monospace;
 

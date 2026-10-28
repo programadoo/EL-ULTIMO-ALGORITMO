@@ -10,7 +10,7 @@ import { navigateTo, showImmediate, onScreenEnter, testRouter } from './router.j
 import { hasSave, loadFromStorage, resetState, getState, update, setPlayerIdentity, testState, isGhostProtocolUnlocked, unlockGhostProtocol, startGhostProtocolMode } from './state.js';
 import { Conjuntos, testConjuntos } from './conjuntos.js';
 import { Logica, testLogica } from './logica.js';
-import { terminal, testTerminal } from './terminal.js';
+import { terminal, testTerminal, formatearCajaASCII, normalizarLineaCajaASCII, esLineaCajaASCII, limpiarTextoCajaASCII } from './terminal.js';
 import { generarPuzzle, generarPuzzleConjuntos, abrirCualquierPuzzle, testGenerador } from './puzzles/generador.js';
 import { abrirPuzzleTipoA, cerrarPuzzle } from './puzzles/tipoA.js';
 import { generarPuzzleTipoB, abrirPuzzleTipoB, cerrarPuzzleTipoB, testTipoB } from './puzzles/tipoB.js';
@@ -30,6 +30,7 @@ import { generarPuzzleFrecuencia, abrirPuzzleFrecuencia, cerrarPuzzleFrecuencia,
 import { testEsteganografia } from './cripto/esteganografia.js';
 import { generarPuzzleEsteganografia, abrirPuzzleEsteganografia, cerrarPuzzleEsteganografia, testTipoEsteganografia } from './puzzles/tipoEsteganografia.js';
 import { testRSA } from './cripto/rsa.js';
+import { testEnigma } from './cripto/enigma.js';
 import { generarPuzzleRSA, abrirPuzzleRSA, cerrarPuzzleRSA, testTipoRSA } from './puzzles/tipoRSA.js';
 import { testLlaves, generarParDeLlaves, cifrarConPublica, descifrarConPrivada, obtenerIdentidadJugador, obtenerBuzonMensajes, descifrarMensajeBuzon } from './cripto/llaves.js';
 import { generarPuzzleLlaves, abrirPuzzleLlaves, cerrarPuzzleLlaves, testTipoLlaves } from './puzzles/tipoLlaves.js';
@@ -289,12 +290,12 @@ function buildMenu() {
   const buttons = [
     { id: 'btn-new-game',    label: '▸ NUEVA PARTIDA',     action: startNewGame },
     { id: 'btn-continue',    label: '▸ CONTINUAR',         action: continueGame, disabled: !savedGame },
-    { id: 'btn-ghost-protocol', label: isGhostUnlocked ? '👻 MODO GHOST PROTOCOL (EXPERTO)' : '🔒 GHOST PROTOCOL (COMPLETA LA CAMPAÑA)', action: startGhostProtocolGame, disabled: !isGhostUnlocked },
-    { id: 'btn-menu-artbook', label: isArtbookUnlocked ? '🎨 ARTBOOK // ARTE CONCEPTUAL (DESBLOQUEADO)' : '🔒 ARTBOOK CONCEPTUAL (COMPLETA EL JUEGO)', action: () => window.open('ARTBOOK.html', '_blank') },
-    { id: 'btn-menu-arg', label: isArgUnlocked ? '🌐 EXPEDIENTE ARG [DESCLASIFICADO]' : '🌐 PORTAL CLANDESTINO ARG (/arg/)', action: () => window.open('arg/index.html', '_blank') },
+    { id: 'btn-ghost-protocol', label: isGhostUnlocked ? '👻 MODO GHOST PROTOCOL' : '🔒 GHOST PROTOCOL [CLASIFICADO]', action: startGhostProtocolGame, disabled: !isGhostUnlocked },
+    { id: 'btn-menu-artbook', label: isArtbookUnlocked ? '🎨 ARTBOOK // ARTE CONCEPTUAL' : '🔒 ARTBOOK CONCEPTUAL [CLASIFICADO]', action: () => window.open('ARTBOOK.html', '_blank') },
+    { id: 'btn-menu-arg', label: isArgUnlocked ? '🌐 EXPEDIENTE CORTEX [DESCLASIFICADO]' : '🌐 NODO SATÉLITE CORTEX', action: () => window.open('arg/index.html', '_blank') },
     { id: 'btn-multiplayer', label: '▸ MULTIJUGADOR',      action: () => navigateTo('screen-multiplayer') },
     { id: 'btn-ranking',     label: '▸ HALL OF FAME GLOBAL', action: () => navigateTo('screen-ranking') },
-    { id: 'btn-script-ranking', label: '⚡ RANKING DE SCRIPTS (ELEGANCIA)', action: () => navigateTo('screen-script-ranking') },
+    { id: 'btn-script-ranking', label: '⚡ RANKING DE SCRIPTS', action: () => navigateTo('screen-script-ranking') },
     { id: 'btn-menu-music',  label: audio.isMusicActive() ? '🎵 MÚSICA HACKER: ACTIVADA' : '🎵 MÚSICA HACKER: PAUSADA', action: () => { audio.toggleMusic(); buildMenu(); } },
     { id: 'btn-menu-logros', label: `🏆 LOGROS (${logrosManager.getDesbloqueadosCount()}/${logrosManager.getTodos().length})`, action: () => navigateTo('screen-logros') },
     { id: 'btn-menu-stats',  label: '📊 ESTADÍSTICAS DEL OPERADOR', action: () => navigateTo('screen-stats') },
@@ -327,7 +328,7 @@ function buildMenu() {
   if (!version) {
     version = document.createElement('span');
     version.className = 'menu-version';
-    version.textContent = 'v0.1.0-alpha // NEXUS Terminal';
+    version.textContent = 'NEXUS Terminal // Aurelia Systems Corp.';
     const menuContent = document.querySelector('.menu-content');
     if (menuContent) menuContent.appendChild(version);
   }
@@ -509,10 +510,10 @@ onScreenEnter('screen-game', async () => {
     output.innerHTML = ''; // Limpiar terminal para el nuevo nodo
     const operadorLine = `${prot.nombreJugador} (Ghost) // ${prot.relacionVera}`;
     terminal.print('╔══════════════════════════════════════════════════════════════╗', 'line--system');
-    terminal.print(`║ NEXUS TERMINAL v4.0 // NODO ${(guion.nombre || cfg.name).slice(0, 32).padEnd(32)} ║`, 'line--info');
-    terminal.print(`║ Operador: ${operadorLine.slice(0, 50).padEnd(50)} ║`, 'line--success');
-    terminal.print(`║ Tema Central: "${TEMA_CENTRAL.pregunta}"                  ║`, 'line--warning');
-    terminal.print(`║ Subcapa: ${cfg.desc.padEnd(51)} ║`, 'line--system');
+    terminal.print(`║ ${(`NEXUS TERMINAL v4.0 // NODO ${(guion.nombre || cfg.name)}`).slice(0, 60).padEnd(60)} ║`, 'line--info');
+    terminal.print(`║ ${(`Operador: ${operadorLine}`).slice(0, 60).padEnd(60)} ║`, 'line--success');
+    terminal.print(`║ ${(`Tema Central: "${TEMA_CENTRAL.pregunta}"`).slice(0, 60).padEnd(60)} ║`, 'line--warning');
+    terminal.print(`║ ${(`Subcapa: ${cfg.desc}`).slice(0, 60).padEnd(60)} ║`, 'line--system');
     terminal.print('╚══════════════════════════════════════════════════════════════╝', 'line--system');
     terminal.print('');
 
@@ -528,10 +529,10 @@ onScreenEnter('screen-game', async () => {
 
     if (state.isGhostProtocol) {
       terminal.print('╔══════════════════════════════════════════════════════════════╗', 'line--error');
-      terminal.print('║ 👻 [GHOST PROTOCOL ACTIVADO] // INFILTRACIÓN COGNITIVA PURA  ║', 'line--error');
+      terminal.print('║ [*] [GHOST PROTOCOL ACTIVADO] // INFILTRACION COGNITIVA PURA ║', 'line--error');
       terminal.print('║ - Temporizadores neuronales: OCULTOS                         ║', 'line--warning');
       terminal.print('║ - Pistas y saltos: DESACTIVADOS (0 disponibles)              ║', 'line--warning');
-      terminal.print('║ - Integridad base: 50% (Crítica)                             ║', 'line--warning');
+      terminal.print('║ - Integridad base: 50% (Critica)                             ║', 'line--warning');
       terminal.print('╚══════════════════════════════════════════════════════════════╝', 'line--error');
       terminal.print('');
     }
@@ -541,14 +542,14 @@ onScreenEnter('screen-game', async () => {
       terminal.print('║ [NEXUS PROTOCOL] // INICIACIÓN: MECÁNICA BÁSICA              ║', 'line--warning');
       terminal.print('╠══════════════════════════════════════════════════════════════╣', 'line--system');
       terminal.print('║ 1. LEER     : Analiza la regla lógica del nodo y archivos.   ║', 'line--info');
-      terminal.print(`║ 2. RESOLVER : Escribe 'hack' para descifrar subnodos (${solved}/3).   ║`, 'line--info');
+      terminal.print(`║ ${(`2. RESOLVER : Escribe 'hack' para descifrar subnodos (${solved}/3).`).slice(0, 60).padEnd(60)} ║`, 'line--info');
       terminal.print('║ 3. AVANZAR  : Resuelve 3 subnodos para quebrar el firewall.  ║', 'line--info');
       terminal.print('╚══════════════════════════════════════════════════════════════╝', 'line--warning');
       terminal.print('');
     } else {
       terminal.print('╔══════════════════════════════════════════════════════════════╗', 'line--success');
       terminal.print('║ GUÍA DE MISIÓN // CÓMO PASAR DE NIVEL:                       ║', 'line--success');
-      terminal.print(`║ 1. Escribe 'hack' para descifrar sub-nodos lógicos (${solved}/3).     ║`, 'line--info');
+      terminal.print(`║ ${(`1. Escribe 'hack' para descifrar sub-nodos lógicos (${solved}/3).`).slice(0, 60).padEnd(60)} ║`, 'line--info');
       terminal.print(`║ 2. Explora con 'ls' y lee documentos con 'cat <archivo>'.    ║`, 'line--info');
       terminal.print(`║ 3. Escribe 'status' para ver tu progreso hacia la brecha.    ║`, 'line--info');
       terminal.print(`║ 4. Escribe 'music' para controlar la banda sonora cyberpunk. ║`, 'line--info');
@@ -580,8 +581,8 @@ onScreenEnter('screen-firewall-complete', () => {
   const nextCfg = !isLast ? FIREWALL_CONFIGS[currentIdx + 1] : null;
 
   container.innerHTML = `
-    <div style="max-width: 780px; margin: 0 auto; padding: var(--space-xl); font-family: var(--font-mono); text-align: center;">
-      <pre class="glow-text" style="color: var(--green-bright); font-size: 10px; line-height: 1.2; margin-bottom: 14px; text-align: center;">
+    <div style="max-width: min(780px, 100%); width: 100%; margin: auto; padding: clamp(12px, 2vmin, var(--space-xl)); font-family: var(--font-mono); text-align: center; box-sizing: border-box;">
+      <pre class="glow-text" style="color: var(--green-bright); font-size: clamp(6px, 1.1vw, 10px); line-height: 1.2; margin-bottom: 12px; text-align: center; overflow-x: auto;">
 ██████╗ ██████╗ ███████╗ █████╗  ██████╗██╗  ██╗
 ██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔════╝██║  ██║
 ██████╔╝██████╔╝█████╗  ███████║██║     ███████║
@@ -590,39 +591,39 @@ onScreenEnter('screen-firewall-complete', () => {
 ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
       </pre>
 
-      <h2 class="glitch" style="color: var(--green-bright); font-family: var(--font-display); font-size: var(--fs-2xl); margin-bottom: 6px;">
+      <h2 class="glitch" style="color: var(--green-bright); font-family: var(--font-display); font-size: clamp(1.3rem, 2.8vw, var(--fs-2xl)); margin-bottom: 6px;">
         BRECHA CONFIRMADA // ${cfg.name} NEUTRALIZADO
       </h2>
-      <p style="color: var(--text-dim); font-size: var(--fs-xs); margin-bottom: 24px;">
+      <p style="color: var(--text-dim); font-size: var(--fs-xs); margin-bottom: 18px;">
         // La contramedida de seguridad lógica ha sido completamente desmantelada (+500 PTS BONIFICACIÓN)
       </p>
 
       <!-- Estadísticas de la sesión -->
-      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; text-align: left;">
-        <div style="background: var(--bg-card); border: 1px solid var(--border-primary); border-radius: 4px; padding: 12px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 18px; text-align: left;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-primary); border-radius: 4px; padding: 10px 12px;">
           <span style="font-size: 10px; color: var(--text-dim);">PUNTUACIÓN ACUMULADA</span>
           <div style="color: var(--green-bright); font-size: 18px; font-weight: bold;">${(state.score || 0).toLocaleString()} PTS</div>
         </div>
-        <div style="background: var(--bg-card); border: 1px solid var(--border-primary); border-radius: 4px; padding: 12px;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-primary); border-radius: 4px; padding: 10px 12px;">
           <span style="font-size: 10px; color: var(--text-dim);">INTEGRIDAD DE SESIÓN</span>
           <div style="color: var(--cyan); font-size: 18px; font-weight: bold;">${state.integrity || 100}%</div>
         </div>
-        <div style="background: var(--bg-card); border: 1px solid var(--border-primary); border-radius: 4px; padding: 12px;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-primary); border-radius: 4px; padding: 10px 12px;">
           <span style="font-size: 10px; color: var(--text-dim);">LOGS DESCLASIFICADOS</span>
           <div style="color: var(--yellow-warn); font-size: 18px; font-weight: bold;">${(state.logsFound || []).length} / 5</div>
         </div>
       </div>
 
       <!-- Resumen narrativo extraído -->
-      <div style="background: rgba(0,255,65,0.04); border-left: 3px solid var(--green-bright); padding: 16px 20px; text-align: left; margin-bottom: 28px; font-family: var(--font-narrative); line-height: 1.7; color: var(--text-primary); font-size: 14px;">
-        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan); margin-bottom: 8px;">
+      <div style="background: rgba(0,255,65,0.04); border-left: 3px solid var(--green-bright); padding: 12px 18px; text-align: left; margin-bottom: 20px; font-family: var(--font-narrative); line-height: 1.65; color: var(--text-primary); font-size: 14px; max-height: 36dvh; overflow-y: auto;">
+        <div style="font-family: var(--font-mono); font-size: 11px; color: var(--cyan); margin-bottom: 6px;">
           ◈ TRANSMISIÓN RESIDUAL // ${guion.outroNarrativa ? guion.outroNarrativa.emisor : 'NEXUS TERMINAL'}
         </div>
         ${guion.outroNarrativa ? guion.outroNarrativa.texto.map(t => `<p style="margin-bottom: 6px;">${t}</p>`).join('') : '<p>Nodo comprometido con éxito.</p>'}
       </div>
 
-      <div style="display: flex; gap: 14px; justify-content: center;">
-        <button id="btn-next-firewall" class="menu-btn" style="width: auto; padding: 12px 36px; font-size: 14px; background: rgba(0,255,65,0.12); border-color: var(--green-bright); color: var(--green-bright); cursor: pointer;">
+      <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
+        <button id="btn-next-firewall" class="menu-btn" style="width: auto; max-width: none; flex: 0 1 auto; padding: 12px 32px; font-size: 14px; background: rgba(0,255,65,0.12); border-color: var(--green-bright); color: var(--green-bright); cursor: pointer;">
           ${isLast ? 'ACCEDER AL NÚCLEO CENTRAL // REVELACIÓN FINAL ▸' : `▸ SIGUIENTE FIREWALL: ${nextCfg.name} [ENTER]`}
         </button>
       </div>
@@ -782,34 +783,34 @@ onScreenEnter('screen-twist', () => {
   if (container) {
     const twist = getTwistNarrativo();
     container.innerHTML = `
-      <div style="max-width: 800px; margin: 0 auto; padding: var(--space-2xl); font-family: var(--font-narrative); text-align: left; line-height: 1.8;">
-        <h2 class="glitch" style="color: var(--red-alert); font-family: var(--font-display); font-size: var(--fs-2xl); margin-bottom: var(--space-xs); letter-spacing: 0.1em; text-align: center;">
+      <div style="max-width: min(800px, 100%); width: 100%; margin: auto; padding: clamp(12px, 2vmin, var(--space-xl)); font-family: var(--font-narrative); text-align: left; line-height: 1.7; box-sizing: border-box;">
+        <h2 class="glitch" style="color: var(--red-alert); font-family: var(--font-display); font-size: clamp(1.3rem, 2.8vw, var(--fs-2xl)); margin-bottom: var(--space-xs); letter-spacing: 0.1em; text-align: center;">
           ${twist.titulo}
         </h2>
-        <p style="color: var(--text-dim); text-align: center; margin-bottom: var(--space-2xl); font-family: var(--font-mono); font-size: var(--fs-sm);">
+        <p style="color: var(--text-dim); text-align: center; margin-bottom: clamp(12px, 2vh, var(--space-xl)); font-family: var(--font-mono); font-size: var(--fs-sm);">
           // ${twist.subtitulo}
         </p>
         ${twist.matizMarcus ? `
-          <div style="background: rgba(212, 175, 55, 0.08); border-left: 3px solid #d4af37; padding: 12px 16px; margin-bottom: var(--space-lg); font-family: var(--font-mono); font-size: 12px; color: #fde68a;">
+          <div style="background: rgba(212, 175, 55, 0.08); border-left: 3px solid #d4af37; padding: 10px 14px; margin-bottom: 14px; font-family: var(--font-mono); font-size: 12px; color: #fde68a;">
             <strong>◈ ECO DEL CANAL DE MARCUS (FIREWALL 4):</strong> ${twist.matizMarcus}
           </div>
         ` : ''}
-        <div style="background: rgba(255, 0, 85, 0.05); border: 1px solid var(--border-danger); border-radius: var(--radius-md); padding: var(--space-xl); margin-bottom: var(--space-2xl); font-size: var(--fs-md); color: var(--text-primary);">
+        <div style="background: rgba(255, 0, 85, 0.05); border: 1px solid var(--border-danger); border-radius: var(--radius-md); padding: clamp(14px, 2vmin, var(--space-xl)); margin-bottom: clamp(14px, 2vh, var(--space-xl)); font-size: clamp(0.95rem, 1.4vw, var(--fs-md)); color: var(--text-primary);">
           ${twist.lineas.map(line => {
             if (line.includes('El código no miente')) {
-              return `<p style="color: var(--cyan); font-weight: bold; font-size: var(--fs-lg); text-align: center; margin: 18px 0; letter-spacing: 0.05em; font-family: var(--font-mono);">${line}</p>`;
+              return `<p style="color: var(--cyan); font-weight: bold; font-size: var(--fs-lg); text-align: center; margin: 14px 0; letter-spacing: 0.05em; font-family: var(--font-mono);">${line}</p>`;
             }
             if (line.includes('murió el 14 de octubre')) {
-              return `<p style="color: var(--red-alert); font-weight: bold; margin: 12px 0;">${line}</p>`;
+              return `<p style="color: var(--red-alert); font-weight: bold; margin: 10px 0;">${line}</p>`;
             }
-            return `<p style="margin-bottom: 10px;">${line}</p>`;
+            return `<p style="margin-bottom: 8px;">${line}</p>`;
           }).join('')}
         </div>
-        <div style="text-align: center; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
-          <button class="menu-btn" id="btn-twist-cutscene" style="width: auto; padding: 14px 28px; font-size: var(--fs-base); background: rgba(255, 0, 85, 0.15); border-color: var(--red-alert); color: var(--red-alert);">
+        <div style="text-align: center; display: flex; gap: 12px; justify-content: center; align-items: center; flex-wrap: wrap;">
+          <button class="menu-btn" id="btn-twist-cutscene" style="width: auto; max-width: none; flex: 0 1 auto; padding: 12px 24px; font-size: var(--fs-sm); background: rgba(255, 0, 85, 0.15); border-color: var(--red-alert); color: var(--red-alert);">
             🎬 VER CINEMÁTICA DEL PLOT TWIST
           </button>
-          <button class="menu-btn" id="btn-twist-to-decision" style="width: auto; padding: 14px 32px; font-size: var(--fs-base); background: rgba(0, 229, 255, 0.1); border-color: var(--cyan); color: var(--cyan);">
+          <button class="menu-btn" id="btn-twist-to-decision" style="width: auto; max-width: none; flex: 0 1 auto; padding: 12px 28px; font-size: var(--fs-sm); background: rgba(0, 229, 255, 0.1); border-color: var(--cyan); color: var(--cyan);">
             ASIMILAR LA VERDAD // IR A LA DECISIÓN FINAL ▸
           </button>
         </div>
@@ -839,20 +840,20 @@ onScreenEnter('screen-decision', () => {
     const opciones = getOpcionesDecisiones();
     const progresoFinales = getProgresoFinales();
     container.innerHTML = `
-      <div style="max-width: 960px; margin: 0 auto; padding: var(--space-2xl); text-align: center;">
-        <h2 class="glitch glow-text" style="color: var(--green-bright); font-family: var(--font-display); font-size: var(--fs-3xl); margin-bottom: var(--space-xs);">
+      <div style="max-width: min(960px, 100%); width: 100%; margin: auto; padding: clamp(10px, 1.8vmin, var(--space-xl)); text-align: center; box-sizing: border-box;">
+        <h2 class="glitch glow-text" style="color: var(--green-bright); font-family: var(--font-display); font-size: clamp(1.5rem, 3.2vw, var(--fs-2xl)); margin-bottom: var(--space-xs);">
           EL ÚLTIMO ALGORITMO // DECISIÓN FINAL
         </h2>
-        <p class="menu-subtitle">// El destino de NEXUS, de Marcus Sorenson y de la humanidad recae sobre tus manos</p>
+        <p class="menu-subtitle" style="margin-bottom: clamp(10px, 1.5vh, 18px);">// El destino de NEXUS, de Marcus Sorenson y de la humanidad recae sobre tus manos</p>
 
-        <div id="decision-replay-banner" style="display: inline-flex; align-items: center; gap: 10px; background: rgba(0, 229, 255, 0.06); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 6px; padding: 8px 16px; margin-bottom: var(--space-xl); font-family: var(--font-mono); font-size: 12px; color: var(--cyan);">
+        <div id="decision-replay-banner" style="display: inline-flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; background: rgba(0, 229, 255, 0.06); border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 6px; padding: 6px 14px; margin-bottom: clamp(12px, 1.8vh, var(--space-lg)); font-family: var(--font-mono); font-size: 12px; color: var(--cyan);">
           <span>◈ FINALES DESBLOQUEADOS EN MEMORIA PERSISTENTE: <strong>${progresoFinales.totalDesbloqueados}/${progresoFinales.totalPosibles}</strong></span>
           ${progresoFinales.completadoTodos ? `<span style="color: var(--green-bright); font-weight: bold;">[★ TRILOGÍA DE FINALES COMPLETADA]</span>` : ''}
         </div>
         
-        <div id="decision-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(275px, 1fr)); gap: var(--space-lg); margin-bottom: var(--space-2xl); text-align: left;">
+        <div id="decision-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: clamp(10px, 1.5vw, var(--space-lg)); margin-bottom: var(--space-md); text-align: left;">
           ${opciones.map(opt => `
-            <div class="hud__section" data-decision-card="${opt.id}" style="display: flex; flex-direction: column; justify-content: space-between; padding: var(--space-xl); transition: transform 0.2s ease, border-color 0.2s ease; position: relative;" onmouseenter="this.style.borderColor='var(--cyan)'; this.style.transform='translateY(-4px)'" onmouseleave="this.style.borderColor='var(--border-primary)'; this.style.transform='none'">
+            <div class="hud__section" data-decision-card="${opt.id}" style="display: flex; flex-direction: column; justify-content: space-between; padding: clamp(14px, 2vmin, var(--space-xl)); transition: transform 0.2s ease, border-color 0.2s ease; position: relative; box-sizing: border-box;" onmouseenter="this.style.borderColor='var(--cyan)'; this.style.transform='translateY(-4px)'" onmouseleave="this.style.borderColor='var(--border-primary)'; this.style.transform='none'">
               <div>
                 <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px;">
                   <span style="font-family: var(--font-mono); font-size: 10px; color: var(--cyan); letter-spacing: 0.08em;">FINAL ${opt.codigoFinal || opt.id}</span>
@@ -864,21 +865,21 @@ onScreenEnter('screen-decision', () => {
                 <h3 style="font-family: var(--font-display); color: var(--green-bright); font-size: var(--fs-lg); margin-bottom: 8px;">
                   ▸ ${opt.nombre}
                 </h3>
-                <p style="font-family: var(--font-narrative); color: var(--text-secondary); font-size: var(--fs-sm); line-height: 1.6; margin-bottom: 12px;">
+                <p style="font-family: var(--font-narrative); color: var(--text-secondary); font-size: var(--fs-sm); line-height: 1.55; margin-bottom: 10px;">
                   ${opt.accion}
                 </p>
-                <p style="font-style: italic; color: var(--text-dim); font-size: var(--fs-xs); margin-bottom: 16px;">
+                <p style="font-style: italic; color: var(--text-dim); font-size: var(--fs-xs); margin-bottom: 12px;">
                   "${opt.dilema}"
                 </p>
               </div>
-              <button class="menu-btn" data-decision="${opt.id}" style="width: 100%; text-align: center; margin-top: 10px;">
+              <button class="menu-btn" data-decision="${opt.id}" style="width: 100%; max-width: 100%; justify-content: center; text-align: center; margin-top: 8px;">
                 ELEGIR: ${opt.id}
               </button>
             </div>
           `).join('')}
         </div>
 
-        <div id="decision-outcome-box" style="display: none; background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: var(--radius-md); padding: var(--space-xl); margin-top: var(--space-xl); text-align: left;">
+        <div id="decision-outcome-box" style="display: none; background: var(--bg-secondary); border: 1px solid var(--border-primary); border-radius: var(--radius-md); padding: clamp(14px, 2vmin, var(--space-xl)); margin-top: var(--space-sm); text-align: left; box-sizing: border-box;">
           <!-- Se rellena tras elegir una opción -->
         </div>
       </div>
@@ -933,7 +934,7 @@ function ejecutarDecisionFinal(decisionId) {
   if (replayBanner) {
     replayBanner.innerHTML = `
       <span>◈ FINALES DESBLOQUEADOS EN MEMORIA PERSISTENTE: <strong>${registroFinales.totalDesbloqueados}/3</strong> (${registroFinales.desbloqueados.join(' · ')})</span>
-      ${registroFinales.completadoTodos ? `<span style="color: var(--green-bright); font-weight: bold;">[★ TODOS LOS FINALES V4 DESBLOQUEADOS]</span>` : ''}
+      ${registroFinales.completadoTodos ? `<span style="color: var(--green-bright); font-weight: bold;">[★ TODOS LOS FINALES DESBLOQUEADOS]</span>` : ''}
     `;
   }
 
@@ -953,44 +954,60 @@ function ejecutarDecisionFinal(decisionId) {
   if (box) {
     box.style.display = 'block';
     box.innerHTML = `
-      <div style="text-align: center; margin-bottom: var(--space-xl);">
+      <div style="text-align: center; margin-bottom: clamp(10px, 1.5vh, var(--space-lg));">
         <span style="font-family: var(--font-mono); color: var(--text-dim); font-size: var(--fs-xs); letter-spacing: 0.1em;">
           RESOLUCIÓN DEL DESTINO // ${dec.tituloSpec || dec.nombre}
         </span>
-        <h3 class="glow-text" style="color: var(--cyan); font-family: var(--font-mono); font-size: var(--fs-xl); margin: 16px 0; font-style: italic; line-height: 1.5; white-space: pre-line;">
+        <h3 class="glow-text" style="color: var(--cyan); font-family: var(--font-mono); font-size: clamp(1.1rem, 2.2vw, var(--fs-xl)); margin: 10px 0; font-style: italic; line-height: 1.45; white-space: pre-line;">
           "${dec.fraseFinalAdaptada || dec.fraseFinal}"
         </h3>
       </div>
 
-      <div id="decision-epilogue-paragraphs" style="margin-bottom: var(--space-lg);">
-        ${parrafosHtml}
+      <div style="margin-bottom: clamp(10px, 1.5vh, var(--space-md));">
+        <div id="decision-epilogue-paragraphs" style="margin-bottom: var(--space-md);">
+          ${parrafosHtml}
+        </div>
+
+        ${dec.epilogo ? `
+          <blockquote id="decision-epilogue-quote" style="border-left: 3px solid var(--cyan); background: rgba(0, 229, 255, 0.06); padding: 12px 16px; margin: 0 0 var(--space-md) 0; font-family: var(--font-narrative); font-style: italic; color: var(--cyan); line-height: 1.65; white-space: pre-line;">
+            <div style="font-family: var(--font-mono); font-style: normal; font-size: 11px; color: var(--green-bright); letter-spacing: 0.08em; margin-bottom: 4px;">
+              ◈ EPÍLOGO // DESTINO ${dec.codigoFinal || dec.id}
+            </div>
+            "${dec.epilogoAdaptado || dec.epilogo}"
+          </blockquote>
+        ` : ''}
+
+        ${dec.costoEmocional ? `
+          <div style="background: rgba(255, 0, 85, 0.06); border: 1px solid var(--border-danger); border-radius: 4px; padding: 8px 12px; margin-bottom: var(--space-sm); font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary);">
+            <strong style="color: var(--red-alert);">◈ COSTO EMOCIONAL:</strong> ${dec.costoEmocional}
+          </div>
+        ` : ''}
+        ${dec.matizMarcusAdaptado ? `
+          <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 4px; padding: 8px 12px; margin-bottom: var(--space-sm); font-family: var(--font-mono); font-size: 12px; color: #fde68a;">
+            <strong style="color: #fbbf24;">◈ MATIZ PSICOLÓGICO (VERA VS. MARCUS):</strong> ${dec.matizMarcusAdaptado}
+          </div>
+        ` : ''}
+
+        ${isGhostRun ? `
+          <div style="background: rgba(0, 229, 255, 0.08); border: 1px solid var(--cyan); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: var(--space-sm); font-family: var(--font-narrative); color: var(--cyan); text-align: left;">
+            <h4 style="font-family: var(--font-mono); margin-bottom: 6px; color: var(--cyan); font-weight: bold; font-size: 12px;">
+              📡 [TRANSMISIÓN RESIDUAL CONFIDENCIAL // PROTOCOLO FANTASMA SUPERADO]
+            </h4>
+            <p style="line-height: 1.6; font-size: 12.5px; font-style: italic; color: #bdf6ff; margin-bottom: 4px;">
+              "Ghost... si estás leyendo esto, sobreviviste a la prueba sin interfaces de apoyo. Sabías que no había cronómetros para salvarte ni pistas a las que recurrir. El experimento de Aurelia no era para contener a NEXUS, sino para encontrar a una mente humana capaz de pensar en sincronía con ella. Tú eres el nuevo estándar. —Dra. Vera Sorenson."
+            </p>
+            <div style="font-size: 11px; font-family: var(--font-mono); color: var(--green-bright); font-weight: bold;">
+              🏆 Logro especial desbloqueado: Protocolo Fantasma
+            </div>
+          </div>
+        ` : ''}
       </div>
 
-      ${dec.epilogo ? `
-        <blockquote id="decision-epilogue-quote" style="border-left: 3px solid var(--cyan); background: rgba(0, 229, 255, 0.06); padding: 16px 20px; margin: 0 0 var(--space-lg) 0; font-family: var(--font-narrative); font-style: italic; color: var(--cyan); line-height: 1.75; white-space: pre-line;">
-          <div style="font-family: var(--font-mono); font-style: normal; font-size: 11px; color: var(--green-bright); letter-spacing: 0.08em; margin-bottom: 6px;">
-            ◈ EPÍLOGO DEFINITIVO // SPEC V4 (FINAL ${dec.codigoFinal || dec.id})
-          </div>
-          "${dec.epilogoAdaptado || dec.epilogo}"
-        </blockquote>
-      ` : ''}
-
-      ${dec.costoEmocional ? `
-        <div style="background: rgba(255, 0, 85, 0.06); border: 1px solid var(--border-danger); border-radius: 4px; padding: 10px 14px; margin-bottom: var(--space-md); font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary);">
-          <strong style="color: var(--red-alert);">◈ COSTO EMOCIONAL:</strong> ${dec.costoEmocional}
-        </div>
-      ` : ''}
-      ${dec.matizMarcusAdaptado ? `
-        <div style="background: rgba(212, 175, 55, 0.08); border: 1px solid rgba(212, 175, 55, 0.4); border-radius: 4px; padding: 10px 14px; margin-bottom: var(--space-md); font-family: var(--font-mono); font-size: 12px; color: #fde68a;">
-          <strong style="color: #fbbf24;">◈ MATIZ PSICOLÓGICO (VERA VS. MARCUS):</strong> ${dec.matizMarcusAdaptado}
-        </div>
-      ` : ''}
-
-      <div id="decision-unlocked-endings-tracker" style="background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 4px; padding: 12px 16px; margin-bottom: var(--space-xl); font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary);">
+      <div id="decision-unlocked-endings-tracker" style="background: rgba(0, 229, 255, 0.05); border: 1px solid rgba(0, 229, 255, 0.25); border-radius: 4px; padding: 10px 14px; margin-bottom: var(--space-sm); font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary);">
         <div style="color: var(--cyan); font-weight: bold; margin-bottom: 6px;">
-          ◈ REGISTRO DE FINALES DESBLOQUEADOS (localStorage: ${registroFinales.totalDesbloqueados}/3)
+          ◈ REGISTRO DE FINALES DESBLOQUEADOS (${registroFinales.totalDesbloqueados}/3)
         </div>
-        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
           ${['LIBERAR', 'DESTRUIR', 'FUSIONARTE'].map(fId => {
             const unlocked = registroFinales.desbloqueados.includes(fId);
             const labelMap = {
@@ -1005,31 +1022,17 @@ function ejecutarDecisionFinal(decisionId) {
         </div>
       </div>
 
-      ${isGhostRun ? `
-        <div style="background: rgba(0, 229, 255, 0.08); border: 1px solid var(--cyan); border-radius: var(--radius-md); padding: 16px 20px; margin-bottom: var(--space-xl); font-family: var(--font-narrative); color: var(--cyan); text-align: left;">
-          <h4 style="font-family: var(--font-mono); margin-bottom: 8px; color: var(--cyan); font-weight: bold; font-size: 13px;">
-            📡 [TRANSMISIÓN RESIDUAL CONFIDENCIAL // PROTOCOLO FANTASMA SUPERADO]
-          </h4>
-          <p style="line-height: 1.7; font-size: 13px; font-style: italic; color: #bdf6ff;">
-            "Ghost... si estás leyendo esto, sobreviviste a la prueba sin interfaces de apoyo. Sabías que no había cronómetros para salvarte ni pistas a las que recurrir. El experimento de Aurelia no era para contener a NEXUS, sino para encontrar a una mente humana capaz de pensar en sincronía con ella. Tú eres el nuevo estándar. —Dra. Vera Sorenson."
-          </p>
-          <div style="margin-top: 8px; font-size: 11px; font-family: var(--font-mono); color: var(--green-bright); font-weight: bold;">
-            🏆 Logro especial desbloqueado: Protocolo Fantasma
-          </div>
-        </div>
-      ` : ''}
-
-      <div style="background: rgba(0, 255, 65, 0.05); border-left: 3px solid var(--green-bright); padding: 12px 18px; margin-bottom: var(--space-xl); font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--green-bright);">
+      <div style="background: rgba(0, 255, 65, 0.05); border-left: 3px solid var(--green-bright); padding: 8px 14px; margin-bottom: var(--space-md); font-family: var(--font-mono); font-size: var(--fs-xs); color: var(--green-bright);">
         ◈ Log desclasificado registrado en el sistema: <strong>${dec.logDesbloqueado}</strong> (+200 PTS)
       </div>
-      <div style="display: flex; gap: var(--space-md); justify-content: center; flex-wrap: wrap;">
-        <a href="ARTBOOK.html" target="_blank" class="menu-btn" id="btn-epilogue-artbook" style="width: auto; padding: 12px 24px; border-color: var(--pink-hot); color: var(--pink-hot); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 0 14px rgba(255, 0, 128, 0.4);">🎨 ARTBOOK CONCEPTUAL [DESBLOQUEADO]</a>
-        <a href="arg/index.html" target="_blank" class="menu-btn" id="btn-epilogue-arg" style="width: auto; padding: 12px 24px; border-color: var(--cyan); color: var(--cyan); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 0 14px rgba(0, 229, 255, 0.4);">🌐 EXPEDIENTE ARG (/arg/)</a>
-        <button class="menu-btn" id="btn-epilogue-other-endings" style="width: auto; padding: 12px 24px; border-color: var(--green-bright); color: var(--green-bright);">🔄 EXPLORAR OTRO FINAL</button>
-        <button class="menu-btn" id="btn-epilogue-stats" style="width: auto; padding: 12px 24px; border-color: var(--cyan); color: var(--cyan);">📊 ESTADÍSTICAS DEL OPERADOR</button>
-        <button class="menu-btn" id="btn-epilogue-logros" style="width: auto; padding: 12px 24px; border-color: var(--yellow-warn); color: var(--yellow-warn);">🏆 VER LOGROS</button>
-        <button class="menu-btn" id="btn-epilogue-ranking" style="width: auto; padding: 12px 24px;">VER RANKING GLOBAL</button>
-        <button class="menu-btn" id="btn-epilogue-menu" style="width: auto; padding: 12px 24px;">VOLVER AL MENÚ PRINCIPAL</button>
+      <div style="display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap;">
+        <a href="ARTBOOK.html" target="_blank" class="menu-btn" id="btn-epilogue-artbook" style="width: auto; max-width: none; flex: 0 1 auto; padding: 10px 18px; border-color: var(--pink-hot); color: var(--pink-hot); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 0 14px rgba(255, 0, 128, 0.4);">🎨 ARTBOOK CONCEPTUAL</a>
+        <a href="arg/index.html" target="_blank" class="menu-btn" id="btn-epilogue-arg" style="width: auto; max-width: none; flex: 0 1 auto; padding: 10px 18px; border-color: var(--cyan); color: var(--cyan); text-decoration: none; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 0 14px rgba(0, 229, 255, 0.4);">🌐 EXPEDIENTE CORTEX</a>
+        <button class="menu-btn" id="btn-epilogue-other-endings" style="width: auto; max-width: none; flex: 0 1 auto; padding: 10px 18px; border-color: var(--green-bright); color: var(--green-bright);">🔄 EXPLORAR OTRO FINAL</button>
+        <button class="menu-btn" id="btn-epilogue-stats" style="width: auto; max-width: none; flex: 0 1 auto; padding: 10px 18px; border-color: var(--cyan); color: var(--cyan);">📊 ESTADÍSTICAS DEL OPERADOR</button>
+        <button class="menu-btn" id="btn-epilogue-logros" style="width: auto; max-width: none; flex: 0 1 auto; padding: 10px 18px; border-color: var(--yellow-warn); color: var(--yellow-warn);">🏆 VER LOGROS</button>
+        <button class="menu-btn" id="btn-epilogue-ranking" style="width: auto; max-width: none; flex: 0 1 auto; padding: 10px 18px;">VER RANKING GLOBAL</button>
+        <button class="menu-btn" id="btn-epilogue-menu" style="width: auto; max-width: none; flex: 0 1 auto; padding: 10px 18px;">VOLVER AL MENÚ PRINCIPAL</button>
       </div>
     `;
 
@@ -1096,6 +1099,7 @@ async function runAllTests() {
   const rTipoEsteganografia = testTipoEsteganografia();
   const rRSA = testRSA();
   const rTipoRSA = testTipoRSA();
+  const rEnigma = testEnigma();
   const rCutscenes = testCutscenes();
   const rGhostScript = testGhostScript();
   const rEditor = testEditor();
@@ -1135,6 +1139,7 @@ async function runAllTests() {
     rFrecuencia, rTipoFrecuencia,
     rEsteganografia, rTipoEsteganografia,
     rRSA, rTipoRSA,
+    rEnigma,
     rLlaves, rTipoLlaves,
     rFirmas, rTipoFirmas,
     rBlockchain, rTipoBlockchain,
@@ -1210,6 +1215,10 @@ if (typeof window !== 'undefined') {
   window.Conjuntos = Conjuntos;
   window.Logica = Logica;
   window.terminal = terminal;
+  window.formatearCajaASCII = formatearCajaASCII;
+  window.normalizarLineaCajaASCII = normalizarLineaCajaASCII;
+  window.esLineaCajaASCII = esLineaCajaASCII;
+  window.limpiarTextoCajaASCII = limpiarTextoCajaASCII;
   window.initHUD = initHUD;
   window.generarPuzzle = generarPuzzle;
   window.generarPuzzleConjuntos = generarPuzzleConjuntos;
@@ -1328,6 +1337,7 @@ if (typeof window !== 'undefined') {
   window.testTipoEsteganografia = testTipoEsteganografia;
   window.testRSA = testRSA;
   window.testTipoRSA = testTipoRSA;
+  window.testEnigma = testEnigma;
   window.generarPuzzleRSA = generarPuzzleRSA;
   window.abrirPuzzleRSA = abrirPuzzleRSA;
   window.cerrarPuzzleRSA = cerrarPuzzleRSA;

@@ -154,7 +154,7 @@ export function abrirPuzzleHex(nivel = 1, onCompletado = null) {
         <div style="font-size: 11px; color: var(--cyan); font-family: var(--font-display); letter-spacing: 0.1em; margin-bottom: 4px;">
           VOLCADO HEX INTERCEPTADO //
         </div>
-        <div style="font-family: var(--font-mono); font-size: 15px; color: var(--text-white); font-weight: bold; letter-spacing: 0.12em; word-break: break-all;">
+        <div style="font-family: var(--font-mono); font-size: 15px; color: var(--text-white); font-weight: bold; letter-spacing: 0.12em; word-break: normal; overflow-wrap: break-word; hyphens: none;">
           ${puzzleActual.codigoHex}
         </div>
       </div>

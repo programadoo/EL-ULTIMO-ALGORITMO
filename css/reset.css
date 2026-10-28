@@ -3,29 +3,42 @@
    ============================================================ */
 
 /* ── Box-sizing universal ─────────────────────────── */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-/* ── Documento ────────────────────────────────────── */
 html {
+  box-sizing: border-box;
   font-size: 16px;
+  width: 100%;
+  max-width: 100vw;
   height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
   overflow: hidden;
   -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   scroll-behavior: smooth;
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
 }
 
 body {
+  width: 100%;
+  max-width: 100vw;
   height: 100%;
   height: 100dvh;
+  max-height: 100dvh;
   min-height: 100vh;
   min-height: 100dvh;
   background-color: var(--bg-primary);
@@ -34,6 +47,19 @@ body {
   font-size: var(--fs-base);
   line-height: 1.6;
   overflow: hidden;
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+/* ── Control universal de corte y desbordamiento de palabras ─────────── */
+p, span, div, h1, h2, h3, h4, h5, h6, li, a, label, button, input, textarea, select {
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
+  hyphens: none;
+  word-break: normal;
 }
 
 /* ── Tipografía ───────────────────────────────────── */

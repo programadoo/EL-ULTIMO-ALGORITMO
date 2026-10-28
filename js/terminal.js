@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ══════════════════════════════════════════════════
  * EL ÚLTIMO ALGORITMO
  * Terminal — Emulador interactivo de terminal hacker
@@ -10,6 +10,9 @@ import { COMMANDS, parseArgs } from './commands.js';
 import { audio } from './audio.js';
 import { statsManager } from './meta/stats.js';
 import { logrosManager } from './meta/logros.js';
+import { envolverTextoPorPalabras } from './utils.js';
+
+export { envolverTextoPorPalabras };
 
 // ─────────────────────────────────────────────────
 // 1. SISTEMA DE ARCHIVOS VIRTUAL (VFS)
@@ -333,7 +336,175 @@ export class VirtualFileSystem {
 }
 
 // ─────────────────────────────────────────────────
-// 2. EMULADOR DE TERMINAL (TerminalEmulator)
+// 2. UTILIDADES DE CAJAS DE TEXTO CON BORDES ASCII
+// ─────────────────────────────────────────────────
+
+/**
+ * Reemplaza emojis de ancho variable o pares subrogados dentro de líneas de cajas ASCII
+ * por equivalentes monoespaciados estrictos de 1 columna para evitar desalineación de bordes.
+ * @param {string} texto
+ * @returns {string}
+ */
+export function limpiarTextoCajaASCII(texto) {
+  if (typeof texto !== 'string') return '';
+  return texto
+    .replace(/🗝️|🔑|🔐|🔏/g, '[*]')
+    .replace(/⚠️/g, '[!]')
+    .replace(/📬/g, '[#]')
+    .replace(/🔓/g, '[+]')
+    .replace(/🔒/g, '[X]')
+    .replace(/👻/g, '[*]')
+    .replace(/🎵/g, '[~]')
+    .replace(/🔊/g, '[+]')
+    .replace(/🔇/g, '[-]')
+    .replace(/⏸/g, '[=]')
+    .replace(/▶|🎬/g, '[>]')
+    .replace(/🎨|🔬|⚡/g, '[*]')
+    .replace(/🌐/g, '[@]')
+    .replace(/⛓/g, '[#]')
+    .replace(/👑/g, '*')
+    .replace(/🥈/g, '+')
+    .replace(/🥉/g, '-')
+    .replace(/\uFE0F/g, '');
+}
+
+/**
+ * Determina si una línea pertenece a un recuadro o tabla con bordes ASCII/Unicode.
+ * @param {string} linea
+ * @returns {boolean}
+ */
+export function esLineaCajaASCII(linea) {
+  if (typeof linea !== 'string') return false;
+  const trimmed = linea.trim();
+  return /^[╔╠╟╚║┌├└│]/.test(trimmed);
+}
+
+/**
+ * Normaliza una línea individual de una caja ASCII para que su longitud en caracteres
+ * coincida exactamente con `anchoObjetivo` (por defecto 64), manteniendo rectos los bordes.
+ * @param {string} linea
+ * @param {number} [anchoObjetivo=64]
+ * @returns {string}
+ */
+export function normalizarLineaCajaASCII(linea, anchoObjetivo = 64) {
+  const ancho = Math.max(10, Number(anchoObjetivo) || 64);
+  const limpia = limpiarTextoCajaASCII(String(linea || '')).trimEnd();
+  const trimmed = limpia.trim();
+
+  if (!trimmed) return limpia;
+
+  const first = trimmed[0];
+  const last = trimmed[trimmed.length - 1];
+
+  // 1. Bordes horizontales superiores, intermedios o inferiores (╔═╗, ╠═╣, ╟─╢, ╚═╝, ┌─┐, ├─┤, └─┘)
+  if (/^[╔╠╟╚┌├└]/.test(first)) {
+    const mapaCierre = {
+      '╔': '╗',
+      '╠': '╣',
+      '╟': '╢',
+      '╚': '╝',
+      '┌': '┐',
+      '├': '┤',
+      '└': '┘'
+    };
+    const rightCorner = mapaCierre[first] || (/[╗╣╢╝┐┤┘]/.test(last) ? last : '╗');
+    const fillChar = (first === '╟' || first === '┌' || first === '├' || first === '└') ? '─' : '═';
+
+    // Si tiene separadores de tabla (╤, ╧, ┼, ┬, ┴), ajustar el relleno final para cuadrar exactamente el ancho
+    const innerRaw = /[╗╣╢╝┐┤┘]/.test(last) ? trimmed.slice(1, -1) : trimmed.slice(1);
+    const targetInnerLen = ancho - 2;
+    if (/[╤╧┼┬┴]/.test(innerRaw)) {
+      const fixedInner = innerRaw.length <= targetInnerLen
+        ? innerRaw + fillChar.repeat(targetInnerLen - innerRaw.length)
+        : innerRaw.slice(0, targetInnerLen);
+      return `${first}${fixedInner}${rightCorner}`;
+    }
+
+    return `${first}${fillChar.repeat(targetInnerLen)}${rightCorner}`;
+  }
+
+  // 2. Líneas de contenido vertical (║ ... ║ o │ ... │)
+  if (first === '║' || first === '│') {
+    const borderChar = first;
+    let inner = trimmed.slice(1);
+    if (inner.endsWith(borderChar)) {
+      inner = inner.slice(0, -1);
+    }
+
+    // Asegurar un espacio de margen izquierdo si no empieza con espacio
+    if (!inner.startsWith(' ')) {
+      inner = ' ' + inner;
+    }
+
+    // Longitud interna entre los dos bordes verticales (dejando 1 espacio antes del borde derecho)
+    const contentWidth = ancho - 3; // borderChar (1) + contentWidth (ancho - 3) + ' ' (1) + borderChar (1) = ancho
+    const innerTrimmedRight = inner.replace(/\s+$/, '');
+
+    let formattedInner;
+    if (innerTrimmedRight.length <= contentWidth) {
+      formattedInner = innerTrimmedRight.padEnd(contentWidth, ' ');
+    } else {
+      formattedInner = innerTrimmedRight.slice(0, contentWidth);
+    }
+
+    return `${borderChar}${formattedInner} ${borderChar}`;
+  }
+
+  return limpia;
+}
+
+/**
+ * Función auxiliar que recibe un array de líneas (con bordes ASCII existentes o texto plano)
+ * y garantiza que todas las líneas de cada caja tengan exactamente la misma longitud en caracteres.
+ * @param {string[]} lineas
+ * @param {{ ancho?: number, envolver?: boolean }} [opciones={}]
+ * @returns {string[]}
+ */
+export function formatearCajaASCII(lineas, opciones = {}) {
+  if (!Array.isArray(lineas) || lineas.length === 0) return [];
+
+  const tieneBordes = lineas.some(l => esLineaCajaASCII(l));
+  let anchoActivo = opciones.ancho || 64;
+
+  // Si se solicita envolver texto plano en una caja nueva
+  if (!tieneBordes && opciones.envolver !== false) {
+    const innerWidth = anchoActivo - 4;
+    const resultado = [`╔${'═'.repeat(anchoActivo - 2)}╗`];
+    for (const rawLine of lineas) {
+      const clean = limpiarTextoCajaASCII(String(rawLine || ''));
+      if (clean.length === 0) {
+        resultado.push(`║ ${' '.repeat(innerWidth)} ║`);
+        continue;
+      }
+      // Partir en trozos si supera el ancho interno respetando las palabras completas
+      const chunks = envolverTextoPorPalabras(clean, innerWidth);
+      for (const chunk of chunks) {
+        resultado.push(`║ ${chunk.padEnd(innerWidth, ' ')} ║`);
+      }
+    }
+    resultado.push(`╚${'═'.repeat(anchoActivo - 2)}╝`);
+    return resultado;
+  }
+
+  // Normalizar cajas existentes línea por línea
+  return lineas.map(linea => {
+    if (typeof linea !== 'string') return '';
+    const limpia = limpiarTextoCajaASCII(linea);
+    const trimmed = limpia.trim();
+    if (/^[╔┌]/.test(trimmed)) {
+      if (!opciones.ancho && trimmed.length >= 20) {
+        anchoActivo = trimmed.length;
+      }
+    }
+    if (esLineaCajaASCII(trimmed)) {
+      return normalizarLineaCajaASCII(trimmed, anchoActivo);
+    }
+    return linea;
+  });
+}
+
+// ─────────────────────────────────────────────────
+// 3. EMULADOR DE TERMINAL (TerminalEmulator)
 // ─────────────────────────────────────────────────
 
 export class TerminalEmulator {
@@ -343,6 +514,7 @@ export class TerminalEmulator {
     this.prevCwd = '/home/ghost';
     this.user = 'ghost';
     this.hostname = 'nexus';
+    this._activeBoxWidth = 64;
 
     // Historial con comandos iniciales de lore (Vera Sorenson)
     this.history = [
@@ -426,16 +598,56 @@ export class TerminalEmulator {
   }
 
   /**
-   * Imprime una línea en la terminal.
+   * Imprime una línea en la terminal, normalizando automáticamente las cajas con bordes ASCII
+   * para que todas sus filas mantengan exactamente la misma longitud en caracteres.
    * @param {string} text
    * @param {string} [cls]
    */
   print(text, cls = '') {
     if (!this.dom.output) return;
+    const rawStr = String(text ?? '');
+
+    // Si el texto contiene saltos de línea internos, imprimir línea por línea para alinear cajas ASCII
+    if (rawStr.includes('\n')) {
+      for (const subLine of rawStr.split('\n')) {
+        this.print(subLine, cls);
+      }
+      return;
+    }
+
+    let finalLine = rawStr;
+    let extraClass = '';
+
+    if (esLineaCajaASCII(rawStr)) {
+      const cleaned = limpiarTextoCajaASCII(rawStr).trim();
+      if (/^[╔┌]/.test(cleaned) && cleaned.length >= 20) {
+        this._activeBoxWidth = cleaned.length;
+      }
+      finalLine = normalizarLineaCajaASCII(cleaned, this._activeBoxWidth || 64);
+      extraClass = 'line--box';
+    }
+
     const div = document.createElement('div');
-    div.className = `line ${cls}`.trim();
-    div.textContent = text;
+    div.className = `line ${extraClass} ${cls}`.replace(/\s+/g, ' ').trim();
+    div.textContent = finalLine;
     this.dom.output.appendChild(div);
+    this.scrollToBottom();
+  }
+
+  /**
+   * Imprime un bloque completo de caja ASCII dentro de un elemento <pre class="terminal__ascii-box">
+   * garantizando que todas las líneas coincidan en longitud exacta de caracteres.
+   * @param {string[]} lines
+   * @param {string} [cls]
+   * @param {{ ancho?: number }} [opciones]
+   */
+  printBox(lines, cls = '', opciones = {}) {
+    if (!this.dom.output || !Array.isArray(lines)) return;
+    const normalized = formatearCajaASCII(lines, opciones);
+    const pre = document.createElement('pre');
+    pre.className = `terminal__ascii-box line--box ${cls}`.replace(/\s+/g, ' ').trim();
+    pre.textContent = normalized.join('\n');
+    this.dom.output.appendChild(pre);
     this.scrollToBottom();
   }
 
@@ -539,6 +751,31 @@ export class TerminalEmulator {
       statsManager.registrarComando();
       logrosManager.verificar('comando_ejecutado', { totalComandos: statsManager.getPerfil().totalComandos });
 
+      const renderResult = (res) => {
+        if (!res) return;
+
+        if (res.error) {
+          this.print(res.error, 'line--error');
+        }
+
+        if (res.lines) {
+          const processedLines = formatearCajaASCII(res.lines, { envolver: false });
+          for (const line of processedLines) {
+            if (typeof line === 'string' && line.startsWith('%c')) {
+              // Soporte para líneas con clase específica: "%ctexto", "line--success"
+              const parts = line.slice(2).split('", "');
+              this.print(parts[0], parts[1] || 'line--info');
+            } else {
+              this.print(line);
+            }
+          }
+        }
+
+        if (res.html) {
+          this.printHTML(res.html);
+        }
+      };
+
       const result = cmd.execute({
         args,
         terminal: this,
@@ -546,26 +783,13 @@ export class TerminalEmulator {
         cwd: this.cwd
       });
 
-      if (!result) return;
-
-      if (result.error) {
-        this.print(result.error, 'line--error');
-      }
-
-      if (result.lines) {
-        for (const line of result.lines) {
-          if (typeof line === 'string' && line.startsWith('%c')) {
-            // Soporte para líneas con clase específica: "%ctexto", "line--success"
-            const parts = line.slice(2).split('", "');
-            this.print(parts[0], parts[1] || 'line--info');
-          } else {
-            this.print(line);
-          }
-        }
-      }
-
-      if (result.html) {
-        this.printHTML(result.html);
+      if (result && typeof result.then === 'function') {
+        result.then(renderResult).catch(err => {
+          console.error(`[Terminal] Error asíncrono al ejecutar '${cmdName}':`, err);
+          this.print(`nexus-sh: error interno al ejecutar '${cmdName}': ${err.message}`, 'line--error');
+        });
+      } else {
+        renderResult(result);
       }
     } catch (err) {
       console.error(`[Terminal] Error al ejecutar '${cmdName}':`, err);
@@ -797,6 +1021,54 @@ export function testTerminal() {
   // 10. parseArgs con comillas
   const parsed1 = parseArgs('grep -rn "código no miente" /var/log/vera.txt');
   assert(parsed1.length === 4 && parsed1[2] === 'código no miente', 'parseArgs debe preservar comillas compuestas');
+
+  // 11. Cajas de texto con bordes ASCII (normalización estricta de ancho en caracteres)
+  const cajaDesalineada = [
+    '╔══════════════════════════════════════════════════════════════╗',
+    '║ TÍTULO CORTO ║',
+    '║ Línea sin cierre a la derecha',
+    '╠══════════════════════════════════════════════════════════════╣',
+    '║ Texto con emoji 🔑 y longitud distinta                        ║',
+    '╚══════════════════════════════════════════════════════════════╝'
+  ];
+  const cajaNormalizada = formatearCajaASCII(cajaDesalineada);
+  assert(
+    cajaNormalizada.length === 6 && cajaNormalizada.every(l => l.length === 64 && (l.endsWith('╗') || l.endsWith('╣') || l.endsWith('╝') || l.endsWith('║'))),
+    'formatearCajaASCII debe igualar la longitud exacta (64 chars) y cerrar los bordes de cada línea'
+  );
+
+  const cajaDesdeTexto = formatearCajaASCII(['ENCABEZADO DE PRUEBA', 'Contenido dinámico de terminal'], { ancho: 50, envolver: true });
+  assert(
+    cajaDesdeTexto.length === 4 && cajaDesdeTexto.every(l => l.length === 50),
+    'formatearCajaASCII debe poder envolver texto dinámico en una caja de ancho exacto (50 chars)'
+  );
+
+  // Verificar que los comandos con cajas ASCII (help, status, retos, music) producen cajas con ancho uniforme
+  const cmdsConCajas = [
+    COMMANDS.help.execute({ args: [], terminal: term, vfs }),
+    COMMANDS.status.execute({ args: [], terminal: term, vfs }),
+    COMMANDS.retos.execute({ args: [], terminal: term, vfs }),
+    COMMANDS.music.execute({ args: ['status'], terminal: term, vfs }),
+    COMMANDS.ghostscript.execute({ args: ['info'], terminal: term, vfs }),
+    COMMANDS['42'].execute({ args: [], terminal: term, vfs })
+  ];
+  const todasCajasUniformes = cmdsConCajas.every(res => {
+    const norm = formatearCajaASCII(res.lines || [], { envolver: false });
+    const boxLines = norm.filter(l => esLineaCajaASCII(l));
+    return boxLines.length > 0 && boxLines.every(l => l.length === boxLines[0].length);
+  });
+  assert(todasCajasUniformes, 'Todos los comandos con cajas ASCII deben producir líneas con idéntico número de caracteres');
+
+  // 12. Envoltura de texto por límites de palabras (evita cortes de palabras y guiones)
+  const textoLargo = 'Este es un mensaje descifrado con criptografía asimétrica donde ninguna palabra debe cortarse.';
+  const envueltas = envolverTextoPorPalabras(textoLargo, 30);
+  assert(
+    envueltas.length >= 3 &&
+    envueltas.every(l => l.length <= 30) &&
+    !envueltas.some(l => l.endsWith('-')) &&
+    envueltas.join(' ') === textoLargo,
+    'envolverTextoPorPalabras debe respetar fronteras de palabras completas sin cortes arbitrarios'
+  );
 
   const fallados = total - pasados;
   if (fallados === 0) {

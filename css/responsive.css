@@ -90,7 +90,7 @@ html, body {
   }
 
   .menu-subtitle {
-    font-size: var(--fs-xs);
+    font-size: clamp(9.5px, 2.2vw, var(--fs-xs));
     margin-bottom: var(--space-md);
   }
 
@@ -122,7 +122,7 @@ html, body {
   /* ── Terminal: mobile ── */
   .terminal {
     padding: var(--space-md);
-    font-size: var(--fs-xs);
+    font-size: clamp(9.5px, 2.2vw, var(--fs-xs));
     border-radius: var(--radius-sm);
   }
 
@@ -297,10 +297,29 @@ html, body {
     grid-template-columns: 1fr !important;
   }
 
-  /* ── Narrative: mobile ── */
+  /* ── Narrative & Intro Screen: mobile ── */
   .narrative-container {
-    width: 95%;
-    padding: var(--space-lg);
+    width: 100%;
+    max-width: 98vw;
+    padding: var(--space-sm);
+  }
+
+  .v4-intro-screen {
+    padding: var(--space-sm) !important;
+  }
+
+  /* ── Marcus External Chat: mobile ── */
+  #marcus-external-chat {
+    right: 8px !important;
+    left: 8px !important;
+    bottom: 8px !important;
+    width: auto !important;
+    max-width: calc(100vw - 16px) !important;
+    max-height: 58dvh !important;
+  }
+
+  #marcus-chat-messages {
+    max-height: 24dvh !important;
   }
 
   /* ── Autosave indicator: mobile ── */
@@ -379,11 +398,12 @@ html, body {
   .terminal {
     padding: var(--space-sm);
     border-radius: 0;
+    font-size: clamp(8.5px, 2.4vw, 11px);
   }
 
   /* Truth table: compact */
   .truth-table {
-    font-size: var(--fs-xs);
+    font-size: clamp(9.5px, 2.2vw, var(--fs-xs));
   }
 
   .truth-table th,
@@ -435,7 +455,11 @@ html, body {
 
   .menu-content h1 {
     font-size: 1.1rem;
-    word-break: break-word;
+    -webkit-hyphens: none;
+    -ms-hyphens: none;
+    hyphens: none;
+    word-break: normal;
+    overflow-wrap: break-word;
   }
 
   .menu-btn {

@@ -183,7 +183,7 @@ export function abrirPuzzleFrecuencia(nivel = 4, onCompletado = null) {
             Sustitución Monoalfabética
           </span>
         </div>
-        <div id="freq-texto-cifrado-box" style="font-family: var(--font-mono); font-size: 13px; color: var(--text-white); font-weight: bold; letter-spacing: 0.08em; line-height: 1.4; word-break: break-all;">
+        <div id="freq-texto-cifrado-box" style="font-family: var(--font-mono); font-size: 13px; color: var(--text-white); font-weight: bold; letter-spacing: 0.08em; line-height: 1.4; word-break: normal; overflow-wrap: break-word; hyphens: none;">
           ${puzzleActual.textoCifrado}
         </div>
       </div>
